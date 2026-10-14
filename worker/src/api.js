@@ -400,8 +400,15 @@ async function createVersion(request, env, cors, user, song) {
   if (!body) return fail("cuerpo JSON no válido", cors, 400);
   const problema = checkSongFields(body);
   if (problema) return fail(problema, cors, 400);
+  // Una versión sin texto no es una versión: es una fila que ensucia la tira de
+  // versiones y no se puede leer. La ruta de PROPUESTAS ya lo rechazaba con
+  // este mismo mensaje; esta no, y desde que el editor abre el cuerpo vacío
+  // —antes venía con el original dentro— guardar sin pegar nada está a un clic.
+  if (!String(body.content || "").trim()) {
+    return fail("la versión necesita contenido", cors, 400);
+  }
   const r2Key = `${SONG_PREFIX}${uuid()}.txt`;
-  await env.BUCKET.put(r2Key, String(body.content || ""), {
+  await env.BUCKET.put(r2Key, String(body.content), {
     httpMetadata: { contentType: "text/plain; charset=utf-8" }
   });
   const version = await insertVersion(env.DB, {

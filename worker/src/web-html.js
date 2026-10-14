@@ -2511,11 +2511,7 @@ function openSong(id) {
     document.title = (d.song.title || "(sin título)") +
       (d.song.artist ? " · " + d.song.artist : "") + " · Accordio";
     setCapo(d.song.capo);
-    // Solo http(s): un href con javascript: en la cabecera sería un agujero.
-    var origen = String(d.song.sourceUrl || "");
-    var valida = acUrlSegura(origen);
-    vSource.href = valida ? origen : "#";
-    vSource.classList.toggle("hidden", !valida);
+    ponerOrigen(d.song.sourceUrl);
     vEdit.classList.toggle("hidden", !(user && (user.id === d.song.ownerId || user.role === "admin")));
     renderViewer();
     viewer.classList.add("on");
@@ -3099,11 +3095,27 @@ function deleteComment(id) {
   });
 }
 
+/*
+ * El enlace «Original ↗» de la cabecera dice de dónde salió LO QUE SE ESTÁ
+ * LEYENDO, y por eso vive aquí y no suelto dentro de openSong: lo pone también
+ * cada versión al elegirla.
+ *
+ * Solo http(s). Un href con «javascript:» en la cabecera sería un agujero, y lo
+ * ve cualquiera que abra la partitura (de ahí acUrlSegura, que está probada).
+ */
+function ponerOrigen(url) {
+  var origen = String(url || "");
+  var valida = acUrlSegura(origen);
+  vSource.href = valida ? origen : "#";
+  vSource.classList.toggle("hidden", !valida);
+}
+
 /** Cambia lo que se lee sin salir del visor: se conservan tono y tamaño. */
 function showVersion(id) {
   if (!id) {
     currentVersion = null;
     setCapo(current.song.capo);
+    ponerOrigen(current.song.sourceUrl);
     var parsed = acParseSong(current.content);
     current.body = parsed.body || current.content;
     renderViewer();
@@ -3115,12 +3127,35 @@ function showVersion(id) {
     var p = acParseSong(d.content);
     current.body = p.body || d.content;
     setCapo(d.version.capo);
+    /*
+     * La procedencia es la de la VERSIÓN que se está leyendo. Antes el enlace se
+     * ponía una sola vez, al abrir la canción, así que una versión con su propia
+     * fuente no la enseñaba nunca: el botón seguía apuntando a la de la canción
+     * —o no salía— por mucho que se hubiera rellenado al crearla.
+     *
+     * Sin fuente propia se deja la de la canción: sigue siendo de donde salió la
+     * canción, y esconder el botón al cambiar de versión parecería que se ha
+     * perdido algo.
+     */
+    ponerOrigen(d.version.sourceUrl || current.song.sourceUrl);
     renderViewer();
     renderVersionBar();
     vBody.scrollTop = 0;
   }).catch(avisarError);
 }
 
+/*
+ * Una versión es OTRA transcripción de la misma canción, no una copia de la que
+ * ya hay: quien la añade viene a pegar un papel distinto. Por eso el cuerpo
+ * arranca vacío. Traerlo relleno con el original obligaba a seleccionarlo y
+ * borrarlo a mano antes de poder pegar nada, cada vez.
+ *
+ * El capo sí se hereda: es de la canción, no del papel que se va a pegar. Y el
+ * nombre y la fuente nacen vacíos porque son de esta versión y de nadie más.
+ *
+ * Guardar sin pegar nada no cuela: el servidor responde «la versión necesita
+ * contenido» y el editor lo enseña donde enseña los demás errores.
+ */
 function newVersion() {
   editorMode = "version";
   editingVersionId = null;
@@ -3129,7 +3164,7 @@ function newVersion() {
   eSource.value = "";
   editCapo = Number(current.song.capo) || 0;
   renderCapo();
-  eContent.value = current.body || "";
+  eContent.value = "";
   renderEditorPreview();
   applyEditorMode();
   irAlEditorPreparado(current.song.id);
@@ -3178,7 +3213,9 @@ function proposeVersion() {
   eSource.value = "";
   editCapo = Number(current.song.capo) || 0;
   renderCapo();
-  eContent.value = current.body || "";
+  // Vacío por lo mismo que en newVersion(): proponer una versión es traer otra
+  // transcripción, no reenviar la que ya está publicada.
+  eContent.value = "";
   eNote.value = "";
   renderEditorPreview();
   applyEditorMode();
@@ -4063,7 +4100,12 @@ function prepararAlta() {
   editChordVariants = variantesDe(null);
   eLocked.checked = false;
   editorMode = "song"; editingVersionId = null;
-  eVisibility.value = "private";
+  /*
+   * Sin elegir, a propósito. Antes nacía en «Privada» y eso no es un valor por
+   * omisión inocente: decide quién va a poder ver la partitura, y se quedaba
+   * decidido sin que nadie lo mirara. Ahora hay que elegir (lo exige saveSong).
+   */
+  eVisibility.value = "";
   // Si se está mirando una lista concreta, la nueva nace ahí: es lo que espera
   // quien acaba de pulsar "+ Nueva" dentro de esa carpeta.
   ePlaylist.value = (playlistBy && playlistBy !== "none") ? playlistBy : "";
@@ -4139,7 +4181,9 @@ function volcarEnEditor() {
   eTube.value = current.song.youtubeUrl || "";
   eTubeMsg.textContent = "";
   eLocked.checked = !!current.song.locked;
-  eVisibility.value = current.song.visibility || "private";
+  // Aquí no es un valor por omisión: es lo que la partitura ES ahora mismo. Si
+  // viniera sin visibilidad, se queda sin elegir antes que suponer «privada».
+  eVisibility.value = current.song.visibility || "";
   ePlaylist.value = current.song.playlistId || "";
   eContent.value = current.content || "";
   editChordVariants = variantesDe(current.song);
@@ -4150,6 +4194,21 @@ function volcarEnEditor() {
 function saveSong() {
   if (editorMode === "version") return saveVersion();
   if (editorMode === "proposal") return sendVersionProposal();
+  /*
+   * La visibilidad hay que elegirla. Se exige AQUÍ y no en el servidor porque
+   * el servidor no puede distinguir «sin elegir» de «privada» —una visibilidad
+   * que no vale cae a privada al crear y se conserva al actualizar
+   * (api.js, canSetVisibility)— y porque la app es otro cliente que sí manda
+   * siempre un valor y no tiene por qué cambiar.
+   *
+   * Solo se pide si el desplegable está EN PANTALLA: applyEditorMode lo esconde
+   * a quien no es editor, y a ese el servidor no le deja fijarla de todos modos.
+   */
+  if (!eVisibilityWrap.classList.contains("hidden") && !eVisibility.value) {
+    editMsg.textContent = "Elige si la partitura va a ser privada o pública.";
+    eVisibility.focus();
+    return;
+  }
   var payload = {
     title: eTitle.value.trim(),
     artist: eArtist.value.trim(),
@@ -4169,8 +4228,12 @@ function saveSong() {
     loadGenres();          // la categoría puede ser nueva
     // Se REEMPLAZA la entrada del editor: guardada la partitura, «atrás» no
     // puede devolver a un formulario que ya no tiene nada que hacer.
+    //
+    // Y se sale al CATÁLOGO, no a «Mis partituras»: esa pestaña viene con
+    // «Solo privadas» puesto, así que guardar aterrizaba siempre en el listado
+    // de privadas, que no es donde se estaba trabajando.
     listOffset = 0;
-    navegar("#/mias", { reemplazar: true });
+    navegar("#/", { reemplazar: true });
   }).catch(function (e) { editMsg.textContent = e.message; });
 }
 /** Guarda una versión de la partitura abierta (alta o edición). */
@@ -4886,6 +4949,7 @@ export const WEB_HTML = `<!doctype html>
             </select></label>
           <label id="eVisibilityWrap">Visibilidad
             <select id="eVisibility">
+              <option value="">Elige…</option>
               <option value="private">Privada (solo yo)</option>
               <option value="public">Pública (cualquiera puede verla)</option>
             </select>

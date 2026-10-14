@@ -232,6 +232,22 @@ test("las versiones de una partitura privada ajena no se listan", async () => {
   assert.equal(res.status, 404, "para un editor, una privada ajena no existe");
 });
 
+test("una versión sin contenido no se crea", async () => {
+  const { estado, env } = escenario();
+  const res = await llamar(env, "POST", "/api/songs/s1/versions",
+    { name: "Vacía", content: "   " }, estado.users.u1);
+  assert.equal(res.status, 400,
+    "el editor web abre el cuerpo vacío a propósito: guardar sin pegar nada no puede colar");
+});
+
+test("con contenido, la versión se crea", async () => {
+  const { estado, db, env } = escenario();
+  const res = await llamar(env, "POST", "/api/songs/s1/versions",
+    { name: "Acústica", content: "{C}letra" }, estado.users.u1);
+  assert.equal(res.status, 201);
+  assert.ok(db.escrituras.some((e) => e.tipo === "version" && e.name === "Acústica"));
+});
+
 test("quien no puede editar no añade versiones: propone", async () => {
   const { estado, env } = escenario();
   const res = await llamar(env, "POST", "/api/songs/s2/versions",

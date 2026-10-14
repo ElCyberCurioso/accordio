@@ -409,6 +409,14 @@ juntar una de verdad, en vez de añadir un puñado distinto cada vez.
 
 Desde la web se gestiona el repertorio propio igual que desde el móvil: **listas (carpetas)** con su filtro, **favoritas**, **papelera** con restaurar y borrar definitivamente, y el editor con visibilidad, candado, categoría, capo, vídeo y lista.
 
+Dos cosas del editor que no son valores por omisión inocentes. La **visibilidad
+hay que elegirla**: el desplegable nace en «Elige…» y guardar no pasa sin
+decidirlo. Antes nacía en «Privada», y eso decide quién puede ver la partitura
+sin que nadie lo haya mirado. (A quien no es editor el desplegable no se le
+enseña, porque el servidor no le deja fijarla de todas formas.) Y al guardar se
+sale al **catálogo**, no a «Mis partituras»: esa pestaña trae «Solo privadas»
+puesto, así que guardar aterrizaba siempre en el listado de privadas.
+
 Hay **conmutador de tema** claro/oscuro en la cabecera (se recuerda en el navegador; sin elección manda el del sistema).
 
 Los **avisos y las confirmaciones son de la propia web**, no del navegador: al compartir una partitura, al borrar o al pedir un texto sale un diálogo con la tipografía y los colores de Accordio (y respeta el tema claro/oscuro), más un aviso flotante que se va solo. `alert`, `confirm` y `prompt` desentonaban y, encima, congelaban la página mientras estaban abiertos: con el metrónomo sonando o una restauración en marcha se notaba.
@@ -619,6 +627,21 @@ Una **versión** es un arreglo alternativo de una partitura —otro tono, otra c
 Quien puede editar la partitura añade versiones directamente. El resto **propone**, y la propuesta espera en la cola de revisión sin tocar nada. Al aprobarla, la versión se crea **a nombre de quien la propuso**, no del revisor.
 
 Las propuestas viven en la pestaña «Propuestas»: cola de pendientes para editores, historial propio para todos los demás. Rechazar pide un motivo, que ve el autor.
+
+Al añadir una versión —o al proponerla— el **cuerpo arranca vacío**: una versión
+es otra transcripción, no una copia de la que ya hay, y quien la añade viene a
+pegar un papel distinto. Antes venía relleno con el original y había que
+seleccionarlo y borrarlo a mano antes de pegar nada, cada vez. Lo que sí se
+hereda es el **capo**, que es de la canción; el nombre y la fuente nacen vacíos
+porque son de esa versión. Guardar sin pegar nada no cuela: el servidor pide
+contenido, como ya hacía con las propuestas.
+
+El enlace **«Original ↗»** de la cabecera dice de dónde salió **lo que se está
+leyendo**, así que al elegir una versión pasa a su propia procedencia; si no
+tiene, se queda la de la canción. Antes se ponía una sola vez al abrir la
+partitura, de modo que la fuente de una versión no se veía nunca aunque se
+hubiera rellenado al crearla. La app ya se comportaba así: la web era la
+excepción.
 ### Categorías
 
 Cada partitura tiene una categoría (`songs.genre`), y el catálogo filtra por ella. `-Categorize` propone una para las que no la tienen, mirando primero el **artista** y luego palabras del **título**; lo que no encaja va a «Varios». Las reglas están en [`worker/src/genres.js`](worker/src/genres.js), a la vista para corregirlas, y cualquier categoría se cambia luego a mano desde el editor.

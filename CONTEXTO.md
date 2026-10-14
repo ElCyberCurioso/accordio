@@ -8,7 +8,7 @@ pendiente.
 
 > Todo lo que describe este documento está **commiteado y subido** a
 > `origin/master` —este commit incluido—, y el servidor está **desplegado**
-> (versión `43ee4f93`). Lo único sin publicar es la app: sigue en
+> (versión `bc7fe5b1`). Lo único sin publicar es la app: sigue en
 > `versionCode 2`, y no debe publicarse sin probarla antes en un móvil de
 > verdad (§7).
 
@@ -326,6 +326,42 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
   deshabilita mientras carga (ya había estilo `:disabled`), que antes dos clics
   seguidos lanzaban dos peticiones.
 
+### 3.11 Versiones: cuerpo vacío y procedencia propia
+- **El cuerpo arranca vacío** al añadir una versión (`newVersion`) y al
+  proponerla (`proposeVersion`). Venía relleno con el original, así que cada
+  versión nueva empezaba por seleccionar y borrar a mano una partitura entera.
+  El capo sí se hereda —es de la canción—; nombre y fuente nacen vacíos.
+- Con el cuerpo vacío, guardar sin pegar nada quedaba a un clic, y resultó que
+  `createVersion` (api.js) **no exigía contenido**: solo `checkSongFields`, que
+  mide tamaños. La ruta de PROPUESTAS sí lo rechazaba, con mensaje y todo. Ahora
+  las dos piden lo mismo («la versión necesita contenido», 400) y hay dos tests
+  en `test/proposals.test.mjs` que lo fijan. Una versión en blanco no se puede
+  leer y ensucia la tira de versiones.
+- **El enlace «Original ↗» sigue a la versión que se lee.** Se ponía una sola vez
+  en `openSong`, de modo que la procedencia de una versión no se veía nunca.
+  Sale a `ponerOrigen(url)`, que lo pone la canción y lo pone cada versión al
+  elegirla, con la de la canción como respaldo si la versión no trae ninguna.
+  Sigue pasando por `acUrlSegura`: ese href lo ve cualquiera que abra la
+  partitura. **La app ya lo hacía así** (`SongViewScreen.kt`,
+  `activeVersion?.sourceUrl ?: song?.sourceUrl`): la web era la excepción.
+
+### 3.12 Editor: salida al catálogo y visibilidad sin valor por omisión
+- **Al guardar se sale a `#/`**, no a `#/mias`. «Mis partituras» viene con «Solo
+  privadas» puesto (§4 y §3.2), así que guardar aterrizaba siempre en el listado
+  de privadas. Consecuencia asumida: si lo guardado es privado, no sale en ese
+  catálogo; la partitura se sigue alcanzando desde «Mis partituras».
+- **La visibilidad se elige.** El desplegable tiene una primera opción sin valor
+  («Elige…»), el alta nace sin elegir y `saveSong` no deja guardar sin decidirlo.
+  Antes nacía en «Privada»: un valor por omisión que decide quién ve la
+  partitura sin que nadie lo mire. En edición se carga el valor REAL de la
+  partitura, que ahí no es omisión sino estado.
+- La exigencia va en el **cliente** a propósito: el servidor no puede distinguir
+  «sin elegir» de «privada» —una visibilidad que no vale cae a privada al crear
+  y se conserva al actualizar (`api.js`, `canSetVisibility`)— y la app es otro
+  cliente que sí manda siempre un valor y no tiene por qué cambiar. Solo se pide
+  si el desplegable está EN PANTALLA: `applyEditorMode` lo esconde a quien no es
+  editor, y a ese el servidor tampoco le deja fijarla.
+
 ---
 
 ## 4. Decisiones de diseño que conviene respetar
@@ -559,7 +595,7 @@ Estado actual de producción:
 | R2 | `guitarchords` |
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
-| Worker | Versión `43ee4f93`, desplegada el 14/10/2026 con `./tools/deploy.sh release` |
+| Worker | Versión `bc7fe5b1`, desplegada el 14/10/2026 con `./tools/deploy.sh release` |
 | App | `versionCode 2` / `2.0` publicada en `/update`, firmada con la clave de siempre (SHA-256 `e6a53587…`). **Los cambios del 16–17/09 NO están publicados** |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
@@ -630,6 +666,14 @@ servidor rechaza los de seis. `seed` solo siembra guitarra.
       con él puesto no hay tono ni diagramas que tocar) y el mismo texto para
       `print/PrintAdapter.kt`, que hoy da el documento idéntico al de la web y
       tiene que seguir dándolo.
+- [ ] **Versión nueva con el cuerpo vacío en la app Android.** La web ya lo hace
+      (§3.11). En la app, `SongViewModel.addVersion` crea la fila con
+      `s.content` —el texto de la canción— y abre el editor encima, así que
+      arrastra el mismo trabajo manual: basta pasar `""`. Ojo con el orden: la
+      fila se inserta ANTES de abrir el editor, de modo que una versión recién
+      creada y abandonada se queda vacía en la base; si se cambia, conviene
+      mirar si merece borrarse al salir sin guardar. El enlace de procedencia
+      **no** hay que tocarlo: ahí la app ya acierta.
 - [ ] Sincronizar el progreso del entrenamiento (mismo patrón que los acordes).
 - [ ] Niveles 4-5 del curriculum en el resto de áreas.
 - [ ] El parser de cabeceras está tres veces: `SongTextFormat.kt`, `acParseSong`
