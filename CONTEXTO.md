@@ -4,12 +4,13 @@ Documento de traspaso: qué es el proyecto, cómo está montado hoy, **por qué*
 tomaron ciertas decisiones (para no deshacerlas sin querer) y qué queda
 pendiente.
 
-Última actualización: 2026-09-17 · Rama `master` · último commit `03317c6`.
+Última actualización: 2026-10-14 · Rama `master`.
 
 > Todo lo que describe este documento está **commiteado y subido** a
-> `origin/master`, y el servidor está **desplegado** (versión `84a93ad9`). Lo
-> único sin publicar es la app: sigue en `versionCode 2`, y no debe publicarse
-> sin probarla antes en un móvil de verdad (§7).
+> `origin/master` —este commit incluido—, y el servidor está **desplegado**
+> (versión `43ee4f93`). Lo único sin publicar es la app: sigue en
+> `versionCode 2`, y no debe publicarse sin probarla antes en un móvil de
+> verdad (§7).
 
 > **El proyecto se llama Accordio**, y desde el renombrado también por dentro:
 > código, comentarios, documentación, tokens de estilo, rutas de los estáticos y
@@ -285,6 +286,11 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
 - `print/PrintAdapter.kt` reescrito para dar **el mismo documento** que la web
   (ver §4.26). `PrintAdapter.print()` recibe `semitones` para la píldora de tono.
 
+### 3.8 Renombrado Vivace → Accordio y carpeta
+- Ver la nota del principio. La carpeta del proyecto pasó de
+  `~/Desktop/projects/vivace` a **`~/Desktop/projects/accordio`**; hay que abrir
+  Android Studio desde la ruta nueva.
+
 ### 3.9 Solo letra (web)
 - La partitura se puede leer e imprimir **sin cifrado**, para quien solo canta.
   Interruptor «Solo letra» en los mandos del visor (bloque Letra), y el PDF sale
@@ -299,10 +305,26 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
   `accordio_letra` (`localStorage`), como el tema y el instrumento.
 - **Falta en la app Android**, y está apuntado en §7 con lo que hay que portar.
 
-### 3.8 Renombrado Vivace → Accordio y carpeta
-- Ver la nota del principio. La carpeta del proyecto pasó de
-  `~/Desktop/projects/vivace` a **`~/Desktop/projects/accordio`**; hay que abrir
-  Android Studio desde la ruta nueva.
+### 3.10 «Cargar más» cargaba a trozos
+- Dos cuentas que no cuadraban en el listado, y las dos se veían al buscar:
+  - El botón avanzaba `listOffset += PAGINA` (60) mientras la petición pedía
+    `PAGINA_BUSQUEDA` (500) si había búsqueda. La segunda página empezaba 440
+    filas por detrás de donde acabó la primera: casi todo lo que llegaba ya
+    estaba en la lista y se pintaba dos veces. Ahora el desplazamiento es
+    `songs.length` —«cuántas tengo»—, que no depende del límite que se usara.
+  - Con menos de `MIN_BUSQUEDA` letras no se pregunta al servidor, así que la
+    página llega **sin filtrar** y el recorte local se queda con las que casen
+    (a veces tres de cien). Pedir una página y parar hacía que el botón añadiera
+    un puñado distinto cada vez. Ahora `cargarMas()` sigue pidiendo hasta juntar
+    una página de **lo que se ve** o hasta que el servidor se queda sin listado,
+    con tope de `VUELTAS_MAX` vueltas: el recorte mira título y artista, y un
+    texto que no esté en ninguno recorrería el catálogo a golpe de petición.
+- `PAGINA` pasa de 60 a **100**, las mismas que `PAGE_SIZE` en `db.js`: dos
+  tamaños distintos para la misma página es lo que un día deja de coincidir.
+- Para eso, `refresh()` devuelve su promesa y el recorte local sale a `visibles()`,
+  que es la cuenta que decide si una página ha aportado algo. El botón se
+  deshabilita mientras carga (ya había estilo `:disabled`), que antes dos clics
+  seguidos lanzaban dos peticiones.
 
 ---
 
@@ -496,7 +518,8 @@ comprobada generando el PDF de verdad y leyéndolo con `pypdf`.
 
 ## 6. Despliegue
 
-Web y app están desplegadas, pero **hay cambios de web sin subir** (§7). Desde
+Web y app están desplegadas. La **web está al día**; la app sigue en
+`versionCode 2`, con los cambios del 16–17/09 sin publicar (§7). Desde
 Linux/macOS:
 
 ```bash
@@ -536,7 +559,7 @@ Estado actual de producción:
 | R2 | `guitarchords` |
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
-| Worker | Versión `84a93ad9`, desplegada el 17/09/2026 con `./tools/deploy.sh release` |
+| Worker | Versión `43ee4f93`, desplegada el 14/10/2026 con `./tools/deploy.sh release` |
 | App | `versionCode 2` / `2.0` publicada en `/update`, firmada con la clave de siempre (SHA-256 `e6a53587…`). **Los cambios del 16–17/09 NO están publicados** |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |

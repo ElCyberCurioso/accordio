@@ -393,10 +393,19 @@ reserva, el corte caería donde no toca.
 **Buscar es cosa del servidor.** Con 3 letras o cifras el buscador consulta el
 catálogo entero por título y artista, sin distinguir mayúsculas ni tildes
 («buleria» encuentra «Bulería»), y devuelve todos los resultados de una vez.
-Antes solo filtraba lo que ya estaba descargado —la primera página de 60—, así
+Antes solo filtraba lo que ya estaba descargado —solo la primera página—, así
 que una partitura que cayera más atrás no aparecía hasta pulsar «Cargar más» las
 veces que hiciera falta. Con menos de 3 caracteres se recorta lo ya cargado y se
 avisa de que hay que escribir un poco más.
+
+**«Cargar más» añade una página de lo que se ve**, y el listado se pide de 100
+en 100 (las mismas que `PAGE_SIZE` en el servidor) o de 500 cuando hay búsqueda.
+El desplazamiento es «cuántas tengo ya», no un salto fijo: con búsqueda el botón
+avanzaba de 60 en 60 mientras la petición pedía 500, así que la segunda página
+empezaba cientos de filas por detrás y casi todo llegaba repetido. Y cuando el
+texto no llega al mínimo para preguntar al servidor —la página viene sin filtrar
+y el recorte local se queda con las que casen— se siguen pidiendo páginas hasta
+juntar una de verdad, en vez de añadir un puñado distinto cada vez.
 
 Desde la web se gestiona el repertorio propio igual que desde el móvil: **listas (carpetas)** con su filtro, **favoritas**, **papelera** con restaurar y borrar definitivamente, y el editor con visibilidad, candado, categoría, capo, vídeo y lista.
 

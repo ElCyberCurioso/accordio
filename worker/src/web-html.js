@@ -1090,12 +1090,16 @@ var editingChord = null;       // nombre que se está editando, "" si es nuevo
 var chordPositions = [];       // posiciones del acorde en edición
 var altasAbiertas = true;      // ¿se pueden crear cuentas? lo dice el servidor
 
-/** Cuántas partituras se piden de golpe. */
-var PAGINA = 60;
+/*
+ * Cuántas partituras se piden de golpe. Las mismas que PAGE_SIZE en el servidor
+ * (db.js): una página del listado es UNA página, y no dos tamaños distintos que
+ * un día dejan de coincidir.
+ */
+var PAGINA = 100;
 
 /*
  * Buscar es cosa del SERVIDOR. Antes el buscador solo filtraba lo que ya estaba
- * descargado —la primera página de 60—, así que una partitura de la mitad del
+ * descargado —solo la primera página—, así que una partitura de la mitad del
  * catálogo no aparecía hasta darle a «Cargar más» las veces que hiciera falta:
  * el buscador parecía roto y en realidad estaba mirando por una rendija.
  *
@@ -1682,7 +1686,7 @@ function refresh() {
    * TODOS los filtros van al servidor, también los de "Mis partituras".
    * Aplicarlos solo sobre lo ya descargado era la causa de que una carpeta o
    * "Solo privadas" salieran vacías: el listado viene por páginas, y si las
-   * primeras sesenta partituras no pasaban el filtro no se veía nada hasta
+   * primeras de la página no pasaban el filtro no se veía nada hasta
    * pulsar "Cargar más" una vez por página. El filtro tiene que decidir sobre
    * todo el catálogo, y eso solo lo sabe SQL.
    */
@@ -1700,7 +1704,7 @@ function refresh() {
     : tab === "mine"
     ? "/api/songs?" + pag + mios
     : "/api/songs/public?" + pag;
-  api("GET", path).then(function (d) {
+  return api("GET", path).then(function (d) {
     // Al pedir "más" se añade; al cambiar de pestaña o filtro se empieza de cero.
     songs = listOffset ? songs.concat(d.songs || []) : (d.songs || []);
     listHasMore = !!d.hasMore;
@@ -1718,19 +1722,31 @@ function refresh() {
   });
 }
 
-function renderList(error) {
-  // Se filtra otra vez aquí, y con la MISMA normalización que el servidor, para
-  // que escribir la cuarta letra no espere a la respuesta: lo ya cargado se
-  // recorta al instante y luego llega el listado completo.
+/*
+ * Lo que de verdad se VE del listado: lo que hay cargado, recortado por el texto
+ * del buscador con la MISMA normalización que el servidor, para que escribir la
+ * cuarta letra no espere a la respuesta.
+ *
+ * Aquí SOLO se recorta por ese texto, que es lo que tiene que responder tecla a
+ * tecla. Los demás filtros los resuelve el servidor: si se repitieran aquí,
+ * esconderían partituras que la página siguiente sí trae.
+ *
+ * Vive aparte de renderList porque «Cargar más» necesita esta misma cuenta: lo
+ * que mide si una página ha aportado algo son las que se ven, no las que se
+ * descargaron.
+ */
+function visibles() {
   var q = acNormalizarBusqueda(search.value);
-  var propio = tab === "mine";
-  // Aquí SOLO se recorta por el texto del buscador, que es lo que tiene que
-  // responder tecla a tecla. Los demás filtros los resuelve el servidor: si se
-  // repitieran aquí, esconderían partituras que la página siguiente sí trae.
-  var shown = songs.filter(function (s) {
-    if (!q) return true;
+  if (!q) return songs;
+  return songs.filter(function (s) {
     return acNormalizarBusqueda((s.title || "") + " " + (s.artist || "")).indexOf(q) >= 0;
   });
+}
+
+function renderList(error) {
+  var q = acNormalizarBusqueda(search.value);
+  var propio = tab === "mine";
+  var shown = visibles();
   list.innerHTML = "";
   shown.forEach(function (s) {
     var card = document.createElement("button");
@@ -4280,7 +4296,46 @@ tabMine.onclick = function () { irA("mine"); };
 tabTrash.onclick = function () { irA("trash"); };
 tabAdmin.onclick = function () { irA("admin"); };
 altasBtn.onclick = alternarAltas;
-moreBtn.onclick = function () { listOffset += PAGINA; refresh(); };
+/*
+ * «Cargar más» tiene que añadir UNA PÁGINA de lo que se ve, y ahí había dos
+ * cuentas que no cuadraban.
+ *
+ * La primera: el botón avanzaba el desplazamiento de PAGINA en PAGINA, pero al
+ * buscar la petición pide PAGINA_BUSQUEDA. La segunda página arrancaba
+ * entonces cientos de filas por detrás de donde acabó la primera, así que casi
+ * todo lo que llegaba ya estaba en la lista y se pintaba dos veces. Ahora el
+ * desplazamiento es «cuántas tengo», que no depende del límite que se usara ni
+ * hay que mantener a mano cuando uno de los dos cambie.
+ *
+ * La segunda: con menos de MIN_BUSQUEDA letras no se pregunta al servidor, de
+ * modo que la página llega SIN filtrar y el recorte local se queda con las que
+ * casen —a veces tres de cien—. Pedir una página y parar hacía que el botón
+ * añadiera un puñado distinto cada vez, que es justo lo que no parece una
+ * página. Ahora se siguen pidiendo hasta juntar una de verdad, o hasta que el
+ * servidor se queda sin listado.
+ *
+ * El tope de vueltas existe porque el recorte mira título y artista: un texto
+ * que no esté en ninguno recorrería el catálogo entero a golpe de petición.
+ */
+var VUELTAS_MAX = 10;
+
+function cargarMas() {
+  var objetivo = visibles().length + PAGINA;
+  moreBtn.disabled = true;
+  var siguiente = function (vueltas) {
+    var teniamos = songs.length;
+    listOffset = songs.length;
+    return refresh().then(function () {
+      // Sin progreso —error o página vacía— no se insiste.
+      if (songs.length <= teniamos) return;
+      if (visibles().length >= objetivo || !listHasMore || vueltas >= VUELTAS_MAX) return;
+      return siguiente(vueltas + 1);
+    });
+  };
+  siguiente(1).catch(function () {}).then(function () { moreBtn.disabled = false; });
+}
+
+moreBtn.onclick = cargarMas;
 /*
  * Al teclear: recorte inmediato de lo que ya hay y, si hay al menos 3 letras o
  * cifras, consulta al servidor un poco después. El retardo es para no lanzar
