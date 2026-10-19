@@ -4725,6 +4725,24 @@ document.addEventListener("keydown", function (e) {
   if (e.key === "Escape" && viewer.classList.contains("on")) salirDelVisor();
 });
 
+/*
+ * Enlace de descarga de la app. La versión sale de /update, que es el mismo
+ * sitio del que la app se entera de que hay una nueva, así que el rótulo no
+ * puede desdecirse de lo que se instala. Si no hay APK publicada —404, o un
+ * latest.json sin versión— el enlace NO se enseña: mejor sin botón que un
+ * botón que descarga un 404.
+ *
+ * No se avisa del fallo: nadie ha pedido esto, es la página la que lo ofrece.
+ */
+function enlaceDeLaApp() {
+  fetch("/update").then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+    if (!d || !d.versionName) return;
+    appLink.querySelector("span").textContent = "App " + d.versionName;
+    appLink.classList.remove("hidden");
+  }).catch(function () {});
+}
+enlaceDeLaApp();
+
 applyTheme(currentTheme());
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
   if (!currentTheme()) recursosDeTema(temaEfectivo());
@@ -4812,6 +4830,11 @@ export const WEB_HTML = `<!doctype html>
       <path class="luna" d="M20.1 14.6A8.5 8.5 0 0 1 9.4 3.9a8.5 8.5 0 1 0 10.7 10.7z"></path>
     </svg>
   </button>
+  <!-- Descarga de la app. Nace oculto: lo enseña el JS solo si hay APK
+       publicada, con su versión en el rótulo (ver enlaceDeLaApp). -->
+  <a id="appLink" class="tool hidden" href="/update/apk"
+     title="Descargar la app de Android (APK)">
+    <svg class="ic"><use href="#ic-app"></use></svg><span>App Android</span></a>
   <button id="loginBtn">Entrar</button>
   <button id="logoutBtn" class="hidden">Salir</button>
 </header>
@@ -5263,13 +5286,14 @@ export const WEB_HTML = `<!doctype html>
   <symbol id="ac-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5l5 5" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
   <symbol id="ac-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v8M6 16v4M12 4v2M12 10v10M18 4v10M18 18v2"></path><circle cx="6" cy="14" r="2"></circle><circle cx="12" cy="8" r="2" stroke="var(--ac-icon-accent, #FF6B6B)"></circle><circle cx="18" cy="16" r="2"></circle></symbol>
   <symbol id="ac-review" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"></rect><rect x="9" y="2.5" width="6" height="3" rx="1"></rect><path d="M8.5 10h7M8.5 16h3"></path><circle cx="15" cy="16" r="1.8" stroke="var(--ac-icon-accent, #FF6B6B)"></circle></symbol>
-  <symbol id="ac-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.7"></circle><path d="M4.9 20.5a7.1 7.1 0 0 1 14.2 0"></path></symbol>
+  <symbol id="ac-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.5" stroke="var(--ac-icon-accent, #FF6B6B)"></circle><path d="M5 20a7 7 0 0 1 14 0"></path></symbol>
   <symbol id="ac-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.2"></circle><circle cx="12" cy="12" r="1.2" stroke="var(--ac-icon-accent, #FF6B6B)"></circle><circle cx="12" cy="19" r="1.2"></circle></symbol>
   <symbol id="ac-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="17" r="2.5"></circle><circle cx="17" cy="15" r="2.5"></circle><path d="M9.5 17V6M19.5 15V4"></path><path d="M9.5 6L19.5 4" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
   <symbol id="ic-candado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10.5v-3a4 4 0 0 1 8 0v3"></path><rect x="5.5" y="10.5" width="13" height="10" rx="2"></rect><path d="M12 14v3" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
   <symbol id="ic-pausa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M10 8.5v7M14 8.5v7" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
-  <symbol id="ic-letra" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.4 7h15.2M4.4 11.4h15.2M4.4 15.8h11.4"></path><path d="M4.4 20.2h7.4" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
-  <symbol id="ic-stop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.2 4h5.6l4.4 16.4H4.8z"></path><path d="M6.2 14.6h11.6"></path><rect x="9.6" y="8.4" width="4.8" height="4.8" rx="1" fill="var(--ac-icon-accent, #FF6B6B)" stroke="var(--ac-icon-accent, #FF6B6B)"></rect></symbol>
+  <symbol id="ic-letra" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16M4 12h16"></path><path d="M4 16h10" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
+  <symbol id="ic-app" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 16.5v-9M8.5 11L12 7.5l3.5 3.5" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
+  <symbol id="ic-stop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><rect x="9" y="9" width="6" height="6" rx="1" stroke="var(--ac-icon-accent, #FF6B6B)"></rect></symbol>
 </svg>
 
 <!-- Avisos flotantes (aria-live: un lector de pantalla los canta sin robar el

@@ -202,6 +202,14 @@ como absolutos, así que **todo acorde con traste base mayor que 1** —cejillas
 posiciones altas, media biblioteca— salía con los puntos corridos o sin ellos.
 Ya está arreglado y cubierto por tests.
 
+### Descargar la app
+
+La cabecera de la web lleva un enlace a la **APK de Android** (`/update/apk`),
+con la versión publicada en el rótulo. Sale de `/update`, que es el mismo sitio
+donde la app mira si hay una versión nueva, así que el botón y la función
+«buscar nueva versión» no pueden decir cosas distintas. Si no hay APK publicada,
+el enlace no aparece.
+
 ### Iconos
 
 Set propio, dibujado para Accordio: 61 iconos de 24 dp más la marca y el icono

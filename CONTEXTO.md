@@ -389,6 +389,28 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
   deja de compilar. Pasó al documentar el orden por omisión y lo cazó
   `npm run check`, que es justo para esto: no basta con compilar la app.
 
+### 3.14 La app se publica: versionCode 3, y se puede descargar desde la web
+- Los tres iconos que faltaban en la web están dibujados en el lenguaje del set
+  (`ac-user`, `ic-stop` —hermano de `pausa`: mismo círculo, cuadrado dentro— y
+  `ic-letra`). Ya no queda nada del dibujo viejo en el sprite.
+- **Enlace de descarga en la cabecera de la web**, que no existía: `/update/apk`
+  estaba servido pero ninguna página llevaba a él. La versión del rótulo sale de
+  `/update`, el mismo sitio del que se entera la app, así que el botón no puede
+  desdecirse de lo que se instala; si no hay APK publicada, el enlace no se
+  enseña.
+- **`versionCode` 2 → 3, `versionName` «2.0» → «2.1»**, y publicada: APK en R2
+  (`app/app-release.apk` + `latest.json`) y como release `v2.1` en GitHub. Subir
+  el código es lo que hace que «buscar nueva versión» la ofrezca: `UpdateManager`
+  compara el de `latest.json` con el instalado.
+- Firma comprobada antes de publicar: `CN=Vivace`, SHA-256 `e6a53587…`, **la
+  misma de la app que ya estaba publicada**. Si no coincidiera, la actualización
+  no se instalaría encima y habría que desinstalar, con sus datos.
+- **Se ha publicado SIN probarla en un dispositivo**, a petición expresa. Lo que
+  eso arrastra está en §7 y sigue siendo lo primero que hay que mirar: la
+  migración de Room 17 → 18 sobre una base con datos viaja en esta versión y no
+  se ha visto correr nunca. Una APK ya descargada no se puede retirar: lo único
+  que se puede hacer es publicar otra por encima.
+
 ---
 
 ## 4. Decisiones de diseño que conviene respetar
@@ -623,7 +645,7 @@ Estado actual de producción:
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
 | Worker | Versión `59eae5f3`, desplegada el 19/10/2026 con `./tools/deploy.sh release` |
-| App | `versionCode 2` / `2.0` publicada en `/update`, firmada con la clave de siempre (SHA-256 `e6a53587…`). **Los cambios del 16–17/09 NO están publicados** |
+| App | `versionCode 3` / `2.1` publicada en `/update` y como release `v2.1` en GitHub, firmada con la clave de siempre (SHA-256 `e6a53587…`). **Publicada sin probar en un dispositivo** (§3.14) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
 | Estilo web | paquete de marca Accordio (claro + oscuro); fuentes en `worker/brand/` |
@@ -653,9 +675,10 @@ Estado actual de producción:
       ~214 KB, ignorado por git) y subirlo desde **Acordes → Instrumento:
       Ukelele → Importar JSON…**. Hasta entonces la web sigue sin posturas de
       ukelele; la app ya las trae dentro.
-- [ ] **Publicar la app** cuando lo anterior esté probado: subir
-      `versionCode`/`versionName` y
-      `./tools/deploy.sh app <apk> --url https://accordio.site`.
+- [x] **Publicar la app.** Hecho: `versionCode 3` / `2.1`, en `/update` y en la
+      release `v2.1` de GitHub. Se hizo **antes** de probarla en un dispositivo,
+      que es lo que pedía el punto de arriba: el riesgo sigue vivo y ahora está
+      en manos de quien actualice.
 - [ ] **Pasar la CSP a obligatoria.** Hoy va como
       `Content-Security-Policy-Report-Only` porque no había navegador con el que
       probarla. Recorrer catálogo, visor con vídeo, editor y diccionario con la
