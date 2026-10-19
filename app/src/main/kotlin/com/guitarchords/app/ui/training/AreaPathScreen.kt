@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.training
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
 import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.clickable
@@ -103,6 +104,7 @@ fun AreaPathScreen(
                     val best = bestByExercise[spec.id]
                     val passed = spec.id in passedIds
                     Card(
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)

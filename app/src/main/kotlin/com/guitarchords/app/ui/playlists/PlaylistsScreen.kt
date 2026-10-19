@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.playlists
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Color
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -143,7 +145,7 @@ fun PlaylistsScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
+                            .clickable(role = Role.Button) {
                                 showFabChooser = false
                                 showCreate = true
                             }
@@ -157,7 +159,7 @@ fun PlaylistsScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
+                            .clickable(role = Role.Button) {
                                 showFabChooser = false
                                 onAddSong()
                             }
@@ -219,6 +221,7 @@ fun PlaylistsScreen(
 @Composable
 private fun UnassignedRow(count: Int, onClick: () -> Unit) {
     Card(
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
@@ -254,6 +257,7 @@ private fun PlaylistRow(
 ) {
     val haptics = LocalHapticFeedback.current
     Card(
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = Modifier
             .fillMaxWidth()
             .pointerInput(Unit) {

@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.update
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
 import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
@@ -102,7 +103,7 @@ fun UpdateScreen(
                     CheckButton(vm)
                 }
                 is UpdateUiState.Available -> {
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), modifier = Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(16.dp)) {
                             Text(
                                 stringResource(R.string.update_available, s.info.versionName),

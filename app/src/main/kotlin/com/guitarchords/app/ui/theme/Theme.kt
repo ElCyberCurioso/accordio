@@ -44,6 +44,8 @@ import androidx.compose.ui.platform.LocalContext
 private val Primary       = Color(0xFF1A535C)
 private val Primary100    = Color(0xFFE3EEF0)
 private val Primary200    = Color(0xFFBCD6DA)
+private val Primary300    = Color(0xFF8DB6BD)
+private val Primary400    = Color(0xFF4E8A94)
 private val Primary600    = Color(0xFF154650)
 private val Primary700    = Color(0xFF113941)
 private val Primary800    = Color(0xFF0D2B31)
@@ -122,8 +124,27 @@ private val LightScheme = lightColorScheme(
     surfaceContainerHighest = Color(0xFFE3F0EB),
     surfaceDim = Color(0xFFEDE4D8),
     surfaceBright = LightSurface2,
-    outline = Primary200,                         // border-strong
-    outlineVariant = LightLine,                   // border
+    /*
+     * Los bordes del tema claro, y es el arreglo de fondo de que «no se
+     * distinguieran los recuadros»:
+     *
+     * La paleta clara son dos cremas casi iguales —tarjeta #F2FAF6 sobre fondo
+     * #F7EFE3 dan 1,07:1—, así que NINGÚN relleno puede separar una tarjeta del
+     * fondo: el blanco puro se queda en 1,14:1. La separación tiene que venir
+     * del borde, y el que había no la daba: Primary200 sobre la tarjeta es
+     * 1,44:1 y LightLine 1,18:1, o sea invisible.
+     *
+     * `outline` es el límite de un CONTROL, y eso WCAG 1.4.11 lo quiere a 3:1.
+     * De las rampas de marca, la primera que llega es la 400 (3,67:1 sobre la
+     * tarjeta, 3,42:1 sobre el fondo). La 300 se queda en 2,07:1.
+     *
+     * `outlineVariant` son los separadores decorativos, que NO son controles y
+     * no les aplica el 3:1; van en la 300 para que se vean sin competir con el
+     * borde de las tarjetas. El token de marca no se toca: sube el ROL, como ya
+     * se hizo con el texto secundario.
+     */
+    outline = Primary400,                         // límite de control: 3,67:1
+    outlineVariant = Primary300,                  // separadores: 2,07:1
     error = Coral700,                             // danger legible
     onError = Color(0xFFFFFFFF),
     errorContainer = Color(0xFFFFE9E9),

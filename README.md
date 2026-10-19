@@ -210,6 +210,17 @@ donde la app mira si hay una versión nueva, así que el botón y la función
 «buscar nueva versión» no pueden decir cosas distintas. Si no hay APK publicada,
 el enlace no aparece.
 
+### El tema claro necesita bordes, no rellenos
+
+La paleta clara son dos cremas casi iguales —tarjeta `#F2FAF6` sobre fondo
+`#F7EFE3` dan **1,07:1**—, de modo que ningún color de relleno separa una
+tarjeta del fondo: el blanco puro se queda en 1,14:1. La definición la da el
+**borde**, y el rol `outline` va en la rampa 400 de la marca (`#4E8A94`), que es
+la primera que llega al **3:1** que WCAG pide para el límite de un control:
+3,67:1 sobre la tarjeta. Los separadores decorativos van en la 300, que no
+necesitan ese mínimo. Lo que sube es el **rol**; los tokens de marca no se
+tocan.
+
 ### Iconos
 
 Set propio, dibujado para Accordio: 61 iconos de 24 dp más la marca y el icono

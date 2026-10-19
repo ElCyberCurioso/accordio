@@ -411,6 +411,37 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
   se ha visto correr nunca. Una APK ya descargada no se puede retirar: lo único
   que se puede hacer es publicar otra por encima.
 
+### 3.15 El tema claro no definía nada, y por qué
+- **La paleta clara son dos cremas casi iguales**: tarjeta `#F2FAF6` sobre fondo
+  `#F7EFE3` dan **1,07:1**. Eso significa que NINGÚN relleno puede separar una
+  tarjeta del fondo —el blanco puro se queda en 1,14:1—, así que la definición
+  tiene que venir del borde. Y el que había no la daba: `outline` era
+  `Primary200` (1,44:1) y `outlineVariant` `LightLine` (1,18:1): invisibles.
+- `outline` es el límite de un CONTROL y WCAG 1.4.11 lo quiere a 3:1. De las
+  rampas de marca la primera que llega es la **400** (`#4E8A94`): 3,67:1 sobre la
+  tarjeta y 3,42:1 sobre el fondo. La 300 se queda en 2,07:1 y va a
+  `outlineVariant`, que son separadores decorativos y no les aplica el 3:1.
+  **Sube el ROL, no el token** (regla 8 de §4), igual que ya se hizo con el texto
+  secundario.
+- Las tarjetas no dibujaban borde ninguno —solo `FretboardInput`—, de modo que
+  en claro se sostenían sobre una sombra que sobre crema no se ve. Ahora lo
+  llevan las 28 de 16 ficheros.
+- **Regresión corregida, y era de accesibilidad:** al regenerar los iconos el
+  acento quedó como `Color(0xFFFF6B6B)` literal donde antes había un rol. Ese
+  coral sobre crema da 2,61:1 —por debajo del 3:1 de los gráficos que significan
+  algo— y además no se aclaraba en oscuro. Vuelve a `extendedColors.chord`:
+  coral-700 en claro (5,3:1) y el coral aclarado del kit en oscuro.
+- **Auditoría de toque y descripciones: sale limpia**, y conviene saber por qué
+  para no «arreglarla» otra vez. Cero controles por debajo de 48 dp, porque
+  Compose aplica `minimumInteractiveComponentSize` a los componentes de Material
+  (un `IconButton` toca 48 aunque el icono mida 24). Cero iconos mudos y cero
+  descripciones a mano: todas pasan por `strings.xml`. Los `Icon(…, null)` de
+  los `leadingIcon` **son correctos**: ese icono acompaña a un texto que ya
+  rotula el control, y describirlo haría que TalkBack lo dijese dos veces.
+- Lo único real eran **5 `Row` pulsables** (no son de Material, así que no
+  heredan ni rol ni tamaño): llevan ya `role = Role.Button`, y las tres que se
+  quedaban en 44 dp suben el padding a 12 para llegar a 48.
+
 ---
 
 ## 4. Decisiones de diseño que conviene respetar
@@ -645,7 +676,7 @@ Estado actual de producción:
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
 | Worker | Versión `59eae5f3`, desplegada el 19/10/2026 con `./tools/deploy.sh release` |
-| App | `versionCode 3` / `2.1` publicada en `/update` y como release `v2.1` en GitHub, firmada con la clave de siempre (SHA-256 `e6a53587…`). **Publicada sin probar en un dispositivo** (§3.14) |
+| App | `versionCode 4` / `2.2` publicada en `/update` y como release `v2.2` en GitHub, firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
 | Estilo web | paquete de marca Accordio (claro + oscuro); fuentes en `worker/brand/` |
@@ -660,12 +691,13 @@ Estado actual de producción:
 - [ ] **Copia de seguridad de la clave de firma** fuera de esta máquina (§9).
       Sin ella no se puede volver a actualizar la app nunca. Sigue pendiente
       desde hace sesiones y es lo único irreversible de esta lista.
-- [ ] **Probar la app en un dispositivo real.** Compila y sus tests pasan, pero
-      **no se ha visto ejecutándose**: aquí no hay emulador. Ahora pesa más que
-      antes, porque la base cambió de versión. Mirar:
-      - la **migración de Room 17 → 18** sobre una base con datos (§3.0);
-      - que tras actualizar **se conserve la sesión** (mudanza de
-        `guitarchords_sync` → `accordio_sync`);
+- [ ] **Probar la app en un dispositivo real.** Lo más gordo ya está visto: con
+      la 2.1 se actualizó desde la propia app y **funcionó**, así que la
+      migración de Room 17 → 18 sobre una base con datos y la conservación de la
+      sesión están comprobadas en un móvil de verdad. Aquí sigue sin haber
+      emulador, así que lo que queda por mirar es lo de abajo. Comprobado ya:
+      - ~~la **migración de Room 17 → 18** sobre una base con datos (§3.0)~~;
+      - ~~que tras actualizar **se conserve la sesión**~~;
       - los diagramas de ukelele, que ahora vienen del diccionario empaquetado
         y ya no de las posturas calculadas;
       - elegir una digitación en el visor, sincronizar y verla puesta en la web;

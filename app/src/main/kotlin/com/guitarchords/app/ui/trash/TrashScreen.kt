@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.trash
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
 import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
@@ -141,7 +142,7 @@ private fun TrashRow(
     onRestore: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), modifier = Modifier.fillMaxWidth()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth().padding(12.dp)

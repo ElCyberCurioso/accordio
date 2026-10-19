@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.training.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -124,6 +125,7 @@ fun AreaCard(
     modifier: Modifier = Modifier
 ) {
     Card(
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = modifier
             .fillMaxWidth()
             .clickable(enabled = enabled) { onClick() },

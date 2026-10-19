@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.dictionary
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -173,7 +174,7 @@ fun TheoryGuideView(modifier: Modifier = Modifier) {
 @Composable
 private fun FormulaCard(f: MusicTheory.ChordFormula) {
     val example = MusicTheory.notesFor(0, f.semitones).joinToString(" · ")
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(

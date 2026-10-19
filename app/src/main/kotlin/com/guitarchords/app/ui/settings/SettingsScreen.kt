@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.settings
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -71,7 +72,7 @@ fun SettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ThemeCard(current: ThemeMode, onPick: (ThemeMode) -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.fillMaxWidth().padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(AccordioIcons.tema(), null, tint = MaterialTheme.colorScheme.primary)
@@ -126,6 +127,7 @@ private fun SettingsContent(rows: List<SettingRow>, onBack: () -> Unit) {
             items(rows.size) { i ->
                 val r = rows[i]
                 Card(
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { r.onClick() }

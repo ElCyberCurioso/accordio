@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,6 +48,7 @@ fun SongListItem(
     trailing: @Composable (RowScope.() -> Unit)? = null
 ) {
     Card(
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         colors = if (selected)
             CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         else CardDefaults.cardColors(),

@@ -1,6 +1,8 @@
 package com.guitarchords.app.ui.icons
 
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import com.guitarchords.app.ui.theme.extendedColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -774,7 +776,14 @@ object AccordioIcons {
     @Composable
     private fun icono(datos: IconoKit, nombre: String, color: Color?, acento: Color?): ImageVector {
         val trazo = color ?: LocalContentColor.current
-        val detalle = acento ?: Color(0xFFFF6B6B)
+        /*
+         * El acento sale del ROL `chord`, no de un coral fijo. Con el literal
+         * #FF6B6B el detalle daba 2,61:1 sobre la tarjeta clara —por debajo del
+         * 3:1 que piden los gráficos que significan algo— y además no se
+         * aclaraba en oscuro. El rol da la rampa que se lee en cada modo:
+         * coral-700 en claro (5,3:1) y el coral aclarado del kit en oscuro.
+         */
+        val detalle = acento ?: MaterialTheme.extendedColors.chord
         return datos.construir(trazo, detalle, nombre)
     }
 

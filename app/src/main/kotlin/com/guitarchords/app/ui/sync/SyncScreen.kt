@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.sync
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
 import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Column
@@ -202,7 +203,7 @@ fun SyncScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            Card(modifier = Modifier.fillMaxWidth()) {
+            Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp)) {
                     Text(
                         stringResource(
@@ -259,7 +260,7 @@ fun SyncScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(Modifier.height(12.dp))
-            Card(modifier = Modifier.fillMaxWidth()) {
+            Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp)) {
                     Text(
                         stringResource(

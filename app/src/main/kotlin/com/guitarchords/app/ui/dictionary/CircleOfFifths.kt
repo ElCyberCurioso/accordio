@@ -2,6 +2,7 @@ package com.guitarchords.app.ui.dictionary
 
 import android.graphics.Paint
 import android.graphics.Typeface
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -281,6 +282,7 @@ fun CircleOfFifthsView(
         ) {
             items(fam.pairs) { (roman, chord) ->
                 Card(
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onChordClick(chord) }

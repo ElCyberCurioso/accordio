@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.song
 
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -306,8 +307,8 @@ private fun PlaylistPickerDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onPick(null) }
-                            .padding(vertical = 10.dp, horizontal = 4.dp)
+                            .clickable(role = Role.Button) { onPick(null) }
+                            .padding(vertical = 12.dp, horizontal = 4.dp)
                     ) {
                         Icon(AccordioIcons.notas(), null, tint = Color.Unspecified)
                         Spacer(Modifier.size(12.dp))
@@ -321,8 +322,8 @@ private fun PlaylistPickerDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onPick(p.id) }
-                            .padding(vertical = 10.dp, horizontal = 4.dp)
+                            .clickable(role = Role.Button) { onPick(p.id) }
+                            .padding(vertical = 12.dp, horizontal = 4.dp)
                     ) {
                         Icon(AccordioIcons.partitura(), null, tint = Color.Unspecified)
                         Spacer(Modifier.size(12.dp))

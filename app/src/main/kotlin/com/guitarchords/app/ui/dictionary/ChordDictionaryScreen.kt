@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.dictionary
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
 import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.clickable
@@ -185,6 +186,7 @@ fun ChordDictionaryScreen(onBack: () -> Unit) {
                 ) {
                     items(filtered, key = { it.name }) { chord ->
                         Card(
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { selected = chord.name }

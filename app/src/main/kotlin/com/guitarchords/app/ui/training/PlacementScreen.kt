@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.training
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
 import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
@@ -180,7 +181,7 @@ private fun SummaryStep(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.height(16.dp))
-        Card(Modifier.fillMaxWidth()) {
+        Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), modifier = Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp)) {
                 TrainingArea.entries.forEach { area ->
                     Row(

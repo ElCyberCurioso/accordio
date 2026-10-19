@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.training
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
 import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
@@ -81,7 +82,7 @@ fun StatsScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                Card(Modifier.fillMaxWidth()) {
+                Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp)) {
                         profile?.let { p ->
                             XpBar(p.xpTotal)
@@ -100,7 +101,7 @@ fun StatsScreen(
             }
             items(TrainingArea.entries.filter { Curriculum.byArea(it).isNotEmpty() }) { area ->
                 val stat = statsByArea[area.name]
-                Card(Modifier.fillMaxWidth()) {
+                Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -143,7 +144,7 @@ fun StatsScreen(
             }
             items(Achievements.all, key = { it.id }) { def ->
                 val unlocked = def.id in unlockedIds
-                Card(Modifier.fillMaxWidth()) {
+                Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically

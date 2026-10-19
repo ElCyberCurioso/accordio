@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.finder
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
 import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
@@ -123,6 +124,7 @@ fun ChordFinderScreen(onBack: () -> Unit) {
             } else {
                 matches.forEach { m ->
                     Card(
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
