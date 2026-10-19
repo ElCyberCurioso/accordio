@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.settings
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,12 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Brightness6
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.CloudSync
-import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -59,13 +54,13 @@ fun SettingsScreen(
         SettingRow(
             stringResource(R.string.sync_r2_title),
             stringResource(R.string.sync_r2_subtitle),
-            Icons.Default.CloudSync,
+            AccordioIcons.sincronizar(),
             onOpenSync
         ),
         SettingRow(
             stringResource(R.string.update_title),
             stringResource(R.string.update_subtitle),
-            Icons.Default.SystemUpdate,
+            AccordioIcons.actualizar(),
             onOpenUpdate
         )
     )
@@ -79,7 +74,7 @@ private fun ThemeCard(current: ThemeMode, onPick: (ThemeMode) -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.fillMaxWidth().padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Brightness6, null, tint = MaterialTheme.colorScheme.primary)
+                Icon(AccordioIcons.tema(), null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.size(12.dp))
                 Text(
                     stringResource(R.string.theme_title),
@@ -114,7 +109,7 @@ private fun SettingsContent(rows: List<SettingRow>, onBack: () -> Unit) {
                 colors = accordioTopBarColors(),
                 title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                    IconButton(onClick = onBack) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                 }
             )
         }
@@ -157,7 +152,7 @@ private fun SettingsContent(rows: List<SettingRow>, onBack: () -> Unit) {
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
-                        Icon(AccordioIcons.siguiente(), contentDescription = null)
+                        Icon(AccordioIcons.siguiente(), contentDescription = null, tint = Color.Unspecified)
                     }
                 }
             }

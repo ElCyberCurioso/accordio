@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.training
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,11 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -63,7 +60,7 @@ fun AreaPathScreen(
                 title = { Text(stringResource(area.titleRes)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified)
                     }
                 }
             )
@@ -89,7 +86,7 @@ fun AreaPathScreen(
                         if (locked) {
                             Spacer(Modifier.size(8.dp))
                             Icon(
-                                Icons.Default.Lock, null,
+                                AccordioIcons.candado(), null,
                                 modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -137,15 +134,15 @@ fun AreaPathScreen(
                             }
                             when {
                                 locked -> Icon(
-                                    Icons.Default.Lock, null,
+                                    AccordioIcons.candado(), null,
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 passed -> Icon(
-                                    Icons.Default.CheckCircle, null,
+                                    AccordioIcons.logrado(), null,
                                     tint = MaterialTheme.extendedColors.success
                                 )
                                 else -> Icon(
-                                    Icons.Default.PlayArrow, null,
+                                    AccordioIcons.reproducir(), null,
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }

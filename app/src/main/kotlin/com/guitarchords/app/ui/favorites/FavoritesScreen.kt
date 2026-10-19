@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.favorites
 
+import androidx.compose.ui.graphics.Color
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,11 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -97,13 +93,13 @@ fun FavoritesScreen(
                     colors = accordioTopBarColors(),
                     title = { Text(stringResource(R.string.favorites_title)) },
                     navigationIcon = {
-                        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                        IconButton(onClick = onBack) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                     },
                     actions = {
                         IconButton(onClick = {
                             searchOpen = !searchOpen
                             if (!searchOpen) query = ""
-                        }) { Icon(AccordioIcons.buscar(), stringResource(R.string.search_songs)) }
+                        }) { Icon(AccordioIcons.buscar(), stringResource(R.string.search_songs), tint = Color.Unspecified) }
                         SongSortMenu(current = sort, onPick = { vm.setSort(it) })
                     }
                 )

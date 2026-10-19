@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.home
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,18 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.GraphicEq
-import androidx.compose.material.icons.filled.LibraryMusic
-import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.filled.Piano
-import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.SystemUpdate
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -79,11 +68,11 @@ fun HomeScreen(
         HomeAction(stringResource(R.string.home_training), AccordioIcons.revision(), onOpenTraining),
         HomeAction(stringResource(R.string.home_playlists), AccordioIcons.partitura(), onOpenPlaylists),
         HomeAction(stringResource(R.string.home_favorites), AccordioIcons.estrella(), onOpenFavorites),
-        HomeAction(stringResource(R.string.home_tuner), Icons.Default.GraphicEq, onOpenTuner),
+        HomeAction(stringResource(R.string.home_tuner), AccordioIcons.onda(), onOpenTuner),
         HomeAction(stringResource(R.string.metronome_title), AccordioIcons.metronomo(), onOpenMetronome),
         HomeAction(stringResource(R.string.home_finder), AccordioIcons.guitarra(), onOpenFinder),
         HomeAction(stringResource(R.string.home_dictionary), AccordioIcons.acorde(), onOpenDictionary),
-        HomeAction(stringResource(R.string.home_trash), Icons.Default.Delete, onOpenTrash),
+        HomeAction(stringResource(R.string.home_trash), AccordioIcons.borrar(), onOpenTrash),
         HomeAction(stringResource(R.string.home_settings), AccordioIcons.ajustes(), onOpenSettings)
     )
 
@@ -160,7 +149,7 @@ private fun UpdateBanner(
             modifier = Modifier.fillMaxWidth().padding(start = 14.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
         ) {
             Icon(
-                Icons.Default.SystemUpdate,
+                AccordioIcons.actualizar(),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
@@ -173,7 +162,7 @@ private fun UpdateBanner(
             )
             IconButton(onClick = onDismiss) {
                 Icon(
-                    Icons.Default.Close,
+                    AccordioIcons.cerrar(),
                     contentDescription = stringResource(R.string.close),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )

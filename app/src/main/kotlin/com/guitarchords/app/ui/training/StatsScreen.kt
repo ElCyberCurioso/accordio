@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.training
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,11 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.HighlightOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -72,7 +69,7 @@ fun StatsScreen(
                 title = { Text(stringResource(R.string.training_stats)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified)
                     }
                 }
             )
@@ -152,7 +149,7 @@ fun StatsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            Icons.Default.EmojiEvents, null,
+                            AccordioIcons.trofeo(), null,
                             modifier = Modifier.size(28.dp),
                             tint = if (unlocked) MaterialTheme.extendedColors.warning
                             else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
@@ -190,7 +187,7 @@ fun StatsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        if (result.passed) Icons.Default.CheckCircle else Icons.Default.HighlightOff,
+                        if (result.passed) AccordioIcons.logrado() else AccordioIcons.fallado(),
                         null,
                         modifier = Modifier.size(18.dp),
                         tint = if (result.passed) MaterialTheme.extendedColors.success

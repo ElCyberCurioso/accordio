@@ -1061,7 +1061,14 @@ var editingVersionId = null;
 var proposalTarget = null;     // partitura sobre la que se propone
 var proposals = [];
 var genres = [];               // categorías con partituras publicadas
-var sortBy = "title";
+/*
+ * Orden por omisión: lo RECIENTE primero. El alfabético dejaba lo último que
+ * se ha metido enterrado en la mitad de la lista, que es justo lo que se va a
+ * buscar al entrar. El <option> de «Más recientes primero» lleva el atributo
+ * para que el desplegable diga lo mismo que esta variable: si se cambia una,
+ * hay que cambiar la otra.
+ */
+var sortBy = "recent";
 var genreBy = "";
 var listOffset = 0;            // desplazamiento del listado que se está viendo
 var listHasMore = false;       // queda más detrás en el servidor
@@ -4850,7 +4857,7 @@ export const WEB_HTML = `<!doctype html>
       <label class="filtro" for="sortSel">Orden
         <select id="sortSel">
           <option value="title">Título (A–Z)</option>
-          <option value="recent">Más recientes primero</option>
+          <option value="recent" selected>Más recientes primero</option>
           <option value="old">Más antiguas primero</option>
         </select></label>
       <label class="filtro hidden" id="playlistFilterWrap" for="playlistFilter">Lista
@@ -5245,22 +5252,22 @@ export const WEB_HTML = `<!doctype html>
      herramienta pinta su icono con el color de su papel sin duplicar ficheros.
      Las dos últimas no salen del kit: le faltan pausa y stop. -->
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
-  <symbol id="ac-play-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"></circle><path d="m10.2 8.6 5.4 3.4-5.4 3.4z" fill="var(--ac-icon-accent, #FF6B6B)" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
-  <symbol id="ac-metronome" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.2 4h5.6l4.4 16.4H4.8z"></path><path d="M6.2 14.6h11.6"></path><path d="M12 14.6 19.6 5.4" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
-  <symbol id="ac-chord" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4.5" width="16" height="15" rx="1"></rect><path d="M9.3 4.5v15M14.7 4.5v15M4 9.5h16M4 14.5h16"></path><circle cx="9.3" cy="7" r="1.7" fill="var(--ac-icon-accent, #FF6B6B)" stroke="none"></circle><circle cx="14.7" cy="12" r="1.7" fill="var(--ac-icon-accent, #FF6B6B)" stroke="none"></circle></symbol>
-  <symbol id="ac-sheet-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.4 3.6h9l4.6 4.6v12.2H5.4z"></path><path d="M14.2 3.6v4.8H19"></path><circle cx="9.4" cy="16.4" r="1.8" fill="var(--ac-icon-accent, #FF6B6B)" stroke="var(--ac-icon-accent, #FF6B6B)"></circle><path d="M11.2 16.4v-5l3.4-1"></path></symbol>
-  <symbol id="ac-submit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 3.6 3.6 10.4l6.6 2.8 2.8 6.6z"></path><path d="M20.4 3.6 10.2 13.2" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
-  <symbol id="ac-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.9l6-.8z" fill="currentColor" stroke="currentColor"></path></symbol>
-  <symbol id="ac-star-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.9l6-.8z"></path></symbol>
-  <symbol id="ac-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5.2v13.6M5.2 12h13.6"></path></symbol>
-  <symbol id="ac-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="6.4"></circle><path d="m15.6 15.6 4.4 4.4" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
-  <symbol id="ac-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 3.4v2.6M12 18v2.6M4.9 7.6l2.3 1.3M16.8 15.1l2.3 1.3M4.9 16.4l2.3-1.3M16.8 8.9l2.3-1.3" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
-  <symbol id="ac-review" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 20.6V10l4.3-6.7c1.7.2 2.4 1.3 2.2 3l-.4 3.7h5a2 2 0 0 1 2 2.4l-1.3 6a2 2 0 0 1-2 1.6z"></path><rect x="2.4" y="10" width="4.6" height="10.6" rx="1.2" fill="var(--ac-icon-accent, #FF6B6B)" stroke="var(--ac-icon-accent, #FF6B6B)"></rect></symbol>
+  <symbol id="ac-play-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M10 8l6.5 4-6.5 4z" fill="var(--ac-icon-accent, #FF6B6B)" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
+  <symbol id="ac-metronome" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 3h7l4 18h-15z"></path><path d="M5.8 15h12.4"></path><path d="M12 15L15.5 6" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
+  <symbol id="ac-chord" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="1"></rect><path d="M9.7 4v16M14.3 4v16"></path><path d="M5 9.3h14M5 14.7h14"></path><circle cx="9.7" cy="12" r="1.8" fill="var(--ac-icon-accent, #FF6B6B)" stroke="none"></circle></symbol>
+  <symbol id="ac-sheet-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M8 11h8M8 14.5h8M8 18h5"></path><path d="M8 7.5h2.5M13.5 7.5h2.5" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
+  <symbol id="ac-submit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"></circle><circle cx="6" cy="12" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="M8.8 10.4l6.4-3.8M8.8 13.6l6.4 3.8" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
+  <symbol id="ac-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.9L14.4 9.7L21.5 9.8L15.8 14.1L17.9 21L12 16.9L6.1 21L8.2 14.1L2.5 9.8L9.6 9.7Z" fill="currentColor"></path></symbol>
+  <symbol id="ac-star-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.9L14.4 9.7L21.5 9.8L15.8 14.1L17.9 21L12 16.9L6.1 21L8.2 14.1L2.5 9.8L9.6 9.7Z"></path></symbol>
+  <symbol id="ac-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
+  <symbol id="ac-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5l5 5" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
+  <symbol id="ac-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v8M6 16v4M12 4v2M12 10v10M18 4v10M18 18v2"></path><circle cx="6" cy="14" r="2"></circle><circle cx="12" cy="8" r="2" stroke="var(--ac-icon-accent, #FF6B6B)"></circle><circle cx="18" cy="16" r="2"></circle></symbol>
+  <symbol id="ac-review" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"></rect><rect x="9" y="2.5" width="6" height="3" rx="1"></rect><path d="M8.5 10h7M8.5 16h3"></path><circle cx="15" cy="16" r="1.8" stroke="var(--ac-icon-accent, #FF6B6B)"></circle></symbol>
   <symbol id="ac-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.7"></circle><path d="M4.9 20.5a7.1 7.1 0 0 1 14.2 0"></path></symbol>
-  <symbol id="ac-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 7h16.8M3.6 12h16.8M3.6 17h16.8"></path></symbol>
-  <symbol id="ac-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.6" cy="17" r="2.7"></circle><circle cx="17" cy="15" r="2.7"></circle><path d="M10.3 17V7.2l9.4-2.4V15"></path><path d="M10.3 9.6l9.4-2.4" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
-  <symbol id="ic-candado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.6" y="10.4" width="14.8" height="9.6" rx="2.4"></rect><path d="M8.2 10.4V7.6a3.8 3.8 0 0 1 7.6 0v2.8"></path><circle cx="12" cy="15.2" r="1.6" fill="var(--ac-icon-accent, #FF6B6B)" stroke="none"></circle></symbol>
-  <symbol id="ic-pausa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"></circle><path d="M10.2 9v6M13.8 9v6" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
+  <symbol id="ac-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.2"></circle><circle cx="12" cy="12" r="1.2" stroke="var(--ac-icon-accent, #FF6B6B)"></circle><circle cx="12" cy="19" r="1.2"></circle></symbol>
+  <symbol id="ac-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="17" r="2.5"></circle><circle cx="17" cy="15" r="2.5"></circle><path d="M9.5 17V6M19.5 15V4"></path><path d="M9.5 6L19.5 4" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
+  <symbol id="ic-candado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10.5v-3a4 4 0 0 1 8 0v3"></path><rect x="5.5" y="10.5" width="13" height="10" rx="2"></rect><path d="M12 14v3" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
+  <symbol id="ic-pausa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M10 8.5v7M14 8.5v7" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
   <symbol id="ic-letra" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.4 7h15.2M4.4 11.4h15.2M4.4 15.8h11.4"></path><path d="M4.4 20.2h7.4" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
   <symbol id="ic-stop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.2 4h5.6l4.4 16.4H4.8z"></path><path d="M6.2 14.6h11.6"></path><rect x="9.6" y="8.4" width="4.8" height="4.8" rx="1" fill="var(--ac-icon-accent, #FF6B6B)" stroke="var(--ac-icon-accent, #FF6B6B)"></rect></symbol>
 </svg>

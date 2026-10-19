@@ -202,6 +202,19 @@ como absolutos, así que **todo acorde con traste base mayor que 1** —cejillas
 posiciones altas, media biblioteca— salía con los puntos corridos o sin ellos.
 Ya está arreglado y cubierto por tests.
 
+### Iconos
+
+Set propio, dibujado para Accordio: 61 iconos de 24 dp más la marca y el icono
+del lanzador. Cada uno lleva **dos tonos** —el trazo, del color del texto de
+alrededor, y un detalle en coral que es el que explica qué hace— y por eso no
+son ficheros sueltos sino trazos en `AccordioIcons.kt`, que construye el vector
+con los colores de donde se pinte. La web lleva los mismos en su sprite SVG.
+
+Al pintarlos en Compose hay que apagar el tinte:
+`Icon(AccordioIcons.x(), desc, tint = Color.Unspecified)`. `Icon` tiñe con
+`LocalContentColor` por omisión y **un tinte aplana el icono a un solo color**,
+que se lleva por delante el detalle en coral.
+
 ### La app Android viste lo mismo
 
 La app usa el **mismo paquete de marca** que la web, no una interpretación:

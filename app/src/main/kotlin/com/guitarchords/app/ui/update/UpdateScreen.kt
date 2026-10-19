@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.update
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,10 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,7 +49,7 @@ fun UpdateScreen(
                 title = { Text(stringResource(R.string.update_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified)
                     }
                 }
             )
@@ -67,7 +65,7 @@ fun UpdateScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Icon(
-                Icons.Default.SystemUpdate,
+                AccordioIcons.actualizar(),
                 contentDescription = null,
                 modifier = Modifier.size(56.dp),
                 tint = MaterialTheme.colorScheme.primary
@@ -96,7 +94,7 @@ fun UpdateScreen(
                 }
                 is UpdateUiState.UpToDate -> {
                     Icon(
-                        Icons.Default.CheckCircle, null,
+                        AccordioIcons.logrado(), null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(40.dp)
                     )

@@ -72,3 +72,7 @@ worker/node_modules/
 # diccionario y no tiene por qué vivir en el repositorio; versionar la copia
 # sería justo lo que el generador viene a evitar, dos ficheros que se separan.
 worker/tools/ukelele-diccionario.json
+
+# Entregas de iconos. Los trazos viven en AccordioIcons.kt y en el sprite de la
+# web, que es la fuente: el comprimido es de dónde salieron, no lo que se usa.
+icons.zip

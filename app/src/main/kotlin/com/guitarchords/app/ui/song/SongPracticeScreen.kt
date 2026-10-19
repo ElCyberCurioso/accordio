@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.song
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,11 +17,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
@@ -93,7 +90,7 @@ fun SongPracticeScreen(
                 title = { Text(stringResource(R.string.practice_changes_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified)
                     }
                 }
             )
@@ -101,7 +98,7 @@ fun SongPracticeScreen(
     ) { pv ->
         if (pairs.isEmpty()) {
             EmptyState(
-                icon = Icons.Default.PlayArrow,
+                icon = AccordioIcons.reproducir(),
                 title = stringResource(R.string.practice_no_chords_title),
                 subtitle = stringResource(R.string.practice_no_chords_subtitle),
                 modifier = Modifier.padding(pv)
@@ -191,12 +188,11 @@ fun SongPracticeScreen(
                     }
                 }) {
                     Icon(
-                        if (running) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        if (running) stringResource(R.string.stop) else stringResource(R.string.start)
-                    )
+                        if (running) AccordioIcons.pausa() else AccordioIcons.reproducir(),
+                        if (running) stringResource(R.string.stop) else stringResource(R.string.start), tint = Color.Unspecified)
                 }
                 FilledTonalButton(onClick = { index = (index + 1) % pairs.size }) {
-                    Icon(Icons.Default.SkipNext, null)
+                    Icon(AccordioIcons.saltar(), null, tint = Color.Unspecified)
                     Spacer(Modifier.size(6.dp))
                     Text(stringResource(R.string.practice_next_pair))
                 }

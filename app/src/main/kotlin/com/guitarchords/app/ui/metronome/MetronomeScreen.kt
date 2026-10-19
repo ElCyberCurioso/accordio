@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.metronome
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,10 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -65,7 +63,7 @@ fun MetronomeScreen(onBack: () -> Unit) {
                 colors = accordioTopBarColors(),
                 title = { Text(stringResource(R.string.metronome_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                    IconButton(onClick = onBack) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                 }
             )
         }
@@ -150,10 +148,9 @@ fun MetronomeScreen(onBack: () -> Unit) {
                 }
             ) {
                 Icon(
-                    if (running) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    if (running) AccordioIcons.pausa() else AccordioIcons.reproducir(),
                     if (running) stringResource(R.string.stop) else stringResource(R.string.start),
-                    modifier = Modifier.size(36.dp)
-                )
+                    modifier = Modifier.size(36.dp), tint = Color.Unspecified)
             }
         }
     }

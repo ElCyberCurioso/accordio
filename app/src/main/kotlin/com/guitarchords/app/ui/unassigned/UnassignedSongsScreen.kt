@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.unassigned
 
+import androidx.compose.ui.graphics.Color
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,16 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.automirrored.filled.DriveFileMove
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -106,13 +97,13 @@ fun UnassignedSongsScreen(
                     colors = accordioTopBarColors(),
                     title = { Text(stringResource(R.string.unassigned_songs)) },
                     navigationIcon = {
-                        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                        IconButton(onClick = onBack) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                     },
                     actions = {
                         IconButton(onClick = {
                             searchOpen = !searchOpen
                             if (!searchOpen) query = ""
-                        }) { Icon(AccordioIcons.buscar(), stringResource(R.string.search_songs)) }
+                        }) { Icon(AccordioIcons.buscar(), stringResource(R.string.search_songs), tint = Color.Unspecified) }
                         SongSortMenu(current = sort, onPick = { vm.setSort(it) })
                     }
                 )
@@ -120,7 +111,7 @@ fun UnassignedSongsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddSong) {
-                Icon(AccordioIcons.mas(), stringResource(R.string.new_song))
+                Icon(AccordioIcons.mas(), stringResource(R.string.new_song), tint = Color.Unspecified)
             }
         }
     ) { pv ->
@@ -255,13 +246,13 @@ private fun SongRow(
                 if (song.favorite)
                     Icon(AccordioIcons.estrella(), stringResource(R.string.remove_favorite), tint = MaterialTheme.colorScheme.primary)
                 else
-                    Icon(AccordioIcons.estrellaHueca(), stringResource(R.string.favorite))
+                    Icon(AccordioIcons.estrellaHueca(), stringResource(R.string.favorite), tint = Color.Unspecified)
             }
         },
         trailing = {
-            IconButton(onClick = onMove) { Icon(Icons.AutoMirrored.Filled.DriveFileMove, stringResource(R.string.assign_to_playlist)) }
-            IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, stringResource(R.string.edit)) }
-            IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, stringResource(R.string.delete)) }
+            IconButton(onClick = onMove) { Icon(AccordioIcons.mover(), stringResource(R.string.assign_to_playlist), tint = Color.Unspecified) }
+            IconButton(onClick = onEdit) { Icon(AccordioIcons.editar(), stringResource(R.string.edit), tint = Color.Unspecified) }
+            IconButton(onClick = onDelete) { Icon(AccordioIcons.borrar(), stringResource(R.string.delete), tint = Color.Unspecified) }
         }
     )
 }

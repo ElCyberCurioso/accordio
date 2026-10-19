@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.search
 
+import androidx.compose.ui.graphics.Color
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,11 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -88,7 +84,7 @@ fun SongSearchScreen(
                     colors = accordioTopBarColors(),
                     title = { Text(stringResource(R.string.search_songs)) },
                     navigationIcon = {
-                        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                        IconButton(onClick = onBack) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                     },
                     actions = { SongSortMenu(current = sort, onPick = { vm.setSort(it) }) }
                 )
@@ -106,11 +102,11 @@ fun SongSearchScreen(
                 onValueChange = vm::setQuery,
                 singleLine = true,
                 placeholder = { Text(stringResource(R.string.search_placeholder)) },
-                leadingIcon = { Icon(AccordioIcons.buscar(), null) },
+                leadingIcon = { Icon(AccordioIcons.buscar(), null, tint = Color.Unspecified) },
                 trailingIcon = {
                     if (query.isNotEmpty()) {
                         IconButton(onClick = { vm.setQuery("") }) {
-                            Icon(Icons.Default.Clear, stringResource(R.string.clear))
+                            Icon(AccordioIcons.limpiar(), stringResource(R.string.clear), tint = Color.Unspecified)
                         }
                     }
                 },

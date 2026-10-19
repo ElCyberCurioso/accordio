@@ -1,9 +1,7 @@
 package com.guitarchords.app.ui.components
 
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CloudDone
-import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -20,14 +18,14 @@ import com.guitarchords.app.R
 fun SyncBadge(synced: Boolean, modifier: Modifier = Modifier) {
     if (synced) {
         Icon(
-            Icons.Default.CloudDone,
+            AccordioIcons.nubeAlDia(),
             contentDescription = stringResource(R.string.badge_synced),
             tint = MaterialTheme.colorScheme.primary,
             modifier = modifier.size(18.dp)
         )
     } else {
         Icon(
-            Icons.Default.CloudOff,
+            AccordioIcons.nubeSinConexion(),
             contentDescription = stringResource(R.string.badge_local_only),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = modifier.size(18.dp)

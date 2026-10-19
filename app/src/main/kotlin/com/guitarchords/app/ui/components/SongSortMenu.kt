@@ -1,11 +1,10 @@
 package com.guitarchords.app.ui.components
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -28,14 +27,14 @@ fun SongSortMenu(current: SongSort, onPick: (SongSort) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { open = true }) {
-            Icon(Icons.AutoMirrored.Filled.Sort, stringResource(R.string.sort_by))
+            Icon(AccordioIcons.ordenar(), stringResource(R.string.sort_by), tint = Color.Unspecified)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             SongSort.entries.forEach { s ->
                 DropdownMenuItem(
                     text = { Text(stringResource(s.labelRes)) },
                     leadingIcon = {
-                        if (s == current) Icon(Icons.Default.Check, null)
+                        if (s == current) Icon(AccordioIcons.hecho(), null, tint = Color.Unspecified)
                         else Spacer(Modifier.size(24.dp))
                     },
                     onClick = { open = false; onPick(s) }

@@ -1,9 +1,7 @@
 package com.guitarchords.app.ui.components
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -27,11 +25,11 @@ fun SongSearchField(
         modifier = modifier.fillMaxWidth(),
         singleLine = true,
         placeholder = { Text(stringResource(R.string.search_songs)) },
-        leadingIcon = { Icon(AccordioIcons.buscar(), null) },
+        leadingIcon = { Icon(AccordioIcons.buscar(), null, tint = Color.Unspecified) },
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = { onQuery("") }) {
-                    Icon(Icons.Default.Close, stringResource(R.string.clear))
+                    Icon(AccordioIcons.cerrar(), stringResource(R.string.clear), tint = Color.Unspecified)
                 }
             }
         }

@@ -12,6 +12,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -37,11 +39,17 @@ fun EmptyState(
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            /*
+             * Sin tinte, y la atenuación en el modificador. El tinte aplana el
+             * icono a un solo color y aquí se perdía el detalle en coral justo
+             * donde más se ve, a 72 dp. Con `alpha` se atenúan los dos tonos por
+             * igual, que era lo que buscaba el 0,6 de antes.
+             */
             Icon(
                 icon,
                 contentDescription = null,
-                modifier = Modifier.size(72.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                modifier = Modifier.size(72.dp).alpha(0.6f),
+                tint = Color.Unspecified
             )
             Spacer(Modifier.height(16.dp))
             Text(

@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.training.exercises
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,9 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -153,7 +152,7 @@ fun EarTrainingExercise(
         Spacer(Modifier.height(16.dp))
 
         Button(onClick = { playCurrent() }, enabled = !playing) {
-            Icon(if (playing) Icons.AutoMirrored.Filled.VolumeUp else Icons.Default.Refresh, null)
+            Icon(if (playing) AccordioIcons.volumen() else AccordioIcons.recargar(), null, tint = Color.Unspecified)
             Spacer(Modifier.size(8.dp))
             Text(stringResource(if (playing) R.string.tr_ear_playing else R.string.tr_ear_replay))
         }

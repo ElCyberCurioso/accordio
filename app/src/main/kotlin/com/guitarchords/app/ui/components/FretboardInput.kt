@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.components
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -9,9 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -106,7 +104,7 @@ fun BaseFretControls(baseFret: Int, onChange: (Int) -> Unit) {
         IconButton(
             onClick = { if (baseFret > 1) onChange(baseFret - 1) },
             enabled = baseFret > 1
-        ) { Icon(Icons.Default.Remove, stringResource(R.string.fret_down)) }
+        ) { Icon(AccordioIcons.menos(), stringResource(R.string.fret_down), tint = Color.Unspecified) }
         Text(
             stringResource(R.string.base_fret, baseFret),
             style = MaterialTheme.typography.titleSmall,
@@ -115,7 +113,7 @@ fun BaseFretControls(baseFret: Int, onChange: (Int) -> Unit) {
         IconButton(
             onClick = { if (baseFret < 12) onChange(baseFret + 1) },
             enabled = baseFret < 12
-        ) { Icon(AccordioIcons.mas(), stringResource(R.string.fret_up)) }
+        ) { Icon(AccordioIcons.mas(), stringResource(R.string.fret_up), tint = Color.Unspecified) }
     }
 }
 

@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.components
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -9,15 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.DriveFileMove
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.LibraryMusic
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.SelectAll
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -86,16 +78,16 @@ fun SelectionTopBar(
         ),
         title = { Text(pluralStringResource(R.plurals.selected_count, count, count)) },
         navigationIcon = {
-            IconButton(onClick = onClose) { Icon(Icons.Default.Close, stringResource(R.string.cancel_selection)) }
+            IconButton(onClick = onClose) { Icon(AccordioIcons.cerrar(), stringResource(R.string.cancel_selection), tint = Color.Unspecified) }
         },
         actions = {
-            IconButton(onClick = onSelectAll) { Icon(Icons.Default.SelectAll, stringResource(R.string.select_all)) }
+            IconButton(onClick = onSelectAll) { Icon(AccordioIcons.seleccionarTodo(), stringResource(R.string.select_all), tint = Color.Unspecified) }
             IconButton(onClick = onFavorite) {
-                if (favoriteIsRemove) Icon(AccordioIcons.estrellaHueca(), stringResource(R.string.remove_from_favorites))
-                else Icon(AccordioIcons.estrella(), stringResource(R.string.mark_favorite))
+                if (favoriteIsRemove) Icon(AccordioIcons.estrellaHueca(), stringResource(R.string.remove_from_favorites), tint = Color.Unspecified)
+                else Icon(AccordioIcons.estrella(), stringResource(R.string.mark_favorite), tint = Color.Unspecified)
             }
-            IconButton(onClick = onMove) { Icon(Icons.AutoMirrored.Filled.DriveFileMove, stringResource(R.string.move_to_list)) }
-            IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, stringResource(R.string.delete)) }
+            IconButton(onClick = onMove) { Icon(AccordioIcons.mover(), stringResource(R.string.move_to_list), tint = Color.Unspecified) }
+            IconButton(onClick = onDelete) { Icon(AccordioIcons.borrar(), stringResource(R.string.delete), tint = Color.Unspecified) }
         }
     )
 }

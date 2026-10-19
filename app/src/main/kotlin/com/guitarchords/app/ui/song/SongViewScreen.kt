@@ -15,24 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.NavigateBefore
-import androidx.compose.material.icons.automirrored.filled.NavigateNext
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Print
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.SearchOff
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
@@ -215,18 +197,17 @@ fun SongViewScreen(
                 colors = accordioTopBarColors(),
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                    IconButton(onClick = onBack) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                 },
                 actions = {
                     IconButton(onClick = onPractice) {
                         Icon(
-                            Icons.Default.FitnessCenter,
-                            contentDescription = stringResource(R.string.practice_changes_title)
-                        )
+                            AccordioIcons.practica(),
+                            contentDescription = stringResource(R.string.practice_changes_title), tint = Color.Unspecified)
                     }
                     IconButton(onClick = { showMetronome = true }) {
                         Icon(
-                            Icons.Default.Timer,
+                            AccordioIcons.tiempo(),
                             contentDescription = stringResource(R.string.metronome_title),
                             tint = if (metroRunning) MaterialTheme.colorScheme.primary
                                    else MaterialTheme.colorScheme.onSurfaceVariant
@@ -234,7 +215,7 @@ fun SongViewScreen(
                     }
                     if (song?.locked == true) {
                         Icon(
-                            Icons.Default.Lock,
+                            AccordioIcons.candado(),
                             contentDescription = stringResource(R.string.locked_song_banner),
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(horizontal = 8.dp)
@@ -249,7 +230,7 @@ fun SongViewScreen(
                                 ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                             }
                         }) {
-                            Icon(Icons.Default.Link, null)
+                            Icon(AccordioIcons.enlace(), null, tint = Color.Unspecified)
                             Spacer(Modifier.size(4.dp))
                             Text(stringResource(R.string.link))
                         }
@@ -270,7 +251,7 @@ fun SongViewScreen(
                             }
                             ctx.startActivity(Intent.createChooser(send, shareTitle))
                         }
-                    }) { Icon(AccordioIcons.compartir(), stringResource(R.string.share_song)) }
+                    }) { Icon(AccordioIcons.compartir(), stringResource(R.string.share_song), tint = Color.Unspecified) }
                     IconButton(onClick = {
                         song?.let { sng ->
                             val base = sng.copy(content = activeContent, capo = activeCapo)
@@ -280,8 +261,8 @@ fun SongViewScreen(
                             )
                             PrintAdapter.print(ctx, shifted, semitones)
                         }
-                    }) { Icon(Icons.Default.Print, stringResource(R.string.print)) }
-                    IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, stringResource(R.string.edit)) }
+                    }) { Icon(AccordioIcons.imprimir(), stringResource(R.string.print), tint = Color.Unspecified) }
+                    IconButton(onClick = onEdit) { Icon(AccordioIcons.editar(), stringResource(R.string.edit), tint = Color.Unspecified) }
                 }
             )
         },
@@ -390,7 +371,7 @@ fun SongViewScreen(
             // borrada definitivamente desde la papelera).
             if (notFound) {
                 EmptyState(
-                    icon = Icons.Default.SearchOff,
+                    icon = AccordioIcons.sinResultados(),
                     title = stringResource(R.string.song_not_found_title),
                     subtitle = stringResource(R.string.song_not_found_subtitle),
                     actionLabel = stringResource(R.string.back),
@@ -511,10 +492,9 @@ private fun MetronomePanel(
         }
         FloatingActionButton(onClick = onToggle) {
             Icon(
-                if (running) Icons.Default.Pause else Icons.Default.PlayArrow,
+                if (running) AccordioIcons.pausa() else AccordioIcons.reproducir(),
                 if (running) stringResource(R.string.stop) else stringResource(R.string.start),
-                modifier = Modifier.size(32.dp)
-            )
+                modifier = Modifier.size(32.dp), tint = Color.Unspecified)
         }
     }
 }
@@ -550,11 +530,11 @@ private fun VersionBar(
         AssistChip(
             onClick = onAdd,
             label = { Text(stringResource(R.string.version)) },
-            leadingIcon = { Icon(AccordioIcons.mas(), null) }
+            leadingIcon = { Icon(AccordioIcons.mas(), null, tint = Color.Unspecified) }
         )
         if (selectedId != null && versions.any { it.id == selectedId }) {
             IconButton(onClick = onEditSelected) {
-                Icon(Icons.Default.Edit, stringResource(R.string.edit_version))
+                Icon(AccordioIcons.editar(), stringResource(R.string.edit_version), tint = Color.Unspecified)
             }
         }
     }
@@ -684,23 +664,20 @@ private fun BottomControls(
                 if (hasPrev || hasNext) {
                     IconButton(onClick = onPrev, enabled = hasPrev) {
                         Icon(
-                            Icons.AutoMirrored.Filled.NavigateBefore,
-                            stringResource(R.string.previous_song)
-                        )
+                            AccordioIcons.anterior(),
+                            stringResource(R.string.previous_song), tint = Color.Unspecified)
                     }
                 }
                 IconButton(onClick = onToggleScroll) {
                     Icon(
-                        if (scrolling) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        if (scrolling) stringResource(R.string.pause) else stringResource(R.string.play)
-                    )
+                        if (scrolling) AccordioIcons.pausa() else AccordioIcons.reproducir(),
+                        if (scrolling) stringResource(R.string.pause) else stringResource(R.string.play), tint = Color.Unspecified)
                 }
                 if (hasPrev || hasNext) {
                     IconButton(onClick = onNext, enabled = hasNext) {
                         Icon(
-                            Icons.AutoMirrored.Filled.NavigateNext,
-                            stringResource(R.string.next_song)
-                        )
+                            AccordioIcons.siguiente(),
+                            stringResource(R.string.next_song), tint = Color.Unspecified)
                     }
                 }
                 if (!expanded) {
@@ -714,9 +691,8 @@ private fun BottomControls(
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = onToggleExpanded) {
                     Icon(
-                        if (expanded) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
-                        if (expanded) stringResource(R.string.hide_controls) else stringResource(R.string.show_controls)
-                    )
+                        if (expanded) AccordioIcons.desplegar() else AccordioIcons.plegar(),
+                        if (expanded) stringResource(R.string.hide_controls) else stringResource(R.string.show_controls), tint = Color.Unspecified)
                 }
             }
             AnimatedVisibility(
@@ -752,14 +728,14 @@ private fun BottomControls(
                 ) {
                     Text(stringResource(R.string.tone), style = MaterialTheme.typography.bodySmall)
                     IconButton(onClick = { onSemitones(semitones - 1) }) {
-                        Icon(Icons.Default.Remove, stringResource(R.string.semitone_down))
+                        Icon(AccordioIcons.menos(), stringResource(R.string.semitone_down), tint = Color.Unspecified)
                     }
                     Text(
                         semitoneLabel(semitones),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                     IconButton(onClick = { onSemitones(semitones + 1) }) {
-                        Icon(AccordioIcons.mas(), stringResource(R.string.semitone_up))
+                        Icon(AccordioIcons.mas(), stringResource(R.string.semitone_up), tint = Color.Unspecified)
                     }
                     FilterChip(
                         selected = useFlats,

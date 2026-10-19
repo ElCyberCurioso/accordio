@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.song
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,16 +16,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.GraphicEq
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
@@ -93,16 +84,16 @@ fun VersionEditorScreen(
                 colors = accordioTopBarColors(),
                 title = { Text(stringResource(R.string.edit_version)) },
                 navigationIcon = {
-                    IconButton(onClick = onDone) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                    IconButton(onClick = onDone) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                 },
                 actions = {
                     IconButton(onClick = { confirmDelete = true }) {
-                        Icon(Icons.Default.Delete, stringResource(R.string.delete_version))
+                        Icon(AccordioIcons.borrar(), stringResource(R.string.delete_version), tint = Color.Unspecified)
                     }
                     IconButton(onClick = {
                         vm.updateContent(contentField.text)
                         vm.save { onDone() }
-                    }) { Icon(Icons.Default.Check, stringResource(R.string.save)) }
+                    }) { Icon(AccordioIcons.hecho(), stringResource(R.string.save), tint = Color.Unspecified) }
                 }
             )
         }
@@ -124,7 +115,7 @@ fun VersionEditorScreen(
         ) {
             if (parentLocked) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Lock, null, tint = MaterialTheme.colorScheme.error)
+                    Icon(AccordioIcons.candado(), null, tint = MaterialTheme.colorScheme.error)
                     Spacer(Modifier.size(6.dp))
                     Text(
                         stringResource(R.string.locked_song_banner),
@@ -149,7 +140,7 @@ fun VersionEditorScreen(
                 placeholder = { Text("https://…") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                leadingIcon = { Icon(Icons.Default.Link, null) },
+                leadingIcon = { Icon(AccordioIcons.enlace(), null, tint = Color.Unspecified) },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(8.dp))
@@ -157,7 +148,7 @@ fun VersionEditorScreen(
                 Text(stringResource(R.string.capo_label), style = MaterialTheme.typography.labelMedium)
                 Spacer(Modifier.size(8.dp))
                 IconButton(onClick = { vm.updateCapo(v.capo - 1) }, enabled = v.capo > 0) {
-                    Icon(Icons.Default.Remove, stringResource(R.string.capo_down))
+                    Icon(AccordioIcons.menos(), stringResource(R.string.capo_down), tint = Color.Unspecified)
                 }
                 Text(
                     if (v.capo == 0) stringResource(R.string.no_capo)
@@ -165,7 +156,7 @@ fun VersionEditorScreen(
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
                 IconButton(onClick = { vm.updateCapo(v.capo + 1) }, enabled = v.capo < 12) {
-                    Icon(AccordioIcons.mas(), stringResource(R.string.capo_up))
+                    Icon(AccordioIcons.mas(), stringResource(R.string.capo_up), tint = Color.Unspecified)
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -178,7 +169,7 @@ fun VersionEditorScreen(
                 AssistChip(
                     onClick = { chordPicker = true },
                     label = { Text(stringResource(R.string.insert_chord)) },
-                    leadingIcon = { Icon(AccordioIcons.notas(), null) }
+                    leadingIcon = { Icon(AccordioIcons.notas(), null, tint = Color.Unspecified) }
                 )
                 AssistChip(
                     onClick = {
@@ -194,7 +185,7 @@ fun VersionEditorScreen(
                         vm.updateContent(newText)
                     },
                     label = { Text(stringResource(R.string.insert_tab)) },
-                    leadingIcon = { Icon(Icons.Default.GraphicEq, null) }
+                    leadingIcon = { Icon(AccordioIcons.onda(), null, tint = Color.Unspecified) }
                 )
             }
             Spacer(Modifier.height(8.dp))
@@ -256,7 +247,7 @@ fun VersionEditorScreen(
     if (parentLocked && !lockAck) {
         AlertDialog(
             onDismissRequest = { onDone() },
-            icon = { Icon(Icons.Default.Lock, null) },
+            icon = { Icon(AccordioIcons.candado(), null, tint = Color.Unspecified) },
             title = { Text(stringResource(R.string.locked_dialog_title)) },
             text = { Text(stringResource(R.string.locked_dialog_msg)) },
             confirmButton = {

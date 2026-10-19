@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.training
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,9 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -77,7 +76,7 @@ fun ExerciseRunnerScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified)
                     }
                 }
             )
@@ -144,7 +143,7 @@ private fun ExerciseIntro(
         )
         Spacer(Modifier.height(28.dp))
         Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Default.PlayArrow, null)
+            Icon(AccordioIcons.reproducir(), null, tint = Color.Unspecified)
             Text(stringResource(R.string.training_start))
         }
     }

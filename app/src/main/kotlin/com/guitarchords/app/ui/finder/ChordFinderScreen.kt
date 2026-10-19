@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.finder
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,10 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -66,13 +64,13 @@ fun ChordFinderScreen(onBack: () -> Unit) {
                 colors = accordioTopBarColors(),
                 title = { Text(stringResource(R.string.finder_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                    IconButton(onClick = onBack) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                 },
                 actions = {
                     IconButton(onClick = {
                         for (i in 0 until STRINGS) frets[i] = 0
                         baseFret = 1
-                    }) { Icon(Icons.Default.Refresh, stringResource(R.string.clear)) }
+                    }) { Icon(AccordioIcons.recargar(), stringResource(R.string.clear), tint = Color.Unspecified) }
                 }
             )
         }
@@ -107,7 +105,7 @@ fun ChordFinderScreen(onBack: () -> Unit) {
             BaseFretControls(baseFret) { baseFret = it }
             Spacer(Modifier.height(8.dp))
             FilledTonalButton(onClick = { player.strum(frets.toList()) }) {
-                Icon(Icons.AutoMirrored.Filled.VolumeUp, null)
+                Icon(AccordioIcons.volumen(), null, tint = Color.Unspecified)
                 Spacer(Modifier.size(8.dp))
                 Text(stringResource(R.string.listen_chord))
             }

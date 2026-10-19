@@ -8,15 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Hearing
-import androidx.compose.material.icons.filled.LibraryMusic
-import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Piano
-import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -55,12 +46,12 @@ val TrainingArea.titleRes: Int
 val TrainingArea.icon: ImageVector
     @Composable get() = when (this) {
         TrainingArea.CHORDS -> AccordioIcons.guitarra()
-        TrainingArea.CHANGES -> Icons.Default.SwapHoriz
-        TrainingArea.RHYTHM -> Icons.Default.Timer
+        TrainingArea.CHANGES -> AccordioIcons.cambioAcordes()
+        TrainingArea.RHYTHM -> AccordioIcons.tiempo()
         TrainingArea.SCALES -> AccordioIcons.notas()
-        TrainingArea.TECHNIQUE -> Icons.Default.School
+        TrainingArea.TECHNIQUE -> AccordioIcons.aprender()
         TrainingArea.THEORY -> AccordioIcons.partitura()
-        TrainingArea.EAR -> Icons.Default.Hearing
+        TrainingArea.EAR -> AccordioIcons.oido()
     }
 
 /** Cabecera de nivel de usuario: nivel actual, barra de progreso y XP. */
@@ -101,7 +92,7 @@ fun XpBar(xpTotal: Long, modifier: Modifier = Modifier) {
 fun StreakChip(current: Int, best: Int, modifier: Modifier = Modifier) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Icon(
-            Icons.Default.LocalFireDepartment,
+            AccordioIcons.racha(),
             contentDescription = null,
             tint = if (current > 0) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.onSurfaceVariant,

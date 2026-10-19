@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.training
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,11 +16,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,13 +65,13 @@ fun TrainingDashboardScreen(
                 title = { Text(stringResource(R.string.training_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified)
                     }
                 },
                 actions = {
                     if (profile?.placementDone == true) {
                         IconButton(onClick = onOpenStats) {
-                            Icon(Icons.Default.BarChart, stringResource(R.string.training_stats))
+                            Icon(AccordioIcons.estadisticas(), stringResource(R.string.training_stats), tint = Color.Unspecified)
                         }
                     }
                 }
@@ -124,7 +121,7 @@ fun TrainingDashboardScreen(
                                 )
                                 Spacer(Modifier.height(8.dp))
                                 Button(onClick = { onOpenExercise(rec.id) }) {
-                                    Icon(Icons.Default.PlayArrow, null)
+                                    Icon(AccordioIcons.reproducir(), null, tint = Color.Unspecified)
                                     Spacer(Modifier.size(6.dp))
                                     Text(stringResource(R.string.training_start))
                                 }
@@ -166,7 +163,7 @@ private fun PlacementInvite(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            Icons.Default.Quiz,
+            AccordioIcons.teoria(),
             contentDescription = null,
             modifier = Modifier.size(72.dp),
             tint = MaterialTheme.colorScheme.primary

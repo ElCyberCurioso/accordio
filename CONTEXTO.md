@@ -4,11 +4,11 @@ Documento de traspaso: qué es el proyecto, cómo está montado hoy, **por qué*
 tomaron ciertas decisiones (para no deshacerlas sin querer) y qué queda
 pendiente.
 
-Última actualización: 2026-10-14 · Rama `master`.
+Última actualización: 2026-10-19 · Rama `master`.
 
 > Todo lo que describe este documento está **commiteado y subido** a
 > `origin/master` —este commit incluido—, y el servidor está **desplegado**
-> (versión `bc7fe5b1`). Lo único sin publicar es la app: sigue en
+> (versión `59eae5f3`). Lo único sin publicar es la app: sigue en
 > `versionCode 2`, y no debe publicarse sin probarla antes en un móvil de
 > verdad (§7).
 
@@ -362,6 +362,33 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
   si el desplegable está EN PANTALLA: `applyEditorMode` lo esconde a quien no es
   editor, y a ese el servidor tampoco le deja fijarla.
 
+### 3.13 Iconos nuevos, y el tinte que los aplanaba
+- Set completo dibujado para la app (61 iconos de 24 dp + la marca + el
+  lanzador), generado fuera y convertido por script. `AccordioIcons.kt` se
+  regenera a partir de los SVG: los `circle` y `rect` se traducen a rutas porque
+  `IconoKit` solo acepta cadenas de ruta.
+- **Los 47 iconos de Material que usaba la app se han sustituido** por los
+  propios, en 35 ficheros de pantalla. Se retiran 8 iconos del set viejo que no
+  usaba nadie (`tiposDeAcorde`, `masCirculo`, `usuario`, `perfil`, `voto`,
+  `tablatura`, `inicio`, `aviso`).
+- **El detalle en coral no se estaba viendo.** Los sitios de llamada hacían
+  `Icon(AccordioIcons.x(), …)` sin apagar el tinte, y `Icon` tiñe con
+  `LocalContentColor` por omisión: un tinte aplana el icono ENTERO a un color,
+  así que el segundo tono —lo que distingue este set de cualquier otro— se
+  perdía. Ahora `icono()` toma el trazo de `LocalContentColor` (mismo icono
+  sobre tarjeta clara y sobre la barra teal, sin pasarle nada) y todas las
+  llamadas van con `tint = Color.Unspecified`. En `EmptyState` la atenuación
+  pasa del tinte a `Modifier.alpha`, que apaga los dos tonos por igual.
+- **La web lleva los mismos**: 15 símbolos del sprite sustituidos conservando
+  sus ids, con el `#FF6B6B` convertido a `var(--ac-icon-accent, #FF6B6B)` para
+  que cada herramienta siga pintando su acento. Se quedan con el dibujo viejo
+  tres que no tienen equivalente en el set nuevo: `ac-user`, `ic-stop` y
+  `ic-letra`. `ac-search` y `ac-review` están definidos y no se usan.
+- **Trampa nueva, hermana de la de las barras invertidas (§8):** un backtick en
+  un comentario DENTRO de `WEB_APP_JS` cierra el template literal y la web entera
+  deja de compilar. Pasó al documentar el orden por omisión y lo cazó
+  `npm run check`, que es justo para esto: no basta con compilar la app.
+
 ---
 
 ## 4. Decisiones de diseño que conviene respetar
@@ -595,7 +622,7 @@ Estado actual de producción:
 | R2 | `guitarchords` |
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
-| Worker | Versión `bc7fe5b1`, desplegada el 14/10/2026 con `./tools/deploy.sh release` |
+| Worker | Versión `59eae5f3`, desplegada el 19/10/2026 con `./tools/deploy.sh release` |
 | App | `versionCode 2` / `2.0` publicada en `/update`, firmada con la clave de siempre (SHA-256 `e6a53587…`). **Los cambios del 16–17/09 NO están publicados** |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |

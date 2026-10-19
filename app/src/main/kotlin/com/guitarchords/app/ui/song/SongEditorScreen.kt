@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.song
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,16 +20,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.LibraryMusic
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.GraphicEq
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -100,13 +91,13 @@ fun SongEditorScreen(
                 colors = accordioTopBarColors(),
                 title = { Text(if (songId == 0L) stringResource(R.string.new_song) else stringResource(R.string.edit)) },
                 navigationIcon = {
-                    IconButton(onClick = onDone) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                    IconButton(onClick = onDone) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                 },
                 actions = {
                     IconButton(onClick = {
                         vm.updateContent(contentField.text)
                         vm.save { onDone() }
-                    }) { Icon(Icons.Default.Check, stringResource(R.string.save)) }
+                    }) { Icon(AccordioIcons.hecho(), stringResource(R.string.save), tint = Color.Unspecified) }
                 }
             )
         }
@@ -121,7 +112,7 @@ fun SongEditorScreen(
         ) {
             if (song.locked) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Lock, null, tint = MaterialTheme.colorScheme.error)
+                    Icon(AccordioIcons.candado(), null, tint = MaterialTheme.colorScheme.error)
                     Spacer(Modifier.size(6.dp))
                     Text(
                         stringResource(R.string.locked_song_banner),
@@ -162,7 +153,7 @@ fun SongEditorScreen(
                 placeholder = { Text("https://…") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                leadingIcon = { Icon(Icons.Default.Link, null) },
+                leadingIcon = { Icon(AccordioIcons.enlace(), null, tint = Color.Unspecified) },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(8.dp))
@@ -177,12 +168,12 @@ fun SongEditorScreen(
                 AssistChip(
                     onClick = { playlistPickerOpen = true },
                     label = { Text(stringResource(R.string.playlist_label, plName)) },
-                    leadingIcon = { Icon(AccordioIcons.partitura(), null) }
+                    leadingIcon = { Icon(AccordioIcons.partitura(), null, tint = Color.Unspecified) }
                 )
                 AssistChip(
                     onClick = { pickerOpen = true },
                     label = { Text(stringResource(R.string.insert_chord)) },
-                    leadingIcon = { Icon(AccordioIcons.notas(), null) }
+                    leadingIcon = { Icon(AccordioIcons.notas(), null, tint = Color.Unspecified) }
                 )
                 AssistChip(
                     onClick = {
@@ -198,7 +189,7 @@ fun SongEditorScreen(
                         vm.updateContent(newText)
                     },
                     label = { Text(stringResource(R.string.insert_tab)) },
-                    leadingIcon = { Icon(Icons.Default.GraphicEq, null) }
+                    leadingIcon = { Icon(AccordioIcons.onda(), null, tint = Color.Unspecified) }
                 )
             }
             Spacer(Modifier.height(8.dp))
@@ -211,7 +202,7 @@ fun SongEditorScreen(
                 IconButton(
                     onClick = { vm.updateCapo(song.capo - 1) },
                     enabled = song.capo > 0
-                ) { Icon(Icons.Default.Remove, stringResource(R.string.capo_down)) }
+                ) { Icon(AccordioIcons.menos(), stringResource(R.string.capo_down), tint = Color.Unspecified) }
                 Text(
                     if (song.capo == 0) stringResource(R.string.no_capo)
                     else stringResource(R.string.fret_n, song.capo),
@@ -220,7 +211,7 @@ fun SongEditorScreen(
                 IconButton(
                     onClick = { vm.updateCapo(song.capo + 1) },
                     enabled = song.capo < 12
-                ) { Icon(AccordioIcons.mas(), stringResource(R.string.capo_up)) }
+                ) { Icon(AccordioIcons.mas(), stringResource(R.string.capo_up), tint = Color.Unspecified) }
             }
             Spacer(Modifier.height(8.dp))
             Text(stringResource(R.string.lyrics_and_chords), style = MaterialTheme.typography.labelMedium)
@@ -252,7 +243,7 @@ fun SongEditorScreen(
     if (song.locked && !lockAck) {
         AlertDialog(
             onDismissRequest = { onDone() },
-            icon = { Icon(Icons.Default.Lock, null) },
+            icon = { Icon(AccordioIcons.candado(), null, tint = Color.Unspecified) },
             title = { Text(stringResource(R.string.locked_dialog_title)) },
             text = { Text(stringResource(R.string.locked_dialog_msg)) },
             confirmButton = {
@@ -318,7 +309,7 @@ private fun PlaylistPickerDialog(
                             .clickable { onPick(null) }
                             .padding(vertical = 10.dp, horizontal = 4.dp)
                     ) {
-                        Icon(AccordioIcons.notas(), null)
+                        Icon(AccordioIcons.notas(), null, tint = Color.Unspecified)
                         Spacer(Modifier.size(12.dp))
                         Text(
                             stringResource(R.string.no_playlist) + if (currentId == null) " ✓" else "",
@@ -333,7 +324,7 @@ private fun PlaylistPickerDialog(
                             .clickable { onPick(p.id) }
                             .padding(vertical = 10.dp, horizontal = 4.dp)
                     ) {
-                        Icon(AccordioIcons.partitura(), null)
+                        Icon(AccordioIcons.partitura(), null, tint = Color.Unspecified)
                         Spacer(Modifier.size(12.dp))
                         Text(
                             p.name + if (currentId == p.id) " ✓" else "",

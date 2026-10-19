@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.dictionary
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,11 +18,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Album
-import androidx.compose.material.icons.filled.MusicOff
-import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -111,15 +108,15 @@ fun ChordDictionaryScreen(onBack: () -> Unit) {
                 navigationIcon = {
                     IconButton(onClick = {
                         if (tab != DictTab.CHORDS) tab = DictTab.CHORDS else onBack()
-                    }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                    }) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                 },
                 actions = {
                     IconButton(onClick = {
                         tab = if (tab == DictTab.GUIDE) DictTab.CHORDS else DictTab.GUIDE
-                    }) { Icon(Icons.Default.School, stringResource(R.string.theory_guide)) }
+                    }) { Icon(AccordioIcons.aprender(), stringResource(R.string.theory_guide), tint = Color.Unspecified) }
                     IconButton(onClick = {
                         tab = if (tab == DictTab.CIRCLE) DictTab.CHORDS else DictTab.CIRCLE
-                    }) { Icon(Icons.Default.Album, stringResource(R.string.circle_of_fifths)) }
+                    }) { Icon(AccordioIcons.disco(), stringResource(R.string.circle_of_fifths), tint = Color.Unspecified) }
                 }
             )
         }
@@ -169,7 +166,7 @@ fun ChordDictionaryScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(4.dp))
             if (filtered.isEmpty()) {
                 EmptyState(
-                    icon = Icons.Default.MusicOff,
+                    icon = AccordioIcons.silencio(),
                     title = stringResource(R.string.no_results),
                     subtitle = stringResource(R.string.change_filters)
                 )

@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.playlists
 
+import androidx.compose.ui.graphics.Color
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -13,15 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material.icons.filled.LibraryMusic
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -87,24 +79,24 @@ fun PlaylistsScreen(
                 title = { Text(stringResource(R.string.playlists)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified)
                     }
                 },
                 actions = {
                     IconButton(onClick = onOpenSearch) {
-                        Icon(AccordioIcons.buscar(), stringResource(R.string.search_songs))
+                        Icon(AccordioIcons.buscar(), stringResource(R.string.search_songs), tint = Color.Unspecified)
                     }
                     IconButton(onClick = {
                         importLauncher.launch(arrayOf("application/zip", "*/*"))
                     }) {
-                        Icon(Icons.Default.FileUpload, stringResource(R.string.import_file))
+                        Icon(AccordioIcons.importar(), stringResource(R.string.import_file), tint = Color.Unspecified)
                     }
                 }
             )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { showFabChooser = true }) {
-                Icon(AccordioIcons.mas(), stringResource(R.string.add))
+                Icon(AccordioIcons.mas(), stringResource(R.string.add), tint = Color.Unspecified)
             }
         }
     ) { pv ->
@@ -158,7 +150,7 @@ fun PlaylistsScreen(
                             .padding(vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(AccordioIcons.partitura(), null)
+                        Icon(AccordioIcons.partitura(), null, tint = Color.Unspecified)
                         Spacer(Modifier.size(12.dp))
                         Text(stringResource(R.string.new_playlist), style = MaterialTheme.typography.bodyLarge)
                     }
@@ -172,7 +164,7 @@ fun PlaylistsScreen(
                             .padding(vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(AccordioIcons.notas(), null)
+                        Icon(AccordioIcons.notas(), null, tint = Color.Unspecified)
                         Spacer(Modifier.size(12.dp))
                         Text(stringResource(R.string.new_song), style = MaterialTheme.typography.bodyLarge)
                     }
@@ -237,7 +229,7 @@ private fun UnassignedRow(count: Int, onClick: () -> Unit) {
                 .fillMaxWidth()
                 .padding(12.dp)
         ) {
-            Icon(AccordioIcons.notas(), null)
+            Icon(AccordioIcons.notas(), null, tint = Color.Unspecified)
             Spacer(Modifier.size(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -280,15 +272,15 @@ private fun PlaylistRow(
                 .fillMaxWidth()
                 .padding(12.dp)
         ) {
-            Icon(AccordioIcons.partitura(), null)
+            Icon(AccordioIcons.partitura(), null, tint = Color.Unspecified)
             Spacer(Modifier.size(12.dp))
             Text(
                 playlist.name,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f)
             )
-            IconButton(onClick = onRename) { Icon(Icons.Default.Edit, stringResource(R.string.rename)) }
-            IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, stringResource(R.string.delete)) }
+            IconButton(onClick = onRename) { Icon(AccordioIcons.editar(), stringResource(R.string.rename), tint = Color.Unspecified) }
+            IconButton(onClick = onDelete) { Icon(AccordioIcons.borrar(), stringResource(R.string.delete), tint = Color.Unspecified) }
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.tuner
 
+import com.guitarchords.app.ui.icons.AccordioIcons
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,9 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -113,7 +111,7 @@ fun TunerScreen(onBack: () -> Unit) {
                 colors = accordioTopBarColors(),
                 title = { Text(stringResource(R.string.tuner_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                    IconButton(onClick = onBack) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                 }
             )
         }
@@ -151,7 +149,7 @@ private fun PermissionPrompt(onRequest: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Icon(Icons.Default.Mic, null, modifier = Modifier.height(64.dp))
+        Icon(AccordioIcons.microfono(), null, modifier = Modifier.height(64.dp), tint = Color.Unspecified)
         Text(
             stringResource(R.string.mic_permission_title),
             style = MaterialTheme.typography.titleMedium

@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.training.exercises
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,9 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -125,7 +124,7 @@ fun ChordQuizExercise(
             if (phase == Phase.CORRECT) {
                 Spacer(Modifier.size(8.dp))
                 Icon(
-                    Icons.Default.CheckCircle, null,
+                    AccordioIcons.logrado(), null,
                     tint = MaterialTheme.extendedColors.success
                 )
             }
@@ -172,7 +171,7 @@ fun ChordQuizExercise(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     BaseFretControls(baseFret) { baseFret = it }
                     IconButton(onClick = { resetBoard() }) {
-                        Icon(Icons.Default.Refresh, stringResource(R.string.clear))
+                        Icon(AccordioIcons.recargar(), stringResource(R.string.clear), tint = Color.Unspecified)
                     }
                 }
                 Spacer(Modifier.height(8.dp))

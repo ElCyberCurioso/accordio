@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.sync
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,9 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -81,7 +80,7 @@ fun SyncScreen(
                 colors = accordioTopBarColors(),
                 title = { Text(stringResource(R.string.sync_r2_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                    IconButton(onClick = onBack) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                 }
             )
         }
@@ -195,7 +194,7 @@ fun SyncScreen(
                     Spacer(Modifier.size(8.dp))
                     Text(stringResource(R.string.syncing))
                 } else {
-                    Icon(Icons.Default.CloudSync, null)
+                    Icon(AccordioIcons.sincronizar(), null, tint = Color.Unspecified)
                     Spacer(Modifier.size(8.dp))
                     Text(stringResource(R.string.sync_now))
                 }
@@ -287,7 +286,7 @@ fun SyncScreen(
                     Spacer(Modifier.size(8.dp))
                     Text(stringResource(R.string.chords_syncing))
                 } else {
-                    Icon(Icons.Default.CloudSync, null)
+                    Icon(AccordioIcons.sincronizar(), null, tint = Color.Unspecified)
                     Spacer(Modifier.size(8.dp))
                     Text(stringResource(R.string.chords_sync_now))
                 }

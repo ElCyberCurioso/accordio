@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.training
 
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
@@ -11,11 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.SentimentNeutral
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -60,7 +56,7 @@ fun ResultCelebration(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            if (summary.passed) Icons.Default.CheckCircle else Icons.Default.SentimentNeutral,
+            if (summary.passed) AccordioIcons.logrado() else AccordioIcons.neutro(),
             contentDescription = null,
             modifier = Modifier.size(80.dp),
             tint = if (summary.passed) MaterialTheme.extendedColors.success
@@ -87,7 +83,7 @@ fun ResultCelebration(
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Default.LocalFireDepartment, null,
+                    AccordioIcons.racha(), null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(18.dp)
                 )
@@ -131,7 +127,7 @@ fun ResultCelebration(
                     modifier = Modifier.padding(vertical = 2.dp)
                 ) {
                     Icon(
-                        Icons.Default.EmojiEvents, null,
+                        AccordioIcons.trofeo(), null,
                         tint = MaterialTheme.extendedColors.warning,
                         modifier = Modifier.size(20.dp)
                     )

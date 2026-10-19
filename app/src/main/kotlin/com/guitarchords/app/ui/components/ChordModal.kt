@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.components
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,13 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -162,7 +156,7 @@ fun ChordModal(
                     AssistChip(
                         onClick = { editing = null to null },
                         label = { Text(stringResource(R.string.add_custom_shape)) },
-                        leadingIcon = { Icon(AccordioIcons.mas(), null) }
+                        leadingIcon = { Icon(AccordioIcons.mas(), null, tint = Color.Unspecified) }
                     )
                 }
                 Spacer(Modifier.height(16.dp))
@@ -180,7 +174,7 @@ fun ChordModal(
                     IconButton(
                         onClick = { if (safe > 0) index = safe - 1 },
                         enabled = safe > 0
-                    ) { Icon(Icons.Default.ChevronLeft, stringResource(R.string.previous)) }
+                    ) { Icon(AccordioIcons.anterior(), stringResource(R.string.previous), tint = Color.Unspecified) }
 
                     Box(modifier = Modifier.padding(horizontal = 24.dp)) {
                         // Tocar una cuerda del diagrama la hace sonar suelta.
@@ -193,11 +187,11 @@ fun ChordModal(
                     IconButton(
                         onClick = { if (safe < total - 1) index = safe + 1 },
                         enabled = safe < total - 1
-                    ) { Icon(AccordioIcons.siguiente(), stringResource(R.string.next)) }
+                    ) { Icon(AccordioIcons.siguiente(), stringResource(R.string.next), tint = Color.Unspecified) }
                 }
                 Spacer(Modifier.height(8.dp))
                 FilledTonalButton(onClick = { player.strum(shape.frets) }) {
-                    Icon(Icons.AutoMirrored.Filled.VolumeUp, null)
+                    Icon(AccordioIcons.volumen(), null, tint = Color.Unspecified)
                     Spacer(Modifier.size(8.dp))
                     Text(stringResource(R.string.listen_chord))
                 }
@@ -250,18 +244,18 @@ fun ChordModal(
                         AssistChip(
                             onClick = { editing = null to null },
                             label = { Text(stringResource(R.string.add_custom_shape)) },
-                            leadingIcon = { Icon(AccordioIcons.mas(), null) }
+                            leadingIcon = { Icon(AccordioIcons.mas(), null, tint = Color.Unspecified) }
                         )
                         if (shape.customId != null) {
                             AssistChip(
                                 onClick = { editing = shape.customId to shape.frets },
                                 label = { Text(stringResource(R.string.edit)) },
-                                leadingIcon = { Icon(Icons.Default.Edit, null) }
+                                leadingIcon = { Icon(AccordioIcons.editar(), null, tint = Color.Unspecified) }
                             )
                             AssistChip(
                                 onClick = { confirmDelete = shape.customId },
                                 label = { Text(stringResource(R.string.delete)) },
-                                leadingIcon = { Icon(Icons.Default.Delete, null) }
+                                leadingIcon = { Icon(AccordioIcons.borrar(), null, tint = Color.Unspecified) }
                             )
                         }
                     }

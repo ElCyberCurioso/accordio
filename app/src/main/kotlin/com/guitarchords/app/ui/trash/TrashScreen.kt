@@ -1,5 +1,7 @@
 package com.guitarchords.app.ui.trash
 
+import androidx.compose.ui.graphics.Color
+import com.guitarchords.app.ui.icons.AccordioIcons
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,10 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.DeleteForever
-import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,13 +55,13 @@ fun TrashScreen(
                 title = { Text(stringResource(R.string.trash_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified)
                     }
                 },
                 actions = {
                     if (items.isNotEmpty()) {
                         IconButton(onClick = { confirmEmpty = true }) {
-                            Icon(Icons.Default.DeleteForever, stringResource(R.string.trash_empty))
+                            Icon(AccordioIcons.borrarDelTodo(), stringResource(R.string.trash_empty), tint = Color.Unspecified)
                         }
                     }
                 }
@@ -72,7 +70,7 @@ fun TrashScreen(
     ) { pv ->
         if (items.isEmpty()) {
             EmptyState(
-                icon = Icons.Default.DeleteForever,
+                icon = AccordioIcons.borrarDelTodo(),
                 title = stringResource(R.string.trash_empty_title),
                 subtitle = stringResource(R.string.trash_empty_subtitle),
                 modifier = Modifier.padding(pv)
@@ -163,11 +161,11 @@ private fun TrashRow(
                 )
             }
             IconButton(onClick = onRestore) {
-                Icon(Icons.Default.RestoreFromTrash, stringResource(R.string.trash_restore))
+                Icon(AccordioIcons.restaurar(), stringResource(R.string.trash_restore), tint = Color.Unspecified)
             }
             IconButton(onClick = onDelete) {
                 Icon(
-                    Icons.Default.DeleteForever,
+                    AccordioIcons.borrarDelTodo(),
                     stringResource(R.string.delete_forever),
                     tint = MaterialTheme.colorScheme.error
                 )

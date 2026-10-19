@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.playlist
 
+import androidx.compose.ui.graphics.Color
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,19 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.DriveFileMove
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -134,24 +122,24 @@ fun PlaylistDetailScreen(
                     colors = accordioTopBarColors(),
                     title = { Text(playlist?.name ?: "") },
                     navigationIcon = {
-                        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                        IconButton(onClick = onBack) { Icon(AccordioIcons.volver(), stringResource(R.string.back), tint = Color.Unspecified) }
                     },
                     actions = {
                         IconButton(onClick = {
                             searchOpen = !searchOpen
                             if (!searchOpen) query = ""
-                        }) { Icon(AccordioIcons.buscar(), stringResource(R.string.search_songs)) }
+                        }) { Icon(AccordioIcons.buscar(), stringResource(R.string.search_songs), tint = Color.Unspecified) }
                         SongSortMenu(current = sort, onPick = { vm.setSort(it) })
                         IconButton(onClick = {
                             vm.exportZipShare { intent -> ctx.startActivity(intent) }
-                        }) { Icon(AccordioIcons.compartir(), stringResource(R.string.share)) }
+                        }) { Icon(AccordioIcons.compartir(), stringResource(R.string.share), tint = Color.Unspecified) }
                     }
                 )
             }
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddSong) {
-                Icon(AccordioIcons.mas(), stringResource(R.string.new_song))
+                Icon(AccordioIcons.mas(), stringResource(R.string.new_song), tint = Color.Unspecified)
             }
         }
     ) { pv ->
@@ -340,7 +328,7 @@ private fun SongRow(
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Icon(
-                    Icons.AutoMirrored.Filled.DriveFileMove,
+                    AccordioIcons.mover(),
                     contentDescription = stringResource(R.string.move_to_unassigned),
                     tint = MaterialTheme.colorScheme.onTertiaryContainer
                 )
@@ -359,35 +347,35 @@ private fun SongRow(
                     if (song.favorite)
                         Icon(AccordioIcons.estrella(), stringResource(R.string.remove_favorite), tint = MaterialTheme.colorScheme.primary)
                     else
-                        Icon(AccordioIcons.estrellaHueca(), stringResource(R.string.favorite))
+                        Icon(AccordioIcons.estrellaHueca(), stringResource(R.string.favorite), tint = Color.Unspecified)
                 }
             },
             trailing = {
                 Box {
                     IconButton(onClick = { menuOpen = true }) {
-                        Icon(AccordioIcons.menu(), stringResource(R.string.more_options))
+                        Icon(AccordioIcons.menu(), stringResource(R.string.more_options), tint = Color.Unspecified)
                     }
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.edit)) },
-                            leadingIcon = { Icon(Icons.Default.Edit, null) },
+                            leadingIcon = { Icon(AccordioIcons.editar(), null, tint = Color.Unspecified) },
                             onClick = { menuOpen = false; onEdit() }
                         )
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.move_to_playlist)) },
-                            leadingIcon = { Icon(Icons.AutoMirrored.Filled.DriveFileMove, null) },
+                            leadingIcon = { Icon(AccordioIcons.mover(), null, tint = Color.Unspecified) },
                             onClick = { menuOpen = false; onMove() }
                         )
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.delete)) },
-                            leadingIcon = { Icon(Icons.Default.Delete, null) },
+                            leadingIcon = { Icon(AccordioIcons.borrar(), null, tint = Color.Unspecified) },
                             onClick = { menuOpen = false; onDelete() }
                         )
                     }
                 }
                 if (showDragHandle) {
                     Icon(
-                        Icons.Default.DragHandle,
+                        AccordioIcons.arrastrar(),
                         contentDescription = stringResource(R.string.drag_reorder),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = dragHandle.padding(start = 4.dp)

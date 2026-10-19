@@ -1,5 +1,6 @@
 package com.guitarchords.app.ui.training.exercises
 
+import com.guitarchords.app.ui.icons.AccordioIcons
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -16,8 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -121,7 +120,7 @@ fun ScaleNotesExercise(
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
-                Icons.Default.Mic, null,
+                AccordioIcons.microfono(), null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.primary
             )

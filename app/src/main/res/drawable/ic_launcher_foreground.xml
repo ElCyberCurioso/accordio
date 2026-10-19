@@ -1,27 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Accordio · marca del mástil (accordio-web-kit/logo/mark-fretboard-light.svg),
-  la misma que la cabecera de la web, sobre el teal del icono adaptativo.
+  Accordio · la marca del mástil sobre el teal del icono adaptativo.
 
-  108x108 con la marca dentro de la zona segura de 72 dp. Sirve además de icono
-  del splash y de capa monocroma (el sistema la usa como máscara, y por eso los
-  trazos son opacos: una máscara no entiende de opacidades).
+  108x108 con el dibujo dentro de la zona segura de 72. Sirve además de icono
+  del splash y de capa monocroma: el sistema la usa como máscara, y por eso los
+  trazos son opacos y ninguno baja de 3 de grosor —una máscara no entiende de
+  opacidades, y un trazo fino desaparece al recortar—.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
 
-    <!-- rejilla del mástil -->
-    <path android:pathData="M18.04,34.16 H89.96 M18.04,44.08 H89.96 M18.04,54.0 H89.96 M18.04,63.92 H89.96 M18.04,73.84 H89.96 M18.04,34.16 V73.84 M36.02,34.16 V73.84 M54.0,34.16 V73.84 M71.98,34.16 V73.84 M89.96,34.16 V73.84"
-        android:strokeColor="#F2FAF6" android:strokeWidth="2.48"
-        android:strokeLineCap="square" android:fillColor="#00000000" />
+    <path android:pathData="M32 36v36"
+        android:strokeColor="#F7EFE3" android:strokeWidth="6"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
 
-    <!-- digitación: claro la mano, amarillo y turquesa los acentos del kit -->
-    <path android:pathData="M54.0,34.16 m-4.96,0 a4.96,4.96 0 1,0 9.92,0 a4.96,4.96 0 1,0 -9.92,0" android:fillColor="#F2FAF6" />
-    <path android:pathData="M36.02,44.08 m-4.96,0 a4.96,4.96 0 1,0 9.92,0 a4.96,4.96 0 1,0 -9.92,0" android:fillColor="#F2FAF6" />
-    <path android:pathData="M71.98,44.08 m-4.96,0 a4.96,4.96 0 1,0 9.92,0 a4.96,4.96 0 1,0 -9.92,0" android:fillColor="#FFE66D" />
-    <path android:pathData="M18.04,54.0 m-4.96,0 a4.96,4.96 0 1,0 9.92,0 a4.96,4.96 0 1,0 -9.92,0" android:fillColor="#F2FAF6" />
-    <path android:pathData="M62.68,54.0 m-4.96,0 a4.96,4.96 0 1,0 9.92,0 a4.96,4.96 0 1,0 -9.92,0" android:fillColor="#FFE66D" />
-    <path android:pathData="M62.68,63.92 m-4.96,0 a4.96,4.96 0 1,0 9.92,0 a4.96,4.96 0 1,0 -9.92,0" android:fillColor="#4ECDC4" />
-    <path android:pathData="M44.7,73.84 m-4.96,0 a4.96,4.96 0 1,0 9.92,0 a4.96,4.96 0 1,0 -9.92,0" android:fillColor="#FFE66D" />
+    <path android:pathData="M43 36v36M54 36v36M65 36v36M76 36v36"
+        android:strokeColor="#F7EFE3" android:strokeWidth="3"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+
+    <path android:pathData="M32 36h44M32 45h44M32 54h44M32 63h44M32 72h44"
+        android:strokeColor="#F7EFE3" android:strokeWidth="3"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+
+    <path android:pathData="M48.5,63 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" android:fillColor="#F7EFE3" />
+
+    <path android:pathData="M59.5,54 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" android:fillColor="#FFE66D" />
+
+    <path android:pathData="M70.5,45 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" android:fillColor="#4ECDC4" />
+
 </vector>
