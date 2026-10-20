@@ -91,9 +91,16 @@ class SyncPrefs(context: Context) {
         runCatching { origen.edit().clear().apply() }
     }
 
+    /*
+     * Se normaliza al guardar Y al leer. Al guardar, para que el campo de la
+     * pantalla no pueda dejar una dirección que el cliente no sepa usar; al
+     * leer, porque la mudanza de preferencias (`mudar`) copió `base_url` tal
+     * cual del fichero antiguo y ahí puede haber una torcida de hace versiones.
+     * Leyendo normalizado se arregla sola, sin una migración aparte.
+     */
     var baseUrl: String
-        get() = sp.getString(KEY_URL, ACCORDIO_BASE_URL).orEmpty()
-        set(value) { sp.edit().putString(KEY_URL, value).apply() }
+        get() = normalizarBase(sp.getString(KEY_URL, ACCORDIO_BASE_URL).orEmpty())
+        set(value) { sp.edit().putString(KEY_URL, normalizarBase(value)).apply() }
 
     var token: String
         get() = sp.getString(KEY_TOKEN, "").orEmpty()

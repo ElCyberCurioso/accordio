@@ -209,9 +209,48 @@ class UnauthorizedException(message: String) : IOException(message)
  * Cliente de la API de Accordio: autenticación por email/contraseña y acceso a
  * las partituras del usuario. Sustituyó al token compartido, ya retirado.
  */
+/**
+ * Deja la dirección del servidor en lo único que el cliente sabe usar:
+ * esquema + servidor, sin ruta.
+ *
+ * El campo de la pantalla de sincronización lo escribe una persona, y lo que
+ * escriba se guarda tal cual. Tres formas de equivocarse, y las tres acababan
+ * en un fallo que no decía nada:
+ *
+ *  - **Una ruta de más.** `https://accordio.site/api` convertía cada petición
+ *    en `/api/api/sync/changes`, y el servidor respondía «ruta no encontrada»
+ *    con un 404 perfectamente correcto. `trimEnd('/')` no lo veía: quita barras
+ *    finales, no rutas.
+ *  - **`www.`** El Worker manda el apex y responde 301 en GET y **308** en el
+ *    resto. `HttpURLConnection` no sigue los 308 —ni ningún redirect que cambie
+ *    de método—, así que bajar cambios podía colar y subirlos no.
+ *  - **`http://`** Lo mismo: 308 a https y la subida clavada.
+ *
+ * `localhost` se queda en `http` a propósito: el Worker lo exime de HSTS y de
+ * los redirects para poder desarrollar, y forzarlo a https rompería eso.
+ *
+ * Vacío sigue siendo vacío: de eso se queja `request()`, que es quien sabe
+ * decirlo a tiempo.
+ */
+fun normalizarBase(bruta: String): String {
+    val limpia = bruta.trim()
+    if (limpia.isBlank()) return ""
+    val conEsquema = if (limpia.contains("://")) limpia else "https://$limpia"
+    val esquema = conEsquema.substringBefore("://").lowercase()
+    val resto = conEsquema.substringAfter("://")
+    // El servidor es lo que hay hasta la primera barra, interrogación o almohadilla.
+    var servidor = resto.takeWhile { it != '/' && it != '?' && it != '#' }.lowercase()
+    if (servidor.startsWith("www.")) servidor = servidor.removePrefix("www.")
+    if (servidor.isBlank()) return ""
+    val local = servidor == "localhost" || servidor.startsWith("localhost:") ||
+                servidor == "127.0.0.1" || servidor.startsWith("127.0.0.1:")
+    val esquemaFinal = if (esquema == "http" && !local) "https" else esquema
+    return "$esquemaFinal://$servidor"
+}
+
 class AccordioClient(baseUrl: String, private val token: String = "") {
 
-    private val base = baseUrl.trim().trimEnd('/')
+    private val base = normalizarBase(baseUrl)
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 
     // ---- autenticación ----
@@ -291,7 +330,13 @@ class AccordioClient(baseUrl: String, private val token: String = "") {
                 json.decodeFromString<ErrorResponse>(raw).error
             }.getOrNull()?.takeIf { it.isNotBlank() } ?: "HTTP $code"
             if (code == 401) throw UnauthorizedException(message)
-            throw IOException(message)
+            /*
+             * Con la dirección a la que se llamó. «Ruta no encontrada» a secas no
+             * dice si falta la ruta en el servidor o si la base guardada trae una
+             * de más, que es el fallo que de verdad pasa; con la URL delante se
+             * ve de un vistazo.
+             */
+            throw IOException("$message ($method $base$path)")
         } finally {
             conn.disconnect()
         }

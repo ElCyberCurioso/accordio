@@ -442,6 +442,33 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
   heredan ni rol ni tamaño): llevan ya `role = Role.Button`, y las tres que se
   quedaban en 44 dp suben el padding a 12 para llegar a 48.
 
+### 3.16 El 404 al sincronizar no era del servidor
+- Síntoma: la app daba **404** al sincronizar. El servidor estaba sano —todas las
+  rutas de sync responden 401 sin sesión, POST incluido—, así que no faltaba
+  ninguna ruta.
+- Causa: **la dirección del servidor la escribe una persona** (campo de texto en
+  la pantalla de sincronización, donde `accordio.site` es solo el *placeholder*)
+  y se guardaba tal cual. Con una ruta de más —`https://accordio.site/api`— cada
+  petición acababa en `/api/api/sync/changes` y el servidor contestaba «ruta no
+  encontrada» con toda la razón. `trimEnd('/')` no lo veía: quita barras
+  finales, no rutas. Reproducido con curl antes de tocar nada.
+- Y la mudanza de preferencias lo agravaba: `mudar()` copia `base_url` tal cual
+  del fichero antiguo, sin validar, así que una dirección torcida de hace
+  versiones sobrevivía a los renombrados.
+- Arreglo: `normalizarBase()` en `AccordioClient.kt`, función pura con diez
+  casos en `BaseUrlTest`. Deja esquema + servidor sin ruta, quita `www.` y sube
+  `http` a `https` —el Worker responde 301 en GET y **308** en el resto, y
+  `HttpURLConnection` no sigue los 308 ni ningún redirect que cambie de método,
+  de modo que bajar cambios podía colar y subirlos no—. **`localhost` y
+  `127.0.0.1` se quedan en `http` a propósito**: el Worker los exime de HSTS y
+  de los redirects para poder desarrollar.
+- Se normaliza al **escribir y al leer** en `SyncPrefs.baseUrl`: al leer, una
+  base torcida se arregla sola al abrir la app, sin migración aparte.
+- Y el error dice ahora contra qué URL falló:
+  `ruta no encontrada (GET https://accordio.site/api/api/sync/changes)`. Con eso
+  el diagnóstico es inmediato; sin eso fue una investigación. El 401 se queda
+  limpio, que ahí el mensaje se explica solo.
+
 ---
 
 ## 4. Decisiones de diseño que conviene respetar
@@ -676,7 +703,7 @@ Estado actual de producción:
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
 | Worker | Versión `59eae5f3`, desplegada el 19/10/2026 con `./tools/deploy.sh release` |
-| App | `versionCode 4` / `2.2` publicada en `/update` y como release `v2.2` en GitHub, firmada con la clave de siempre (SHA-256 `e6a53587…`) |
+| App | `versionCode 5` / `2.3` publicada en `/update` y como release `v2.3` en GitHub, firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
 | Estilo web | paquete de marca Accordio (claro + oscuro); fuentes en `worker/brand/` |
