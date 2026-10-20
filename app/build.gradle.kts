@@ -31,8 +31,8 @@ android {
          * nueva (UpdateManager.check lo compara con BuildConfig.VERSION_CODE),
          * así que sube en cada publicación aunque el nombre no cambie.
          */
-        versionCode = 5
-        versionName = "2.3"
+        versionCode = 6
+        versionName = "2.4"
         vectorDrawables { useSupportLibrary = true }
         // URL base del Worker para la auto-actualización. Vacío = se usa la URL
         // de sincronización configurada en la app. Con el dominio propio ya no

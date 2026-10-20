@@ -469,6 +469,31 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
   el diagnóstico es inmediato; sin eso fue una investigación. El 401 se queda
   limpio, que ahí el mensaje se explica solo.
 
+### 3.17 El 404 era la URL vieja del Worker, y el documento mentía
+- El 404 de §3.16 **no se arregló con normalizar**: la dirección guardada era
+  `https://guitarchords-sync.elcybercurioso.workers.dev`, que es `https`, sin
+  `www.` y sin ruta, así que `normalizarBase()` la dejaba intacta. Lo que pasa es
+  que **ese host está muerto**: devuelve 404 con `error code: 1042` de
+  Cloudflare, que no es un 404 de la API sino «aquí no hay Worker». Por eso el
+  mensaje salía como `HTTP 404` y no como «ruta no encontrada»: la respuesta no
+  traía JSON.
+- La causa de fondo: `wrangler.toml` declara `accordio.site` y
+  `www.accordio.site` como `custom_domain` y **no activa `workers_dev`**. Al
+  pasar a dominio propio, la subruta `*.workers.dev` dejó de servirse. Quien
+  tuviera esa URL guardada de antes lleva desde entonces pidiéndole las rutas a
+  un host vacío.
+- **El documento decía que esa URL «sigue viva»**, y yo lo leí sin comprobarlo:
+  con eso descarté esta hipótesis en el primer diagnóstico y publiqué una 2.3
+  diciendo que el problema «se corregía solo». No era verdad para esta causa. La
+  fila está corregida en §6. Un documento de traspaso que miente hace perder más
+  tiempo que no tenerlo, y aquí hizo perder una versión entera.
+- Arreglo: `normalizarBase()` **muda** `guitarchords-sync.*.workers.dev` a
+  `accordio.site`. Se muda en código porque nadie va a ir a cambiarlo a mano,
+  igual que con las claves de preferencias. Otros `*.workers.dev` NO se tocan:
+  pueden ser de otra cuenta. Dos tests más en `BaseUrlTest`, doce en total.
+- Lo que sí sirvió de la 2.3: **el mensaje con la URL**. Sin él, esto seguiría
+  siendo «da un 404» y a ciegas.
+
 ---
 
 ## 4. Decisiones de diseño que conviene respetar
@@ -697,13 +722,13 @@ Estado actual de producción:
 | | |
 |---|---|
 | URL | `https://accordio.site` (canónica; `www` → 301 al apex) |
-| URL anterior | `https://guitarchords-sync.elcybercurioso.workers.dev` (sigue viva) |
+| URL anterior | `https://guitarchords-sync.elcybercurioso.workers.dev` · **MUERTA**: devuelve 404 con `error code: 1042` («aquí no hay Worker»). `wrangler.toml` declara solo los dominios propios y NO activa `workers_dev`, así que al pasar a dominio propio esa subruta dejó de servirse. **No se resucita** a propósito: un segundo host público es otra superficie que mantener y verificar. La app muda esa dirección sola (§3.17) |
 | D1 | `vivace` · `1830ca34-43f6-429a-812d-5156287e90f1` |
 | R2 | `guitarchords` |
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
 | Worker | Versión `59eae5f3`, desplegada el 19/10/2026 con `./tools/deploy.sh release` |
-| App | `versionCode 5` / `2.3` publicada en `/update` y como release `v2.3` en GitHub, firmada con la clave de siempre (SHA-256 `e6a53587…`) |
+| App | `versionCode 6` / `2.4` publicada en `/update` y como release `v2.4` en GitHub, firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
 | Estilo web | paquete de marca Accordio (claro + oscuro); fuentes en `worker/brand/` |

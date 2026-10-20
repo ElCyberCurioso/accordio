@@ -26,6 +26,25 @@ class BaseUrlTest {
     }
 
     @Test
+    fun `la direccion vieja del worker se muda al dominio propio`() {
+        // guitarchords-sync.*.workers.dev ya no sirve nada: wrangler.toml solo
+        // declara los dominios propios, asi que Cloudflare contesta 404 (1042).
+        // Quien la tuviera guardada llevaba pidiendo a un host vacio.
+        assertEquals("https://accordio.site",
+            normalizarBase("https://guitarchords-sync.elcybercurioso.workers.dev"))
+        assertEquals("https://accordio.site",
+            normalizarBase("https://guitarchords-sync.elcybercurioso.workers.dev/api"))
+        assertEquals("https://accordio.site",
+            normalizarBase("http://guitarchords-sync.otracuenta.workers.dev"))
+    }
+
+    @Test
+    fun `otros workers dev no se tocan, que pueden ser de alguien mas`() {
+        assertEquals("https://otra-cosa.alguien.workers.dev",
+            normalizarBase("https://otra-cosa.alguien.workers.dev"))
+    }
+
+    @Test
     fun `www se quita porque el servidor manda el apex`() {
         assertEquals("https://accordio.site", normalizarBase("https://www.accordio.site"))
     }
