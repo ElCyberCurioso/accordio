@@ -743,17 +743,22 @@ Estado actual de producción:
 - [ ] **Copia de seguridad de la clave de firma** fuera de esta máquina (§9).
       Sin ella no se puede volver a actualizar la app nunca. Sigue pendiente
       desde hace sesiones y es lo único irreversible de esta lista.
-- [ ] **Probar la app en un dispositivo real.** Lo más gordo ya está visto: con
-      la 2.1 se actualizó desde la propia app y **funcionó**, así que la
-      migración de Room 17 → 18 sobre una base con datos y la conservación de la
-      sesión están comprobadas en un móvil de verdad. Aquí sigue sin haber
-      emulador, así que lo que queda por mirar es lo de abajo. Comprobado ya:
+- [ ] **Probar la app en un dispositivo real.** Lo más gordo ya está visto en un
+      móvil de verdad: la actualización desde la propia app, la migración de la
+      base y, con la 2.4, la sincronización contra la API (§3.17). Aquí sigue sin
+      haber emulador, así que lo que queda es lo de abajo sin tachar.
+      Comprobado ya:
       - ~~la **migración de Room 17 → 18** sobre una base con datos (§3.0)~~;
       - ~~que tras actualizar **se conserve la sesión**~~;
+      - ~~que la **sincronización con la API** funcione~~ (con la 2.4, después de
+        mudar la URL muerta del Worker);
       - los diagramas de ukelele, que ahora vienen del diccionario empaquetado
         y ya no de las posturas calculadas;
-      - elegir una digitación en el visor, sincronizar y verla puesta en la web;
-      - el modo avión (§5), el selector del afinador y el PDF impreso.
+      - que una digitación elegida en el visor **aparezca luego en la web**: la
+        sincronización ya está vista, pero ese viaje concreto no;
+      - el modo avión (§5), el selector del afinador y el PDF impreso;
+      - el **tema claro** con los bordes nuevos (§3.15) y los 62 iconos, que se
+        publicaron sin haberse visto en pantalla.
 - [ ] **Importar el diccionario de ukelele en la web.** Generarlo con
       `node tools/generar-ukelele.mjs` (deja `worker/tools/ukelele-diccionario.json`,
       ~214 KB, ignorado por git) y subirlo desde **Acordes → Instrumento:
