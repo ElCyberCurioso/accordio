@@ -1070,7 +1070,6 @@ var genres = [];               // categorías con partituras publicadas
  */
 var sortBy = "recent";
 var genreBy = "";
-var listOffset = 0;            // desplazamiento del listado que se está viendo
 var listHasMore = false;       // queda más detrás en el servidor
 var playlists = [];            // listas (carpetas) del usuario
 var playlistBy = "";           // filtro de lista activo en "Mis partituras"
@@ -1670,7 +1669,17 @@ function loadGenres() {
   });
 }
 
-function refresh() {
+/*
+ * «desde» solo lo pasa «Cargar más»: es la fila desde la que se pide y lo que
+ * llega se AÑADE. Cualquier otra llamada empieza de cero y reemplaza.
+ *
+ * Antes era un global (listOffset) que solo se ponía a 0 al cambiar de
+ * pestaña o de filtro. Tras «Cargar más» se quedaba en 100, y volver de una
+ * partitura al listado repetía la petición con ese desplazamiento y pegaba
+ * otra vez la misma página detrás: cada ida y vuelta, una copia más.
+ */
+function refresh(desde) {
+  var listOffset = desde || 0;
   tabPublic.setAttribute("aria-selected", tab === "public");
   tabMine.setAttribute("aria-selected", tab === "mine");
   tabChords.setAttribute("aria-selected", tab === "chords");
@@ -1993,7 +2002,6 @@ function aplicarUrl() {
     if (r.pantalla === "nueva") { prepararAlta(); showView("edit"); return; }
     if (r.pantalla === "entrar") { showView("auth"); authMsg.textContent = ""; return; }
     // Listados: la pestaña sale de la ruta, no al revés.
-    if (tab !== def.tab) listOffset = 0;
     tab = def.tab;
     refresh();
   } finally {
@@ -4239,7 +4247,6 @@ function saveSong() {
     // Y se sale al CATÁLOGO, no a «Mis partituras»: esa pestaña viene con
     // «Solo privadas» puesto, así que guardar aterrizaba siempre en el listado
     // de privadas, que no es donde se estaba trabajando.
-    listOffset = 0;
     navegar("#/", { reemplazar: true });
   }).catch(function (e) { editMsg.textContent = e.message; });
 }
@@ -4271,7 +4278,6 @@ function sendVersionProposal() {
     content: eContent.value
   }).then(function () {
     editorMode = "song";
-    listOffset = 0;
     navegar("#/propuestas", { reemplazar: true });
   }).catch(function (e) { editMsg.textContent = e.message; });
 }
@@ -4290,7 +4296,6 @@ function proposePublish() {
     if (nota === null) return;
     return api("POST", "/api/songs/" + id + "/proposals", { kind: "publish", note: nota })
       .then(function () {
-        listOffset = 0;
         navegar("#/propuestas", { reemplazar: true });
         notificar("Propuesta enviada", "ok");
       }).catch(function (e) { editMsg.textContent = e.message; });
@@ -4394,8 +4399,7 @@ function cargarMas() {
   moreBtn.disabled = true;
   var siguiente = function (vueltas) {
     var teniamos = songs.length;
-    listOffset = songs.length;
-    return refresh().then(function () {
+    return refresh(teniamos).then(function () {
       // Sin progreso —error o página vacía— no se insiste.
       if (songs.length <= teniamos) return;
       if (visibles().length >= objetivo || !listHasMore || vueltas >= VUELTAS_MAX) return;
@@ -4420,7 +4424,6 @@ search.oninput = function () {
   clearTimeout(temporizadorBusqueda);
   temporizadorBusqueda = setTimeout(function () {
     busqueda = quiereBuscar;
-    listOffset = 0;
     refresh();
   }, 250);
 };
@@ -4435,20 +4438,17 @@ themeBtn.onclick = toggleTheme;
 playlistFilter.onchange = function () {
   playlistBy = playlistFilter.value;
   renderPlaylistControls();
-  listOffset = 0;
   refresh();
 };
 favFilter.onclick = function () {
   favOnly = !favOnly;
   marcarFavoritas();
-  listOffset = 0;
   refresh();
 };
 
 privFilter.onclick = function () {
   sinPublicas = !sinPublicas;
   marcarPrivadas();
-  listOffset = 0;
   refresh();
 };
 
@@ -4647,8 +4647,8 @@ propMine.onchange = loadProposals;
 pmClose.onclick = function () { cerrarDialogo(propModal); };
 propModal.onclick = function (e) { if (e.target === propModal) cerrarDialogo(propModal); };
 proposeBtn.onclick = proposePublish;
-genreFilter.onchange = function () { genreBy = genreFilter.value; listOffset = 0; refresh(); };
-sortSel.onchange = function () { sortBy = sortSel.value; listOffset = 0; refresh(); };
+genreFilter.onchange = function () { genreBy = genreFilter.value; refresh(); };
+sortSel.onchange = function () { sortBy = sortSel.value; refresh(); };
 chordSearch.oninput = renderChordList;
 chordNew.onclick = function () { openChordEditor(""); };
 chordSeed.onclick = seedChords;
