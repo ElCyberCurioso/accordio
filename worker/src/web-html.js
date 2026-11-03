@@ -314,6 +314,10 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   /* Las tarjetas son <button>, y la regla de arriba les pone nowrap: sin esto
      un titulo largo se sale de la tarjeta por la derecha. */
   .card, .chordCard { white-space:normal; }
+  /* Las que abren una partitura son enlaces (ver enlaceACancion): se les da la
+     letra y el aspecto que los botones traen de la regla general. */
+  a.card { color:inherit; text-decoration:none; cursor:pointer; font-size:14px;
+           font-weight:600; line-height:normal; }
   .card { display:block; text-align:left; width:100%; border:1.5px solid transparent;
           border-radius:var(--ui-radius-lg); padding:16px 18px; background:var(--ui-surface);
           box-shadow:var(--ui-shadow-card);
@@ -360,6 +364,13 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
            color:var(--ui-head); border-radius:var(--ui-radius-md); padding:11px 14px;
            margin-bottom:12px; font-size:14px; }
   .filtros { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:flex-end; }
+  /* El buscador se queda pegado bajo la cabecera al bajar por el listado: con la
+     carga automática el listado no se acaba, y había que volver arriba a mano
+     para buscar otra cosa. --alto-cabecera lo mide medirCabecera(), porque la
+     cabecera cambia de alto con el ancho. El fondo tapa las tarjetas que pasan
+     por debajo. */
+  #listView .filtros { position:sticky; top:var(--alto-cabecera, 0px); z-index:9;
+                       background:var(--ui-bg); padding:8px 0 10px; margin:-8px 0 4px; }
   /* La etiqueta va encima del control: antes el nombre del filtro solo existía
      como title=, que ni se lee con lector de pantalla ni se ve al tocar. */
   .filtro { display:flex; flex-direction:column; gap:4px; flex:0 1 190px; font-size:11px;
@@ -576,8 +587,20 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
      contenido y el título largo se sale de la cabecera. */
   /* Una sola línea: autor – título, y el capo a su derecha. */
   #vHead .vMeta { min-width:0; display:flex; align-items:center; gap:12px; }
-  #vHead .titulo { min-width:0; display:flex; align-items:baseline; gap:6px; }
-  #vHead .titulo > * { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* Autor – título en una pista que, si no cabe, se desliza de lado a lado
+     (ver deslizarTitulo). Antes se cortaba con puntos suspensivos y en el móvil
+     no se leía ni el nombre de la canción. */
+  #vHead .titulo { min-width:0; overflow:hidden; }
+  #vHead .titulo .pista { display:inline-flex; align-items:baseline; gap:6px; white-space:nowrap; }
+  #vHead .titulo.desliza .pista { animation:deslizaTitulo var(--dur, 8s) ease-in-out infinite alternate; }
+  @keyframes deslizaTitulo { 0%, 15% { transform:none; }
+                             85%, 100% { transform:translateX(var(--desliz, 0px)); } }
+  /* Sin animación para quien la ha quitado en el sistema: la pista se arrastra
+     con el dedo, que también deja leerla entera. */
+  @media (prefers-reduced-motion: reduce) {
+    #vHead .titulo { overflow-x:auto; scrollbar-width:none; }
+    #vHead .titulo.desliza .pista { animation:none; }
+  }
   #vSep { color:var(--ui-text-subtle); flex:0 0 auto; }
   /* El capo cambia cómo se toca la canción entera: va en ámbar macizo, que no
      se pueda pasar por alto como pasaba con la píldora gris de antes. */
@@ -597,7 +620,11 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
                   overflow:hidden; background:#000; }
   #vTube iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
   @media (max-width:1200px) { #vTube { flex-basis:280px; } }
-  @media (max-width:900px) { #vTube { flex:0 0 auto; } }
+  /* En estrecho el vídeo va debajo de la hoja, y a todo el ancho de una tablet
+     en vertical medía 16:9 de 800 px: media pantalla para algo que se escucha.
+     Se acota por alto —un cuarto de pantalla— y se centra. */
+  @media (max-width:900px) { #vTube { flex:0 0 auto; align-self:center;
+                                      width:min(100%, calc(26vh * 16 / 9)); } }
   /* En vertical se mueve toda la columna; en horizontal, solo la hoja (ver
      .sheet). Si el desplazamiento lateral fuese de aquí, al leer una tablatura
      ancha se irían de lado también los comentarios y el pie. */
@@ -615,7 +642,10 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   /* La columna de lectura nunca baja de --ui-sheet, para que una canción de
      líneas cortas no salga en una tira estrecha, pero sí crece con el contenido
      hasta donde dé la ventana. */
-  #vSheet { width:max-content; min-width:var(--ui-sheet); max-width:100%; flex:0 0 auto; }
+  /* min() y no min-width a secas: en CSS un min-width GANA a max-width, así que
+     en el móvil la columna medía 68ch —más que la pantalla— y #vBody, que no
+     desplaza de lado, cortaba el final de cada verso sin dejar arrastrarlo. */
+  #vSheet { width:max-content; min-width:min(var(--ui-sheet), 100%); max-width:100%; flex:0 0 auto; }
   .ln { white-space:pre; line-height:1.35; margin:0; }
   .tab { white-space:pre; line-height:1.35; color:var(--ui-text-muted); }
   .chord { color:var(--ui-chord); font-weight:600; }
@@ -789,6 +819,16 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
     header .kicker { display:none; }
     header #who { display:none; }
     header h1 { font-size:19px; }
+    /* El buscador fijo, en una sola fila: con los filtros apilados la barra
+       pegada se llevaba un cuarto de la pantalla del móvil. Buscar va delante y
+       ocupa casi todo; categoría, orden y demás asoman a la derecha y se
+       arrastran de lado. */
+    #listView .filtros { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
+                         padding-left:2px; padding-right:2px; }
+    #listView .filtros::-webkit-scrollbar { display:none; }
+    #listView .filtros > * { flex:0 0 auto; }
+    #listView .filtros .filtro { width:160px; }
+    #listView .filtros .filtro:first-child { width:68%; }
 
     /* En la barra solo queda el botón de acciones, y ahí basta el icono; dentro
        del menú los nombres se leen enteros. */
@@ -796,8 +836,6 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
                                 overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
     #vHead > .lado .tool { padding:8px 10px; }
     #vTitle, #vArtist { font-size:14px; }
-    /* Título y artista en una línea, con puntos suspensivos si no cabe. */
-    #vHead .titulo > * { max-width:46vw; }
   }
   #vCtrl .row label { font-size:12px; color:var(--ui-text-muted); white-space:nowrap; }
   #vTone { color:var(--ui-accent); font-weight:600; }
@@ -1048,7 +1086,7 @@ var tab = "public";
 var songs = [];
 var current = null;          // { song, content }
 var editingId = null;        // null = alta nueva
-var semis = 0, flats = false, fontSize = 18;
+var semis = 0, flats = false, fontSize = 14;
 var scrolling = false, lastTs = 0, remainder = 0, raf = 0, wakeLock = null;
 var metro = new AcMetronome();
 var ratings = {};              // medias por versión ("" = el Original)
@@ -1678,6 +1716,13 @@ function loadGenres() {
  * partitura al listado repetía la petición con ese desplazamiento y pegaba
  * otra vez la misma página detrás: cada ida y vuelta, una copia más.
  */
+/*
+ * Con la carga automática al bajar es fácil que se crucen dos peticiones: una
+ * página que llega tarde DESPUÉS de cambiar de filtro se pegaría detrás del
+ * listado nuevo. Solo cuenta la respuesta de la última que se hizo.
+ */
+var peticionLista = 0;
+
 function refresh(desde) {
   var listOffset = desde || 0;
   tabPublic.setAttribute("aria-selected", tab === "public");
@@ -1720,7 +1765,9 @@ function refresh(desde) {
     : tab === "mine"
     ? "/api/songs?" + pag + mios
     : "/api/songs/public?" + pag;
+  var esta = ++peticionLista;
   return api("GET", path).then(function (d) {
+    if (esta !== peticionLista) return;
     // Al pedir "más" se añade; al cambiar de pestaña o filtro se empieza de cero.
     songs = listOffset ? songs.concat(d.songs || []) : (d.songs || []);
     listHasMore = !!d.hasMore;
@@ -1733,6 +1780,7 @@ function refresh(desde) {
     renderGenreDatalist(propias);
     renderList();
   }).catch(function (e) {
+    if (esta !== peticionLista) return;
     songs = [];
     renderList(e.message);
   });
@@ -1759,13 +1807,34 @@ function visibles() {
   });
 }
 
+/*
+ * Tarjeta que abre una partitura. Es un enlace de verdad, no un botón: así el
+ * clic central, Ctrl/Cmd+clic y «Abrir en una pestaña nueva» del menú del ratón
+ * funcionan como en cualquier web. Con un botón no había dirección que abrir.
+ *
+ * El clic normal se queda en la aplicación —navegar() deja el historial en
+ * orden y, desde las relacionadas, cambia de partitura en el mismo visor—; todo
+ * lo demás se deja al navegador.
+ */
+function enlaceACancion(id) {
+  var enlace = document.createElement("a");
+  enlace.href = "#/cancion/" + id;
+  enlace.onclick = function (ev) {
+    if (ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
+    ev.preventDefault();
+    navegar("#/cancion/" + id);
+  };
+  return enlace;
+}
+
 function renderList(error) {
   var q = acNormalizarBusqueda(search.value);
   var propio = tab === "mine";
   var shown = visibles();
   list.innerHTML = "";
   shown.forEach(function (s) {
-    var card = document.createElement("button");
+    // En la papelera no se abre nada: ahí la tarjeta sigue siendo un botón.
+    var card = tab === "trash" ? document.createElement("button") : enlaceACancion(s.id);
     card.className = "card";
     var a = document.createElement("div");
     a.className = "a";
@@ -1829,7 +1898,6 @@ function renderList(error) {
       acc.appendChild(rest); acc.appendChild(borrar);
       card.appendChild(acc);
     }
-    card.onclick = function () { if (tab !== "trash") navegar("#/cancion/" + s.id); };
     list.appendChild(card);
   });
   // Con menos de 3 letras no se ha preguntado al servidor: si el recorte local
@@ -2541,6 +2609,7 @@ function openSong(id) {
     // ancho y la cuenta saldría con el de la ventana entera.
     fontSize = letraQueQuepa();
     vBody.style.setProperty("--fs", fontSize + "px");
+    deslizarTitulo();
     renderTube();
     colocarVersiones();
     colocarAcciones();
@@ -2572,6 +2641,37 @@ function openSong(id) {
  */
 var capoActual = 0;
 
+/*
+ * Si autor y título no caben en la cabecera, la pista se desliza de un extremo a
+ * otro, ida y vuelta, con una pausa en cada punta para leer. Lo que recorre es
+ * justo lo que sobra, y el tiempo crece con ello: un nombre que se pasa por poco
+ * no sale disparado, y uno muy largo no se arrastra durante un minuto.
+ */
+function deslizarTitulo() {
+  var caja = vTitle.parentElement.parentElement;
+  var pista = vTitle.parentElement;
+  caja.classList.remove("desliza");
+  var sobra = pista.scrollWidth - caja.clientWidth;
+  if (sobra <= 2) return;
+  caja.style.setProperty("--desliz", -sobra + "px");
+  caja.style.setProperty("--dur", Math.min(20, 3 + sobra / 25).toFixed(1) + "s");
+  caja.classList.add("desliza");
+}
+window.addEventListener("resize", function () {
+  if (viewer.classList.contains("on")) deslizarTitulo();
+});
+
+/* Alto de la cabecera, para que el buscador se pegue justo debajo. */
+function medirCabecera() {
+  var cabecera = document.querySelector("body > header");
+  if (cabecera) document.documentElement.style.setProperty("--alto-cabecera", cabecera.offsetHeight + "px");
+}
+if ("ResizeObserver" in window) {
+  var cabeceraPrincipal = document.querySelector("body > header");
+  if (cabeceraPrincipal) new ResizeObserver(medirCabecera).observe(cabeceraPrincipal);
+}
+medirCabecera();
+
 function setCapo(capo) {
   var n = Number(capo) || 0;
   capoActual = n;
@@ -2580,75 +2680,36 @@ function setCapo(capo) {
 }
 
 /*
- * Tamaño de letra que hace que la partitura QUEPA de ancho.
+ * Tamaño de letra con el que se ABRE una partitura: el mayor que cabe de ancho,
+ * sin pasar de un techo pequeño.
  *
- * La hoja mide 68 caracteres de la monoespaciada, que a 18 px son unos 730:
- * en un móvil de 390 eso obliga a arrastrar de lado para leer cada línea, que
- * es justo lo que no se puede hacer mientras se toca. Aquí se mide la línea más
- * larga de ESTA partitura (no las 68 columnas teóricas: casi ninguna canción
- * las gasta) y se elige el mayor tamaño que entra, entre 11 y 18 px.
+ * Antes se abría a 18 px en pantalla ancha y, en estrecho, el ajuste no bajaba
+ * de 13: casi siempre había que reducir a mano, sobre todo en el móvil, donde un
+ * verso no entraba y había que arrastrarlo de lado. Ahora se abre pequeño y quien
+ * quiera más grande pulsa A+: es mejor tener que agrandar que tener que reducir
+ * cada vez.
  *
- * Solo se hace al abrir y solo en estrecho. A partir de ahí manda A-/A+: si
- * alguien decide leer más grande y arrastrar, es cosa suya.
+ * Se mide el desbordamiento DE VERDAD en vez de estimarlo con el ancho de un
+ * carácter: se pinta al techo, se mira cuánto se sale la hoja y se escala en la
+ * misma proporción (la monoespaciada crece en línea recta con el tamaño). Así
+ * vale igual en ancho, donde la columna depende del vídeo y de los mandos, que
+ * en estrecho, y no importa qué fuente haya cargado.
+ *
+ * Solo se hace al abrir. A partir de ahí manda A-/A+.
  */
-/*
- * Ancho de un carácter de la monoespaciada, en fracción del tamaño de letra.
- * Se MIDE en vez de darlo por supuesto: JetBrains Mono avanza 0,6 em, pero si no
- * ha cargado todavía manda la de reserva del sistema, que no tiene por qué. Con
- * el número estimado el cálculo se quedaba corto por unos píxeles y la línea se
- * salía igualmente por la derecha, que era justo lo que se quería evitar.
- * Se mide una vez y se guarda: es una lectura de layout, y no cambia.
- */
-var anchoChar = 0;
-
-/* Tamaño mínimo del ajuste automático: por debajo no se lee de un vistazo. */
-var SUELO_LETRA = 13;
-
-function anchoDeCaracter() {
-  if (anchoChar) return anchoChar;
-  var regla = document.createElement("span");
-  regla.textContent = "0123456789";
-  regla.style.cssText = "position:absolute;visibility:hidden;white-space:pre;" +
-                        "font-family:var(--ui-font-mono);font-size:100px";
-  document.body.appendChild(regla);
-  anchoChar = regla.getBoundingClientRect().width / 1000;   // 10 caracteres a 100 px
-  regla.remove();
-  return anchoChar || 0.6;
-}
+var TECHO_LETRA_ANCHA = 16;
+var TECHO_LETRA_ESTRECHA = 14;
+/* Por debajo de esto no se lee con la guitarra en las manos: se arrastra. */
+var SUELO_LETRA = 9;
 
 function letraQueQuepa() {
-  if (!current || pantallaAncha.matches) return fontSize;
-  var lineas = String(current.body || "").split("\\n");
-  var largo = 0;
-  for (var i = 0; i < lineas.length; i++) {
-    // Las llaves de los acordes no se pintan: {Am} ocupa dos columnas, no cuatro.
-    var limpia = lineas[i].replace(/[{}]/g, "");
-    if (limpia.length > largo) largo = limpia.length;
-  }
-  if (!largo) return fontSize;
+  var techo = pantallaAncha.matches ? TECHO_LETRA_ANCHA : TECHO_LETRA_ESTRECHA;
   var hoja = vSheet.querySelector(".sheet");
-  var hueco = (hoja ? hoja.clientWidth : vBody.clientWidth || window.innerWidth);
-  var cabe = Math.floor(hueco / (largo * anchoDeCaracter()));
-  /*
-   * El suelo del ajuste automático son 13 px, y es un suelo de LEGIBILIDAD, no
-   * de encaje: por debajo la letra no se lee de un vistazo con la guitarra en
-   * las manos, así que una canción de columnas exageradas se queda a 13 y se
-   * arrastra de lado. Encoger hasta que "quepa" cueste lo que cueste daba
-   * partituras que entraban enteras y no se leían, que es peor negocio.
-   *
-   * Antes eran 10, y además chocaba con el mínimo de A- (11): el ajuste dejaba
-   * la letra ya por debajo del mínimo manual y el botón de reducir no hacía
-   * nada. Ahora A- baja hasta 8 para quien quiera apretar de verdad.
-   */
-  /*
-   * Suelo blando: si la canción entra justo un punto por debajo (12 px), se le
-   * concede. Plantarse en 13 a rajatabla dejaba hojas que se salían por cinco
-   * píxeles —arrastrar la línea entera para leer una sílaba— cuando bajando uno
-   * entraban enteras. Dos puntos por debajo ya no: ahí se prefiere leer y
-   * arrastrar.
-   */
-  var suelo = cabe === SUELO_LETRA - 1 ? cabe : SUELO_LETRA;
-  return Math.max(suelo, Math.min(18, cabe));
+  if (!current || !hoja) return techo;
+  vBody.style.setProperty("--fs", techo + "px");
+  var mide = hoja.scrollWidth, cabe = hoja.clientWidth;
+  if (!mide || mide <= cabe) return techo;
+  return Math.max(SUELO_LETRA, Math.min(techo, Math.floor(techo * cabe / mide)));
 }
 
 function renderViewer() {
@@ -2984,7 +3045,7 @@ function renderRelated(lista, motivo) {
   var rejilla = document.createElement("div");
   rejilla.className = "relGrid";
   lista.forEach(function (s) {
-    var card = document.createElement("button");
+    var card = enlaceACancion(s.id);
     card.className = "card";
     var a = document.createElement("div");
     a.className = "a";
@@ -3003,9 +3064,6 @@ function renderRelated(lista, motivo) {
       etiquetas.appendChild(g);
       card.appendChild(etiquetas);
     }
-    // Se abre EN EL MISMO visor: cambia la partitura, la URL y las propias
-    // recomendaciones, sin pasar por el catálogo.
-    card.onclick = function () { navegar("#/cancion/" + s.id); };
     rejilla.appendChild(card);
   });
   vRelated.appendChild(rejilla);
@@ -4406,10 +4464,40 @@ function cargarMas() {
       return siguiente(vueltas + 1);
     });
   };
-  siguiente(1).catch(function () {}).then(function () { moreBtn.disabled = false; });
+  siguiente(1).catch(function () {}).then(function () {
+    moreBtn.disabled = false;
+    // Si tras la página el final sigue a la vista (pantalla alta, o una página
+    // que el buscador ha dejado en casi nada), el observador no vuelve a avisar:
+    // para él no ha cambiado nada. Se pide la siguiente desde aquí.
+    if (finalALaVista) cargaAutomatica();
+  });
 }
 
 moreBtn.onclick = cargarMas;
+
+/*
+ * Carga al bajar: cuando «Cargar más» se acerca a la pantalla, se pulsa solo.
+ * El botón se queda —sin JS de observador, o con el teclado, sigue sirviendo—
+ * pero ya no hay que ir a buscarlo cada cien partituras.
+ *
+ * Con margen por abajo para que la página siguiente esté llegando antes de
+ * tocar fondo. Y nunca con el visor abierto: el listado sigue debajo, y un
+ * cambio de tamaño podría disparar descargas que nadie está mirando.
+ */
+var finalALaVista = false;
+
+function cargaAutomatica() {
+  if (moreBtn.disabled || moreBtn.classList.contains("hidden")) return;
+  if (listView.classList.contains("hidden") || viewer.classList.contains("on")) return;
+  cargarMas();
+}
+
+if ("IntersectionObserver" in window) {
+  new IntersectionObserver(function (entradas) {
+    finalALaVista = entradas[entradas.length - 1].isIntersecting;
+    if (finalALaVista) cargaAutomatica();
+  }, { rootMargin: "0px 0px 600px 0px" }).observe(moreBtn);
+}
 /*
  * Al teclear: recorte inmediato de lo que ya hay y, si hay al menos 3 letras o
  * cifras, consulta al servidor un poco después. El retardo es para no lanzar
@@ -5175,11 +5263,11 @@ export const WEB_HTML = `<!doctype html>
       <button id="vClose" class="ghost">‹ Volver</button>
     </div>
     <div class="vMeta">
-      <div class="titulo">
+      <div class="titulo"><span class="pista">
         <span id="vArtist"></span>
         <span id="vSep" class="hidden">–</span>
         <span id="vTitle"></span>
-      </div>
+      </span></div>
       <span id="vCapo" class="hidden"></span>
     </div>
     <div class="lado der" id="vLadoDer">
