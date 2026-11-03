@@ -9,13 +9,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.content.IntentCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.guitarchords.app.sync.SyncWorker
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Surface
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,6 +32,7 @@ import com.guitarchords.app.ui.theme.GuitarChordsTheme
 import com.guitarchords.app.ui.theme.ThemeController
 import com.guitarchords.app.ui.theme.ThemeMode
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -46,6 +46,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         handleIntent(intent)
+        sincronizarMientrasSeVe()
 
         setContent {
             val themeMode by ThemeController.mode.collectAsState()
@@ -89,21 +90,39 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                /*
+                 * A todo el ancho, también en tablet y en horizontal. Antes el
+                 * contenido se topaba en 840 dp y se centraba, y en una tablet
+                 * tumbada quedaban dos franjas vacías a los lados: justo el
+                 * ancho que una partitura necesita para no partir los versos.
+                 */
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    // On large screens (tablets, landscape) cap the content
-                    // width so lines/cards stay readable instead of stretching.
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.TopCenter
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .widthIn(max = 840.dp)
-                        ) {
-                            NavGraph(nav)
-                        }
-                    }
+                    NavGraph(nav)
+                }
+            }
+        }
+    }
+
+    /**
+     * Trae lo que haya cambiado en el servidor sin tener que pedirlo.
+     *
+     * Hasta ahora solo se sincronizaba al arrancar el proceso, al guardar algo y
+     * al recuperar la red; lo editado en la web no llegaba hasta que alguien
+     * pulsaba «Sincronizar» (o hasta el repaso periódico, horas después). Ahora
+     * cada vez que la app vuelve a primer plano se pide una pasada, y mientras
+     * siga a la vista, otra cada pocos minutos.
+     *
+     * Va por WorkManager con KEEP, como todas: si ya hay una en marcha, esta no
+     * hace nada. Y la pasada solo baja lo que cambió desde el último cursor, así
+     * que repetirla con la app abierta cuesta una petición pequeña.
+     */
+    private fun sincronizarMientrasSeVe() {
+        val app = application as GuitarChordsApp
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    if (app.syncPrefs.isLoggedIn) SyncWorker.schedule(app, delaySeconds = 0)
+                    delay(INTERVALO_EN_PRIMER_PLANO_MS)
                 }
             }
         }
@@ -125,5 +144,9 @@ class MainActivity : ComponentActivity() {
             else -> null
         }
         if (uri != null) pendingImport.value = uri
+    }
+
+    private companion object {
+        const val INTERVALO_EN_PRIMER_PLANO_MS = 5 * 60 * 1000L
     }
 }

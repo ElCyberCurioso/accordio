@@ -494,6 +494,45 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
 - Lo que sí sirvió de la 2.3: **el mensaje con la URL**. Sin él, esto seguiría
   siendo «da un 404» y a ciegas.
 
+### 3.18 Sesión 28/10–03/11/2026 · R2 caído, listado duplicado y lectura en tablet y móvil
+- **Partituras con 500**: no era código. R2 estaba **desactivado en la cuenta**
+  (`code: 10042`, «Please enable R2 through the Cloudflare Dashboard»); D1
+  respondía, así que el listado salía y abrir una partitura no. Se vio con
+  `wrangler tail` cruzando el `id` del error. Se reactivó desde el panel y los
+  objetos seguían ahí.
+- **El listado se duplicaba al volver de una partitura** (`996eed5`): el
+  desplazamiento era un global que solo volvía a 0 al cambiar de pestaña. Ahora
+  `refresh(desde)` lo recibe y solo «Cargar más» lo pasa. Además, `refresh`
+  descarta las respuestas que no son de la última petición (`peticionLista`).
+- Web:
+  - Las tarjetas que abren una partitura son **enlaces** (`enlaceACancion`):
+    clic central, Ctrl+clic y «abrir en pestaña nueva» funcionan.
+  - **Carga automática** al bajar: un `IntersectionObserver` sobre «Cargar más»
+    lo pulsa solo, 600 px antes del final. El botón se queda.
+  - **Buscador fijo** bajo la cabecera (`--alto-cabecera`, medido con
+    `ResizeObserver`). En ≤560 px los filtros van en una sola fila deslizable.
+  - **Vídeo acotado** en ≤900 px: un cuarto del alto de la pantalla, centrado.
+  - **Autor – título se desliza** de lado a lado si no cabe (`deslizarTitulo`);
+    con «menos movimiento» se arrastra con el dedo.
+  - **Letra más pequeña al abrir**: techo de 16 px en ancho y 14 en estrecho,
+    suelo de 9, midiendo el desbordamiento real de la hoja. Y un fallo de
+    fondo: `#vSheet` tenía `min-width:68ch`, que **gana** a `max-width:100%`;
+    en el móvil la columna medía más que la pantalla y `#vBody` cortaba el
+    final de cada verso sin dejar arrastrarlo.
+- App 2.5 (`versionCode 7`):
+  - **A todo el ancho**: fuera el tope de 840 dp que dejaba franjas vacías en
+    una tablet en horizontal. Las pantallas no se han revisado una a una a ese
+    ancho.
+  - **Sincronización automática**: una pasada al volver a primer plano y otra
+    cada 5 minutos mientras la app se ve (`MainActivity.sincronizarMientrasSeVe`);
+    el repaso en segundo plano pasa de 6 h a 1 h, con `UPDATE` para que los
+    móviles que ya tenían el de 6 h lo cambien.
+  - **Publicada SIN probar en un dispositivo**: no había ninguno conectado.
+- La web se probó en Chromium sin cabeza por CDP (390, 800 y 1440 px) con una
+  API de mentira: 437 partituras cargadas al bajar sin repetir ninguna, volver
+  de una partitura sin duplicados, enlaces con `href`, buscador pegado, vídeo y
+  tamaño de letra. El arnés vive fuera del repo.
+
 ---
 
 ## 4. Decisiones de diseño que conviene respetar
@@ -728,7 +767,7 @@ Estado actual de producción:
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
 | Worker | Versión `59eae5f3`, desplegada el 19/10/2026 con `./tools/deploy.sh release` |
-| App | `versionCode 6` / `2.4` publicada en `/update` y como release `v2.4` en GitHub, firmada con la clave de siempre (SHA-256 `e6a53587…`) |
+| App | `versionCode 7` / `2.5` publicada en `/update` y como release `v2.5` en GitHub, firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
 | Estilo web | paquete de marca Accordio (claro + oscuro); fuentes en `worker/brand/` |

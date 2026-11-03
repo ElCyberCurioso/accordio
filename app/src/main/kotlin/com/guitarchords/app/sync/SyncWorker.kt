@@ -89,16 +89,27 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                 .enqueueUniqueWork(UNICO, ExistingWorkPolicy.KEEP, peticion)
         }
 
-        /** Red de seguridad: una pasada cada pocas horas por si algo se quedó atrás. */
+        /**
+         * Repaso en segundo plano, con la app cerrada: trae lo editado en la web
+         * para que esté al abrirla, aunque sea sin red en ese momento.
+         *
+         * Cada hora (eran 6: un cambio hecho por la mañana no aparecía hasta la
+         * tarde). Con la app abierta manda la pasada de MainActivity, que es
+         * mucho más frecuente.
+         *
+         * UPDATE y no KEEP: con KEEP, en los móviles que ya tenían programado el
+         * de 6 horas seguiría ese para siempre, porque WorkManager lo guarda en
+         * disco por nombre y no mira si el intervalo ha cambiado.
+         */
         fun schedulePeriodic(context: Context) {
             // Antes de programar el nuestro, se retira el del nombre viejo.
             WorkManager.getInstance(context).cancelUniqueWork(PERIODICO_ANTIGUO)
-            val peticion = PeriodicWorkRequestBuilder<SyncWorker>(6, TimeUnit.HOURS)
+            val peticion = PeriodicWorkRequestBuilder<SyncWorker>(1, TimeUnit.HOURS)
                 .setConstraints(CON_RED)
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 5, TimeUnit.MINUTES)
                 .build()
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                PERIODICO, ExistingPeriodicWorkPolicy.KEEP, peticion
+                PERIODICO, ExistingPeriodicWorkPolicy.UPDATE, peticion
             )
         }
 
