@@ -327,20 +327,32 @@ function acChordSvg(pos, ancho) {
 var AC_CHORD_RE = /^\\(?[A-G][#b]?(?:maj|min|sus|add|aug|dim|m|M|º|°|\\+|-|b|#|\\d)*(?:\\/[A-G][#b]?)?\\)?$/;
 var AC_SEP_RE = /^(?:\\||\\/|-+|–|%|x\\d+|\\(x\\d+\\)|N\\.?C\\.?)$/i;
 
+// Caracteres invisibles que traen las webs de cifrados al copiar. Cifra Club
+// pone un espacio de ancho cero (U+200B) al principio de CADA línea: no se ve,
+// pero va pegado al primer acorde, que entonces no es un acorde, y la línea
+// entera se tomaba por letra. No aportan nada a una partitura: se quitan.
+var AC_INVISIBLES_RE = /[\\u200B-\\u200D\\u2060\\uFEFF]/g;
+
+// Etiqueta de sección al principio de la línea ("[Intro] Em7  G"): se salta al
+// decidir si la línea es de acordes. Antes la cortaba como si fuera letra.
+var AC_SECCION_RE = /^\\[[^\\]]*\\]\\s*/;
+
 /**
  * Marca los acordes de un texto. Devuelve { text, marked }: el texto con los
  * acordes entre llaves y cuántos ha marcado, para poder decírselo a quien
  * pulsa el botón.
  */
 function acDetectChords(text) {
-  var lines = (text || "").replace(/\\r\\n/g, "\\n").split("\\n");
+  var lines = (text || "").replace(AC_INVISIBLES_RE, "").replace(/\\r\\n/g, "\\n").split("\\n");
   var inTab = false, marked = 0;
   var out = lines.map(function (line) {
     var t = line.trim();
     if (t === "{tab}") { inTab = true; return line; }
     if (t === "{/tab}") { inTab = false; return line; }
     if (inTab || !t || line.indexOf("{") >= 0) return line;
-    var chords = 0, tokens = t.split(/\\s+/), corta = false;
+    var resto = t.replace(AC_SECCION_RE, "");
+    if (!resto) return line;
+    var chords = 0, tokens = resto.split(/\\s+/), corta = false;
     for (var i = 0; i < tokens.length; i++) {
       if (AC_CHORD_RE.test(tokens[i])) chords++;
       else if (!AC_SEP_RE.test(tokens[i])) { corta = true; break; }  // token de letra

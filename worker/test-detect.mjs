@@ -16,6 +16,13 @@ const cases = [
   ["{C} ya marcada\nD G", "{C} ya marcada\n{D} {G}"],
   ["{tab}\nE|--0--3--\n{/tab}\nC G", "{tab}\nE|--0--3--\n{/tab}\n{C} {G}"],
   ["  C   G\nletra", "  {C}   {G}\nletra"],
+  // Cifra Club: espacio de ancho cero al principio de cada línea.
+  ["​Em7    Am\n​Tienes el arma", "{Em7}    {Am}\nTienes el arma"],
+  ["﻿C G\nletra", "{C} {G}\nletra"],
+  // Etiqueta de sección delante de los acordes.
+  ["[Intro] Em7  G", "[Intro] {Em7}  {G}"],
+  ["[Primera Parte]\nC G", "[Primera Parte]\n{C} {G}"],
+  ["[Puente] y aquí letra", "[Puente] y aquí letra"],
 ];
 
 let fail = 0;
