@@ -730,8 +730,9 @@ La primera sincronización tras iniciar sesión **reconoce las partituras que ya
 Para publicar una actualización de la app: sube el APK firmado y un `latest.json` al bucket.
 
 ```bash
-wrangler r2 object put guitarchords/app/app-release.apk --file=app/build/outputs/apk/release/app-release.apk
-wrangler r2 object put guitarchords/app/latest.json --file=latest.json
+# --remote: con wrangler 4, sin él se escribe en el R2 local de `wrangler dev`.
+wrangler r2 object put guitarchords/app/app-release.apk --file=app/build/outputs/apk/release/app-release.apk --remote
+wrangler r2 object put guitarchords/app/latest.json --file=latest.json --remote
 ```
 
 ```json

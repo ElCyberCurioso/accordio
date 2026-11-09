@@ -788,7 +788,8 @@ NOTAS=$'• Primera novedad.\n• Segunda novedad.' \
 - **Para corregir solo las notas** de lo ya publicado, sin resubir el APK, basta
   con reescribir `latest.json` en R2 con los mismos campos
   (`versionCode`, `versionName`, `notes`, `apkUrl: "/update/apk"`):
-  `cd worker && npx wrangler r2 object put guitarchords/app/latest.json --file latest.json --content-type application/json`.
+  `cd worker && npx wrangler r2 object put guitarchords/app/latest.json --file latest.json --content-type application/json --remote`
+  (el `--remote` es imprescindible: ver §8).
   Así se pusieron las de la 2.6.
 
 Desde Windows, lo equivalente es `tools/deploy.ps1` (además prepara la cadena de
@@ -947,8 +948,13 @@ servidor rechaza los de seis. `seed` solo siembra guitarra.
   `./gradlew --stop` y matando los daemons.
 - **Tras `wrangler deploy`, la propagación tarda unos segundos.** Verificar al
   instante da falsos negativos que parecen un despliegue roto.
-- **`wrangler r2 object put` no acepta `--remote` en la 3.x** (allí lo remoto es
-  lo predeterminado); en la 4 sí. El script mira la ayuda antes de pasarlo.
+- **Wrangler está en la 4** (desde el 09/11/2026; antes 3.114). En la 4,
+  `wrangler r2 object put`/`get` **sin `--remote` trabajan sobre el R2 LOCAL**
+  de `wrangler dev`: la orden acaba bien, dice «Upload complete» y producción
+  no cambia. A mano, poner siempre `--remote`. `deploy.sh` mira la ayuda y lo
+  añade si existe (en la 3 no existía y lo remoto era lo predeterminado);
+  `deploy.ps1` ya lo pasaba siempre. `d1 execute` ya llevaba `--remote` en todas
+  partes.
 - **`wrangler whoami` termina en 0 aunque no haya sesión.** Hay que leer la
   respuesta, no el código de salida.
 - **En bash, `local x="$(cmd)"` se traga el fallo de `cmd`**: el código de salida
