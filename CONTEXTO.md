@@ -785,7 +785,7 @@ Estado actual de producción:
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
 | Worker | Versión `59eae5f3`, desplegada el 19/10/2026 con `./tools/deploy.sh release` |
-| App | `versionCode 8` / `2.6` publicada en `/update` y como release `v2.6` en GitHub (no hay release `v2.5`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
+| App | `versionCode 8` / `2.6` publicada en `/update` y como release `v2.6` en GitHub (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
 | Estilo web | paquete de marca Accordio (claro + oscuro); fuentes en `worker/brand/` |
