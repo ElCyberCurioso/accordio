@@ -50,13 +50,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.guitarchords.app.R
 import com.guitarchords.app.data.Song
 import com.guitarchords.app.data.SongSort
+import com.guitarchords.app.data.filterByGenre
 import com.guitarchords.app.data.filterByQuery
+import com.guitarchords.app.data.genres
 import com.guitarchords.app.ui.components.BulkDeleteDialog
 import com.guitarchords.app.ui.components.BulkMoveDialog
 import com.guitarchords.app.ui.components.EmptyState
 import com.guitarchords.app.ui.components.MoveSongDialog
 import com.guitarchords.app.ui.components.SelectionTopBar
 import com.guitarchords.app.ui.components.SongListItem
+import com.guitarchords.app.ui.components.GenreFilterRow
 import com.guitarchords.app.ui.components.SongSearchField
 import com.guitarchords.app.ui.components.SongSortMenu
 import com.guitarchords.app.ui.components.rememberSongSelection
@@ -91,9 +94,13 @@ fun PlaylistDetailScreen(
     var bulkDeleting by remember { mutableStateOf(false) }
     var searchOpen by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
+    var genre by remember { mutableStateOf<String?>(null) }
+    val genres = remember(songs) { songs.genres() }
 
     val manualSort = sort == SongSort.MANUAL
-    val visibleSongs = remember(songs, query) { songs.filterByQuery(query) }
+    val visibleSongs = remember(songs, query, genre) {
+        songs.filterByGenre(genre).filterByQuery(query)
+    }
 
     // Avisos reversibles: mandar a la papelera y sacar de la carpeta.
     val snackbarHost = remember { SnackbarHostState() }
@@ -151,6 +158,13 @@ fun PlaylistDetailScreen(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                 )
             }
+            // Categorías: siempre a la vista, no detrás de la lupa.
+            GenreFilterRow(
+                genres = genres,
+                selected = genre,
+                onSelect = { genre = it },
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
             if (songs.isEmpty()) {
                 EmptyState(
                     icon = AccordioIcons.notas(),
@@ -160,9 +174,9 @@ fun PlaylistDetailScreen(
                 )
             } else {
                 // El arrastre solo tiene sentido con el orden manual y sin filtro
-                // de búsqueda; en cualquier otro caso la lista es derivada y se
+                // de búsqueda ni de categoría; en cualquier otro caso la lista es derivada y se
                 // oculta el asa.
-                val canDrag = manualSort && query.isBlank()
+                val canDrag = manualSort && query.isBlank() && genre == null
                 // Orden local editable por arrastre; se persiste al soltar.
                 var localOrder by remember { mutableStateOf(songs) }
                 LaunchedEffect(songs) { localOrder = songs }

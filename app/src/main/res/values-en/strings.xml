@@ -129,7 +129,8 @@
     <!-- Editor -->
     <string name="song_title">Title</string>
     <string name="song_artist">Artist</string>
-    <string name="song_genre">Genre</string>
+    <string name="song_genre">Category</string>
+    <string name="genre_all">All</string>
     <string name="playlist_label">List: %1$s</string>
     <string name="insert_chord">Insert chord</string>
     <string name="insert_tab">Insert tablature</string>
@@ -229,9 +230,9 @@
     <string name="ukulele_no_dictionary">Shapes are computed: the ukulele dictionary does not ship with the app yet.</string>
 
     <!-- Search -->
-    <string name="search_placeholder">Title, artist, genre or lyrics…</string>
+    <string name="search_placeholder">Title, artist or category…</string>
     <string name="search_hint_title">Search your songbook</string>
-    <string name="search_hint_subtitle">Type a title, artist, genre or part of the lyrics</string>
+    <string name="search_hint_subtitle">Type a title, an artist or a category, or pick a category. Searches all your lists</string>
     <string name="try_another_search">Try another search</string>
 
     <!-- Favorites -->

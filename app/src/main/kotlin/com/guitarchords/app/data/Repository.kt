@@ -30,7 +30,7 @@ class Repository(
     fun songs(playlistId: Long): Flow<List<Song>> = songDao.observeByPlaylist(playlistId)
     fun song(id: Long): Flow<Song?> = songDao.observeById(id)
     fun favorites(): Flow<List<Song>> = songDao.observeFavorites()
-    fun search(q: String): Flow<List<Song>> = songDao.search(q)
+    fun allSongs(): Flow<List<Song>> = songDao.observeAlive()
     fun unassigned(): Flow<List<Song>> = songDao.observeUnassigned()
     fun unassignedCount(): Flow<Int> = songDao.countUnassigned()
     fun pendingUploadCount(): Flow<Int> = songDao.countDirty()

@@ -36,6 +36,7 @@ import com.guitarchords.app.R
 import com.guitarchords.app.ui.components.BulkDeleteDialog
 import com.guitarchords.app.ui.components.BulkMoveDialog
 import com.guitarchords.app.ui.components.EmptyState
+import com.guitarchords.app.ui.components.GenreFilterRow
 import com.guitarchords.app.ui.components.SelectionTopBar
 import com.guitarchords.app.ui.components.SongListItem
 import com.guitarchords.app.ui.components.SongSortMenu
@@ -54,6 +55,8 @@ fun SongSearchScreen(
 ) {
     val query by vm.query.collectAsStateWithLifecycle()
     val hits by vm.results.collectAsStateWithLifecycle()
+    val genre by vm.genre.collectAsStateWithLifecycle()
+    val genres by vm.genres.collectAsStateWithLifecycle()
     val sort by vm.sort.collectAsStateWithLifecycle()
     val playlists by vm.playlists.collectAsStateWithLifecycle()
     val selection = rememberSongSelection()
@@ -112,9 +115,16 @@ fun SongSearchScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
+            GenreFilterRow(
+                genres = genres,
+                selected = genre,
+                onSelect = vm::setGenre,
+                modifier = Modifier.padding(top = 8.dp),
+                horizontalPadding = 0.dp
+            )
             Spacer(Modifier.height(12.dp))
             when {
-                query.isBlank() -> EmptyState(
+                query.isBlank() && genre == null -> EmptyState(
                     icon = AccordioIcons.buscar(),
                     title = stringResource(R.string.search_hint_title),
                     subtitle = stringResource(R.string.search_hint_subtitle)

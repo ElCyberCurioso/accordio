@@ -98,19 +98,13 @@ interface SongDao {
     @Query("SELECT * FROM songs WHERE favorite = 1 AND deleted_at = 0 ORDER BY title COLLATE NOCASE ASC")
     fun observeFavorites(): Flow<List<Song>>
 
-    @Query(
-        """
-        SELECT * FROM songs
-        WHERE deleted_at = 0 AND (
-              title LIKE '%' || :q || '%' COLLATE NOCASE
-           OR artist LIKE '%' || :q || '%' COLLATE NOCASE
-           OR genre LIKE '%' || :q || '%' COLLATE NOCASE
-           OR content LIKE '%' || :q || '%' COLLATE NOCASE
-        )
-        ORDER BY title COLLATE NOCASE ASC
-        """
-    )
-    fun search(q: String): Flow<List<Song>>
+    /**
+     * Todas las partituras vivas, de todas las listas y de «Sin lista». El
+     * buscador global filtra sobre esto con filterByQuery, la misma búsqueda que
+     * dentro de una lista: en SQL, LIKE con NOCASE no dobla las tildes.
+     */
+    @Query("SELECT * FROM songs WHERE deleted_at = 0 ORDER BY title COLLATE NOCASE ASC")
+    fun observeAlive(): Flow<List<Song>>
 
     @Query("UPDATE songs SET playlist_id = :newPlaylistId, position = :position WHERE id = :id")
     suspend fun moveSong(id: Long, newPlaylistId: Long?, position: Int)

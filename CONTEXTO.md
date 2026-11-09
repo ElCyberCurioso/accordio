@@ -533,6 +533,24 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
   de una partitura sin duplicados, enlaces con `href`, buscador pegado, vídeo y
   tamaño de letra. El arnés vive fuera del repo.
 
+### 3.19 Sesión 08–09/11/2026 · Cifra Club, categorías y búsqueda en la app
+- **Acordes sin detectar en texto de Cifra Club** (`6ccee60`): esa web pone un
+  U+200B al principio de cada línea, pegado al primer acorde. `acDetectChords`
+  quita ahora los invisibles (U+200B–U+200D, U+2060, U+FEFF) y salta una
+  etiqueta `[Sección]` al principio de la línea. Se revisaron las 471
+  partituras: solo «Me Niego» (Reik) estaba afectada y ya está corregida.
+- App 2.6 (`versionCode 8`):
+  - **Filtro por categoría** (`GenreFilterRow`) dentro de una lista, en «Sin
+    lista» y en el buscador global. La categoría es el campo `genre`, que ya
+    viajaba con la sincronización: no hizo falta tocar ni el servidor ni Room.
+    En la app el campo se llama ahora «Categoría», como en la web.
+  - **Una sola búsqueda** (`filterByQuery`): título, artista y categoría, sin
+    tildes ni mayúsculas. El buscador global usaba SQL (`LIKE … NOCASE`, que no
+    dobla tildes) y miraba también la letra, así que daba otros resultados que
+    el de dentro de una lista. Ahora filtra sobre `observeAlive()` con la misma
+    función. **Ya no busca en la letra**, por decisión expresa.
+  - Publicada SIN probar en un dispositivo.
+
 ---
 
 ## 4. Decisiones de diseño que conviene respetar
@@ -767,7 +785,7 @@ Estado actual de producción:
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
 | Worker | Versión `59eae5f3`, desplegada el 19/10/2026 con `./tools/deploy.sh release` |
-| App | `versionCode 7` / `2.5` publicada en `/update` y como release `v2.5` en GitHub, firmada con la clave de siempre (SHA-256 `e6a53587…`) |
+| App | `versionCode 8` / `2.6` publicada en `/update` (la release de GitHub se quedó en `v2.4`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
 | Estilo web | paquete de marca Accordio (claro + oscuro); fuentes en `worker/brand/` |

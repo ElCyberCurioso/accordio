@@ -129,7 +129,8 @@
     <!-- Editor -->
     <string name="song_title">Título</string>
     <string name="song_artist">Artista</string>
-    <string name="song_genre">Género</string>
+    <string name="song_genre">Categoría</string>
+    <string name="genre_all">Todas</string>
     <string name="playlist_label">Lista: %1$s</string>
     <string name="insert_chord">Insertar acorde</string>
     <string name="insert_tab">Insertar tablatura</string>
@@ -229,9 +230,9 @@
     <string name="ukulele_no_dictionary">Digitaciones calculadas: el diccionario de ukelele todavía no viene con la app.</string>
 
     <!-- Búsqueda -->
-    <string name="search_placeholder">Título, artista, género o letra…</string>
+    <string name="search_placeholder">Título, artista o categoría…</string>
     <string name="search_hint_title">Busca en tu cancionero</string>
-    <string name="search_hint_subtitle">Escribe un título, artista, género o parte de la letra</string>
+    <string name="search_hint_subtitle">Escribe un título, un artista o una categoría, o elige una categoría. Busca en todas tus listas</string>
     <string name="try_another_search">Prueba con otra búsqueda</string>
 
     <!-- Favoritas -->

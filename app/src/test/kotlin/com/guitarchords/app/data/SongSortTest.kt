@@ -66,6 +66,30 @@ class SongSortTest {
     }
 
     @Test
+    fun `la busqueda no distingue tildes en ningun sentido`() {
+        val conTildes = listOf(
+            song(1, title = "Llueve sobre mojado", artist = "Álvaro de Luna"),
+            song(2, title = "Canción", artist = "ANDRÉS"),
+            song(3, title = "Otra", genre = "Música latina")
+        )
+        assertEquals(listOf(1L), conTildes.filterByQuery("alvaro").map { it.id })
+        assertEquals(listOf(1L), conTildes.filterByQuery("ÁLVARO").map { it.id })
+        assertEquals(listOf(2L), conTildes.filterByQuery("cancion").map { it.id })
+        assertEquals(listOf(2L), conTildes.filterByQuery("andrés").map { it.id })
+        assertEquals(listOf(3L), conTildes.filterByQuery("musica").map { it.id })
+    }
+
+    @Test
+    fun `filtra por categoria sin distinguir tildes ni mayusculas`() {
+        val varias = listOf(
+            song(1, genre = "Rumba"), song(2, genre = "rumba "), song(3, genre = "Pop"), song(4)
+        )
+        assertEquals(listOf(1L, 2L), varias.filterByGenre("Rumba").map { it.id })
+        assertEquals(4, varias.filterByGenre(null).size)
+        assertEquals(listOf("Pop", "Rumba"), varias.genres())
+    }
+
+    @Test
     fun `sin coincidencias devuelve vacio`() {
         assertEquals(emptyList<Long>(), list.filterByQuery("zzz").map { it.id })
     }
