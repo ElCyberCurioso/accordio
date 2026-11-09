@@ -771,6 +771,26 @@ Para publicar la app: `./tools/deploy.sh app <apk> --url https://accordio.site`.
 Lee `versionCode`/`versionName` de `build.gradle.kts`, rechaza un APK firmado con
 la clave de depuración y exige que el código suba respecto a lo publicado.
 
+**Las notas de versión se pasan en la variable `NOTAS`**, y si no se pasan
+`latest.json` sale con `"notes": ""` y la pantalla de actualización de la app no
+dice qué trae la versión (así salieron de la 2.0 a la 2.6):
+
+```bash
+NOTAS=$'• Primera novedad.\n• Segunda novedad.' \
+  ./tools/deploy.sh app app/build/outputs/apk/release/app-release.apk --url https://accordio.site
+```
+
+- Texto plano: la app lo pinta tal cual con `Text`, sin Markdown. Los saltos de
+  línea sí se respetan, de ahí `$'…\n…'`.
+- Si alguien puede venir de más de una versión atrás, conviene incluir también
+  lo de las intermedias: recibe todas de golpe y solo ve estas notas.
+- En Windows, `tools/deploy.ps1` lo toma del parámetro `-Notes`.
+- **Para corregir solo las notas** de lo ya publicado, sin resubir el APK, basta
+  con reescribir `latest.json` en R2 con los mismos campos
+  (`versionCode`, `versionName`, `notes`, `apkUrl: "/update/apk"`):
+  `cd worker && npx wrangler r2 object put guitarchords/app/latest.json --file latest.json --content-type application/json`.
+  Así se pusieron las de la 2.6.
+
 Desde Windows, lo equivalente es `tools/deploy.ps1` (además prepara la cadena de
 compilación de Android y firma el APK).
 
