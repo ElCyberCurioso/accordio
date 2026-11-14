@@ -66,7 +66,10 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
     --ui-bg:var(--ac-bg); --ui-surface:var(--ac-surface); --ui-surface-alt:var(--ac-surface-2);
     --ui-border:var(--ac-line); --ui-border-strong:var(--ac-primary-200);
     --ui-text:var(--ac-body); --ui-head:var(--ac-ink);
-    --ui-text-muted:var(--ac-muted); --ui-text-subtle:var(--ac-muted);
+    /* El gris del kit (#7B8E92) da 3,2:1 sobre la tarjeta clara y 3,0:1 sobre
+       el crema: artista, notas y rótulos costaban de leer. Sube el ROL, no el
+       token de marca, igual que en oscuro. Lo vigila test/contraste.test.mjs. */
+    --ui-text-muted:#5A6F73; --ui-text-subtle:#63777B;
     --ui-accent:var(--ac-action); --ui-accent-strong:var(--ac-action-hover);
     --ui-on-accent:var(--ac-on-action); --ui-accent-soft:var(--ac-primary-100);
     /* Estado seleccionado/activo: turquesa (regla 1, un acento por bloque). */
@@ -133,7 +136,7 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
       /* El gris del kit (#8CA6AA) se queda en 3,6:1 sobre la tarjeta oscura: el
          artista y las notas al pie costaban de leer. Se sube el ROL de texto
          secundario; el token de marca --ac-muted no se toca. */
-      --ui-text-muted:#A9C3C6; --ui-text-subtle:#93AFB2;
+      --ui-text-muted:#A9C3C6; --ui-text-subtle:#9AB5B8;
     }
   }
   [data-theme=dark] {
@@ -160,7 +163,7 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
     --ui-on-active:var(--ac-primary-800);
     --ui-state-soft:rgba(255,230,109,.16); --ui-state-text:var(--ac-yellow);
     --ui-danger-soft:rgba(255,138,138,.16); --ui-danger-text:var(--ac-highlight);
-    --ui-text-muted:#A9C3C6; --ui-text-subtle:#93AFB2;
+    --ui-text-muted:#A9C3C6; --ui-text-subtle:#9AB5B8;
   }
   * { box-sizing:border-box; }
   a { color:var(--ac-turquoise-700); text-decoration:none; }
@@ -323,11 +326,21 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   .tabs { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
   /* Relleno lateral algo más corto que el botón normal: con las siete secciones
      de un administrador, «Nueva» no cabía en la fila y bajaba sola a otra. */
-  .tabs button { border-color:var(--ui-border-strong); color:var(--ui-accent);
-                 padding-left:14px; padding-right:14px; }
-  .tabs button[aria-selected=true] { background:var(--ui-active); color:var(--ui-on-active);
-                                     border-color:transparent; box-shadow:var(--ui-shadow-pop); }
-  .tabs button[aria-selected=true]:hover { background:var(--ac-turquoise-600); }
+  .tabs button { padding-left:14px; padding-right:14px; }
+  /* Las secciones son enlaces con cara de píldora: repiten aquí lo que los
+     botones traen de la regla general de button. */
+  .tabs a { display:inline-flex; align-items:center; cursor:pointer; text-decoration:none;
+            border:1.5px solid var(--ui-border-strong); background:var(--ui-surface-alt);
+            color:var(--ui-accent); border-radius:var(--ui-radius-pill); padding:9px 14px;
+            font-weight:600; font-size:14px; line-height:normal; white-space:nowrap;
+            box-shadow:var(--ui-shadow-card);
+            transition:background var(--ac-dur) var(--ac-ease), color var(--ac-dur) var(--ac-ease),
+                       border-color var(--ac-dur) var(--ac-ease); }
+  .tabs a:hover { background:var(--ui-accent-soft); border-color:var(--ui-accent);
+                  color:var(--ui-accent); }
+  .tabs a[aria-current=page] { background:var(--ui-active); color:var(--ui-on-active);
+                               border-color:transparent; box-shadow:var(--ui-shadow-pop); }
+  .tabs a[aria-current=page]:hover { background:var(--ac-turquoise-600); }
   /* stretch y no start: con start cada tarjeta medía lo suyo y las filas
      quedaban dentadas (la que no tiene categoría, más corta que sus vecinas). */
   .grid { display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); align-items:stretch; }
@@ -425,8 +438,11 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   .listas .etiqueta { font-size:11px; text-transform:uppercase; letter-spacing:.08em;
                       color:var(--ui-text-muted); }
   .chips { display:flex; gap:6px; flex-wrap:wrap; }
-  .chip { border:1px solid var(--ui-border); border-radius:999px; padding:4px 12px;
-          font-size:13px; background:transparent; color:inherit; cursor:pointer; }
+  /* Con superficie: transparentes, sobre el mosaico, las pastillas eran texto
+     con una raya alrededor. */
+  .chip { border:1px solid var(--ui-border-strong); border-radius:999px; padding:4px 12px;
+          font-size:13px; background:var(--ui-surface-alt); color:inherit; cursor:pointer;
+          box-shadow:none; }
   .chip[aria-pressed=true] { background:var(--ui-active); color:var(--ui-on-active);
                              border-color:var(--ui-active); font-weight:600; }
   /* Anclada a la esquina y con relleno: flotando medía 16 px de lado, imposible
@@ -478,6 +494,23 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   .portada .chip[aria-pressed=true] { background:var(--ui-active); color:var(--ui-on-active);
                                       border-color:var(--ui-active); }
   .portada .chip[aria-pressed=true] small { color:inherit; }
+  /* La barra del diccionario, con la misma caja que la del listado (sin
+     pegarse: allí no hay carga infinita que obligue a volver arriba). */
+  #chordsView .filtros { background:var(--ui-surface); border:1.5px solid var(--ui-border);
+                         border-radius:var(--ui-radius-md); padding:10px 12px 12px;
+                         box-shadow:var(--ui-shadow-card); margin:0 0 14px; }
+  #chordsView .filtros > .filtro:first-child { flex:1 1 220px; }
+  #chordRoots .chip { font-family:var(--ui-font-mono); min-width:38px; padding:5px 10px; }
+
+  /* Administración: la pila de «Sin vídeo» heredaba el margen de 40 px del
+     formulario de acceso, y cada herramienta reservaba una línea para un
+     mensaje que casi nunca hay. */
+  .adminTool .stack { margin:10px 0 0; max-width:none; }
+  .adminTool .stack:empty { display:none; }
+  .adminTool .msg { min-height:0; }
+  .adminTool .msg:empty { display:none; }
+  .adminTool .msg:not(:empty) { margin-top:10px; }
+
   /* Sin sesión solo existe «Catálogo»: una pestaña sola no elige nada. La
      portada ya dice dónde se está. */
   #tabs:has(#tabMine.hidden) { display:none; }
@@ -496,7 +529,19 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   .badge.lista { background:var(--ui-state-soft); color:var(--ui-state-text);
                  border-color:var(--ui-state); }
   .msg { color:var(--ui-danger); min-height:1.2em; }
-  .empty { color:var(--ui-text-muted); text-align:center; padding:40px 12px; }
+  /* Con superficie, como todo texto: suelto sobre el mosaico no se leía. */
+  .empty { color:var(--ui-text-muted); text-align:center; padding:32px 16px;
+           background:var(--ui-surface); border:1.5px dashed var(--ui-border-strong);
+           border-radius:var(--ui-radius-lg); }
+  .empty button { display:flex; margin:14px auto 0; }
+  /* Silueta del listado mientras carga. */
+  .card.esqueleto { pointer-events:none; min-height:92px; }
+  .card.esqueleto i { display:block; height:11px; width:42%; border-radius:6px;
+                      background:var(--ui-border); margin-bottom:10px;
+                      animation:latido 900ms ease-in-out infinite alternate; }
+  .card.esqueleto i + i { height:15px; width:74%; }
+  @keyframes latido { from { opacity:.4; } to { opacity:1; } }
+  @media (prefers-reduced-motion: reduce) { .card.esqueleto i { animation:none; } }
   .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   .stack { display:flex; flex-direction:column; gap:12px; max-width:420px; margin:40px auto; }
   /* El acceso va en tarjeta: suelto sobre el mosaico, las notas del fondo se
@@ -934,7 +979,7 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
     #tabs { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
             margin:0 -16px 6px; padding:4px 16px 12px; }
     #tabs::-webkit-scrollbar { display:none; }
-    #tabs > button { flex:0 0 auto; }
+    #tabs > a, #tabs > button { flex:0 0 auto; }
     #tabs .grow { display:none; }
     /* «Nueva» baja a la esquina del pulgar, como «Mandos» en el visor. */
     #tabs #newBtn { position:fixed; z-index:8; right:16px;
@@ -984,6 +1029,8 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
     .grid .card { display:grid; grid-template-columns:minmax(0,1fr) auto;
                   align-items:center; column-gap:10px; padding:10px 14px;
                   border-radius:var(--ui-radius-md); }
+    .grid .card.esqueleto { display:block; min-height:0; }
+    .grid .card.esqueleto i:last-child { margin-bottom:2px; }
     .grid .card .a { grid-column:1; grid-row:1; font-size:12px; }
     .grid .card .t { grid-column:1; grid-row:2; font-size:15px; }
     .grid .card .etiquetas { grid-column:2; grid-row:1 / span 2; margin:0; padding:0;
@@ -1929,22 +1976,29 @@ function loadGenres() {
  * listado nuevo. Solo cuenta la respuesta de la última que se hizo.
  */
 var peticionLista = 0;
+var pestanaPintada = "";   // de qué pestaña es lo que hay ahora en el listado
+
+/** aria-current y no aria-selected: son enlaces de navegación, no pestañas ARIA. */
+function marcarSeccion(enlace, actual) {
+  if (actual) enlace.setAttribute("aria-current", "page");
+  else enlace.removeAttribute("aria-current");
+}
 
 function refresh(desde) {
   var listOffset = desde || 0;
-  tabPublic.setAttribute("aria-selected", tab === "public");
-  tabMine.setAttribute("aria-selected", tab === "mine");
-  tabChords.setAttribute("aria-selected", tab === "chords");
-  tabProposals.setAttribute("aria-selected", tab === "proposals");
-  tabUsers.setAttribute("aria-selected", tab === "users");
-  tabTrash.setAttribute("aria-selected", tab === "trash");
-  tabAdmin.setAttribute("aria-selected", tab === "admin");
+  marcarSeccion(tabPublic, tab === "public");
+  marcarSeccion(tabMine, tab === "mine");
+  marcarSeccion(tabChords, tab === "chords");
+  marcarSeccion(tabProposals, tab === "proposals");
+  marcarSeccion(tabUsers, tab === "users");
+  marcarSeccion(tabTrash, tab === "trash");
+  marcarSeccion(tabAdmin, tab === "admin");
   // En el móvil las secciones son una tira que se arrastra: la elegida tiene
   // que quedar a la vista. Solo se mueve la tira, nunca la página.
   contarFiltros();
   pintarPortada();
   var tira = document.getElementById("tabs");
-  var elegida = tira && tira.querySelector("[aria-selected=true]");
+  var elegida = tira && tira.querySelector("[aria-current=page]");
   if (elegida && tira.scrollWidth > tira.clientWidth) {
     tira.scrollLeft = elegida.offsetLeft - (tira.clientWidth - elegida.offsetWidth) / 2;
   }
@@ -1982,8 +2036,14 @@ function refresh(desde) {
     ? "/api/songs?" + pag + mios
     : "/api/songs/public?" + pag;
   var esta = ++peticionLista;
+  // Al cambiar de pestaña, mientras llega la respuesta se enseña la silueta
+  // del listado: antes seguían en pantalla las tarjetas de la pestaña
+  // anterior, o nada. Al filtrar o buscar NO: parpadearía a cada tecla.
+  if (!listOffset && pestanaPintada !== tab) pintarEsqueleto();
+  var deEstaPestana = tab;
   return api("GET", path).then(function (d) {
     if (esta !== peticionLista) return;
+    pestanaPintada = deEstaPestana;
     // Al pedir "más" se añade; al cambiar de pestaña o filtro se empieza de cero.
     songs = listOffset ? songs.concat(d.songs || []) : (d.songs || []);
     listHasMore = !!d.hasMore;
@@ -1997,6 +2057,7 @@ function refresh(desde) {
     renderList();
   }).catch(function (e) {
     if (esta !== peticionLista) return;
+    pestanaPintada = "";
     songs = [];
     renderList(e.message);
   });
@@ -2043,7 +2104,22 @@ function enlaceACancion(id) {
   return enlace;
 }
 
+/** Ocho tarjetas en blanco con el pulso de «cargando». */
+function pintarEsqueleto() {
+  list.innerHTML = "";
+  list.setAttribute("aria-busy", "true");
+  for (var i = 0; i < 8; i++) {
+    var hueco = document.createElement("div");
+    hueco.className = "card esqueleto";
+    hueco.innerHTML = "<i></i><i></i>";
+    list.appendChild(hueco);
+  }
+  listEmpty.classList.add("hidden");
+  moreBtn.classList.add("hidden");
+}
+
 function renderList(error) {
+  list.removeAttribute("aria-busy");
   var q = acNormalizarBusqueda(search.value);
   var propio = tab === "mine";
   var shown = visibles();
@@ -2157,6 +2233,16 @@ function renderList(error) {
               : "Aún no hay partituras publicadas.");
   listEmpty.textContent = msg;
   listEmpty.classList.toggle("hidden", !msg);
+  // Sin partituras propias, el vacío trae la salida puesta: el botón «Nueva»
+  // de arriba queda lejos de donde se está leyendo el mensaje.
+  if (!error && propio && !songs.length && !shown.length && !q && !filtrando) {
+    listEmpty.textContent = "Todavía no tienes partituras.";
+    var crear = document.createElement("button");
+    crear.className = "tool destacada";
+    crear.innerHTML = '<svg class="ic"><use href="#ac-plus"></use></svg><span>Crear la primera</span>';
+    crear.onclick = function () { navegar("#/nueva"); };
+    listEmpty.appendChild(crear);
+  }
 }
 
 /* ---------- rutas ---------- */
@@ -4034,16 +4120,77 @@ function showChords() {
   loadChords().then(renderChordList);
 }
 
+/*
+ * Filtros del diccionario. Un nombre se parte en nota, tipo y bajo: «A#m7/C#»
+ * es A# · m7 · /C#. El tipo "*" es «cualquiera»; la cadena vacía es el acorde
+ * mayor, que no lleva sufijo y por eso no puede ser también el «todos».
+ */
+var acordeNota = "";
+var acordeTipo = "*";
+var acordeConBajo = false;
+var tiposPintadosDe = "";
+var NOTAS_EN_ORDEN = ["C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B"];
+
+function partesDeAcorde(nombre) {
+  // Barra doble: todo esto vive en un template literal, que se come una.
+  var m = /^([A-G][#b]?)([^\\/]*)(\\/.+)?$/.exec(nombre);
+  return m ? { nota: m[1], tipo: m[2], bajo: m[3] || "" } : { nota: "", tipo: nombre, bajo: "" };
+}
+
+/** Notas y tipos que EXISTEN en este diccionario; se repintan solo si cambia. */
+function pintarFiltrosDeAcordes(nombres) {
+  var firma = instrumento + ":" + nombres.length;
+  if (firma !== tiposPintadosDe) {
+    tiposPintadosDe = firma;
+    var tipos = {};
+    nombres.forEach(function (n) { tipos[partesDeAcorde(n).tipo] = 1; });
+    var lista = Object.keys(tipos).sort(function (a, b) { return a.length - b.length || a.localeCompare(b); });
+    var opciones = '<option value="*">Todos</option>';
+    lista.forEach(function (t) {
+      opciones += '<option value="' + acEsc(t) + '">' + (t ? acEsc(t) : "Mayor") + "</option>";
+    });
+    chordType.innerHTML = opciones;
+    if (!tipos[acordeTipo]) acordeTipo = "*";
+    chordType.value = acordeTipo;
+  }
+  var hay = {};
+  nombres.forEach(function (n) { hay[partesDeAcorde(n).nota] = 1; });
+  if (acordeNota && !hay[acordeNota]) acordeNota = "";
+  chordRoots.innerHTML = "";
+  [""].concat(NOTAS_EN_ORDEN.filter(function (n) { return hay[n]; })).forEach(function (nota) {
+    var b = document.createElement("button");
+    b.className = "chip";
+    b.setAttribute("aria-pressed", acordeNota === nota ? "true" : "false");
+    b.textContent = nota || "Todas";
+    b.onclick = function () { acordeNota = nota; renderChordList(); };
+    chordRoots.appendChild(b);
+  });
+  chordSlash.setAttribute("aria-pressed", acordeConBajo ? "true" : "false");
+}
+
 function renderChordList() {
   var q = chordSearch.value.trim().toLowerCase();
   var nombres = Object.keys(chordDict || {}).sort();
-  var vistos = nombres.filter(function (n) { return !q || n.toLowerCase().indexOf(q) >= 0; });
-  chordCount.textContent = nombres.length + " acordes en el diccionario de " +
-                           nombreInstrumento(instrumento).toLowerCase();
+  pintarFiltrosDeAcordes(nombres);
+  // Quien escribe una barra está buscando una inversión: no hay que hacerle
+  // pulsar además el interruptor.
+  var conBajo = acordeConBajo || q.indexOf("/") >= 0;
+  var vistos = nombres.filter(function (n) {
+    if (q && n.toLowerCase().indexOf(q) < 0) return false;
+    var p = partesDeAcorde(n);
+    if (acordeNota && p.nota !== acordeNota) return false;
+    if (acordeTipo !== "*" && p.tipo !== acordeTipo) return false;
+    if (p.bajo && !conBajo) return false;
+    return true;
+  });
+  var filtrando = q || acordeNota || acordeTipo !== "*";
+  chordCount.textContent = (filtrando || vistos.length !== nombres.length
+      ? vistos.length + " de " + nombres.length : nombres.length) +
+    " acordes en el diccionario de " + nombreInstrumento(instrumento).toLowerCase();
   chordList.innerHTML = "";
-  // Con el diccionario base entero son cientos de tarjetas: sin buscar se
-  // enseña un aperitivo y se pide filtrar, que si no el navegador sufre.
-  var tope = q ? 400 : 60;
+  // Con el diccionario base entero son miles de tarjetas: sin filtrar se
+  // enseña un aperitivo y se pide acotar, que si no el navegador sufre.
+  var tope = filtrando ? 400 : 60;
   vistos.slice(0, tope).forEach(function (nombre) {
     var posiciones = chordPositionsOf(nombre);
     var card = document.createElement("button");
@@ -4062,8 +4209,9 @@ function renderChordList() {
         : "Todavía no hay acordes de " + nombreInstrumento(instrumento).toLowerCase() +
           ". Añádelos con «+ Nuevo acorde» o sube el diccionario entero por la API " +
           "(PUT /api/chords/global?instrument=" + instrumento + ").")
-    : !vistos.length ? "Ningún acorde coincide con la búsqueda."
-    : resto > 0 ? "Y " + resto + " más. Busca por nombre para acotar."
+    : !vistos.length ? "Ningún acorde pasa los filtros." +
+        (!conBajo ? " Prueba con «Con inversiones»." : "")
+    : resto > 0 ? "Y " + resto + " más. Elige una nota o un tipo para acotar."
     : "";
   chordEmpty.textContent = msg;
   chordEmpty.classList.toggle("hidden", !msg);
@@ -4659,8 +4807,7 @@ authSwitch.onclick = function () {
   ajustarAutocomplete();
   authMsg.textContent = "";
 };
-authSubmit.onclick = submitAuth;
-password.addEventListener("keydown", function (e) { if (e.key === "Enter") submitAuth(); });
+authForm.onsubmit = function (e) { e.preventDefault(); submitAuth(); };
 
 /** Cambiar de pestaña o de filtro empieza el listado desde el principio. */
 /** Cambiar de pestaña es cambiar de ruta: lo demás lo hace el enrutador. */
@@ -4668,10 +4815,23 @@ function irA(pestana) {
   navegar(hashDePestana(pestana));
 }
 
-tabPublic.onclick = function () { irA("public"); };
-tabMine.onclick = function () { irA("mine"); };
-tabTrash.onclick = function () { irA("trash"); };
-tabAdmin.onclick = function () { irA("admin"); };
+/**
+ * Clic normal en una sección: navega la aplicación (y marca la entrada del
+ * historial como propia). Con Ctrl, Mayús o el botón central se deja al
+ * navegador, que para eso son enlaces.
+ */
+function alPulsarSeccion(pestana) {
+  return function (ev) {
+    if (ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
+    ev.preventDefault();
+    irA(pestana);
+  };
+}
+
+tabPublic.onclick = alPulsarSeccion("public");
+tabMine.onclick = alPulsarSeccion("mine");
+tabTrash.onclick = alPulsarSeccion("trash");
+tabAdmin.onclick = alPulsarSeccion("admin");
 altasBtn.onclick = alternarAltas;
 /*
  * «Cargar más» tiene que añadir UNA PÁGINA de lo que se ve, y ahí había dos
@@ -4759,7 +4919,7 @@ search.oninput = function () {
     refresh();
   }, 250);
 };
-tabChords.onclick = function () { irA("chords"); };
+tabChords.onclick = alPulsarSeccion("chords");
 
 themeBtn.onclick = toggleTheme;
 
@@ -5001,8 +5161,8 @@ document.addEventListener("keydown", function (e) {
   }
 });
 chordModal.onclick = function (e) { if (e.target === chordModal) cerrarDialogo(chordModal); };
-tabProposals.onclick = function () { irA("proposals"); };
-tabUsers.onclick = function () { irA("users"); };
+tabProposals.onclick = alPulsarSeccion("proposals");
+tabUsers.onclick = alPulsarSeccion("users");
 propStatus.onchange = loadProposals;
 propMine.onchange = loadProposals;
 pmClose.onclick = function () { cerrarDialogo(propModal); };
@@ -5011,6 +5171,8 @@ proposeBtn.onclick = proposePublish;
 genreFilter.onchange = function () { genreBy = genreFilter.value; refresh(); };
 sortSel.onchange = function () { sortBy = sortSel.value; refresh(); };
 chordSearch.oninput = renderChordList;
+chordType.onchange = function () { acordeTipo = chordType.value; renderChordList(); };
+chordSlash.onclick = function () { acordeConBajo = !acordeConBajo; renderChordList(); };
 chordNew.onclick = function () { openChordEditor(""); };
 chordSeed.onclick = seedChords;
 chordImport.onclick = function () { chordFile.click(); };
@@ -5065,6 +5227,28 @@ deleteBtn.onclick = deleteSong;
 vClose.onclick = salirDelVisor;
 vEdit.onclick = editCurrent;
 vPlay.onclick = function () { scrolling ? stopScroll() : startScroll(); };
+
+/*
+ * Atajos del visor: con la guitarra en las manos no se acierta a un botón.
+ * Espacio arranca y para el desplazamiento; las flechas suben y bajan el tono.
+ *
+ * Solo con el visor delante y sin nada encima (diálogos, menú, panel), y nunca
+ * cuando el foco está en algo que ya usa esas teclas: escribir un comentario
+ * tiene que poder llevar espacios, y las flechas mueven las barras deslizantes.
+ * Se pulsa el botón en vez de llamar a su función: así un mando desactivado
+ * (el tono en «Solo letra») sigue sin hacer nada.
+ */
+document.addEventListener("keydown", function (e) {
+  if (!viewer.classList.contains("on") || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (viewer.classList.contains("conMandos") || !vMenu.hidden) return;
+  if (document.querySelector(".modal:not(.hidden)")) return;
+  var en = e.target && e.target.tagName;
+  if (en === "INPUT" || en === "TEXTAREA" || en === "SELECT" || en === "BUTTON" || en === "A") return;
+  if (e.target && e.target.isContentEditable) return;
+  if (e.key === " ") { e.preventDefault(); vPlay.click(); }
+  else if (e.key === "ArrowRight") { e.preventDefault(); vUp.click(); }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); vDown.click(); }
+});
 vSpeed.oninput = function () { vSpeedVal.textContent = vSpeed.value + " px/s"; };
 vUp.onclick = function () { semis = Math.min(11, semis + 1); renderViewer(); };
 vDown.onclick = function () { semis = Math.max(-11, semis - 1); renderViewer(); };
@@ -5180,7 +5364,7 @@ export const WEB_HTML = `<!doctype html>
     </span>
   </a>
   <span class="grow"></span>
-  <span id="who" class="hidden" style="font-size:13px;color:var(--ui-text-muted)"></span>
+  <span id="who" class="hidden" style="font-size:13px"></span>
   <button id="themeBtn" class="iconBtn" title="Cambiar tema" aria-label="Cambiar tema">
     <svg class="iconoTema" viewBox="0 0 24 24" aria-hidden="true" fill="none"
          stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
@@ -5203,31 +5387,36 @@ export const WEB_HTML = `<!doctype html>
 <main>
   <!-- acceso -->
   <section id="authView" class="hidden">
-    <div class="stack">
+    <!-- Formulario de verdad: Enter envía desde cualquier campo y los gestores
+         de contraseñas saben qué guardar. novalidate, porque los mensajes de
+         error son los nuestros (submitAuth), no los globos del navegador. -->
+    <form id="authForm" class="stack" novalidate>
       <h2 id="authTitle" style="margin:0">Entrar en Accordio</h2>
       <label>Email<input type="email" id="email" autocomplete="email"></label>
       <label id="nameWrap" class="hidden">Nombre<input type="text" id="name" autocomplete="name"></label>
       <label>Contraseña <small>(mínimo 8 caracteres)</small>
         <input type="password" id="password" minlength="8" autocomplete="current-password"></label>
       <div class="msg" id="authMsg"></div>
-      <button class="primary" id="authSubmit">Entrar</button>
-      <button class="ghost" id="authSwitch">Crear una cuenta</button>
+      <button type="submit" class="primary" id="authSubmit">Entrar</button>
+      <button type="button" class="ghost" id="authSwitch">Crear una cuenta</button>
       <p id="authCerrado" class="hidden aviso" style="margin:0">
         Las altas de cuenta están cerradas ahora mismo. Si ya tienes una, puedes entrar.</p>
-    </div>
+    </form>
   </section>
 
   <!-- Navegación entre secciones. Vive fuera de #listView: dentro, al entrar
        en Acordes, Usuarios o Administración desaparecía y la única vuelta era
        el logotipo. La esconde el CSS en el acceso y en el editor. -->
+  <!-- Son enlaces y no botones: cada sección es una ruta, y así se abren en
+       otra pestaña o se copian como cualquier dirección. -->
   <nav id="tabs" class="tabs" aria-label="Secciones">
-      <button id="tabPublic" aria-selected="true">Catálogo</button>
-      <button id="tabMine" aria-selected="false" class="hidden">Mis partituras</button>
-      <button id="tabProposals" aria-selected="false" class="hidden">Propuestas</button>
-      <button id="tabChords" aria-selected="false" class="hidden" title="Diccionario global, visible para todo el mundo">Acordes</button>
-      <button id="tabUsers" aria-selected="false" class="hidden">Usuarios</button>
-      <button id="tabTrash" aria-selected="false" class="hidden" title="Partituras borradas">Papelera</button>
-      <button id="tabAdmin" aria-selected="false" class="hidden" title="Herramientas del catálogo">Administración</button>
+      <a id="tabPublic" href="#/" aria-current="page">Catálogo</a>
+      <a id="tabMine" href="#/mias" class="hidden">Mis partituras</a>
+      <a id="tabProposals" href="#/propuestas" class="hidden">Propuestas</a>
+      <a id="tabChords" href="#/acordes" class="hidden" title="Diccionario global, visible para todo el mundo">Acordes</a>
+      <a id="tabUsers" href="#/usuarios" class="hidden">Usuarios</a>
+      <a id="tabTrash" href="#/papelera" class="hidden" title="Partituras borradas">Papelera</a>
+      <a id="tabAdmin" href="#/admin" class="hidden" title="Herramientas del catálogo">Administración</a>
       <span class="grow"></span>
       <button id="newBtn" class="tool destacada hidden">
         <svg class="ic"><use href="#ac-plus"></use></svg><span>Nueva</span></button>
@@ -5468,14 +5657,26 @@ export const WEB_HTML = `<!doctype html>
 
   <!-- diccionario global de acordes (solo administración) -->
   <section id="chordsView" class="hidden">
-    <div class="row" style="margin-bottom:12px">
-      <input type="text" id="chordSearch" placeholder="Buscar acorde…" style="flex:1;min-width:160px">
+    <div class="filtros">
+      <label class="filtro" for="chordSearch">Buscar
+        <input type="text" id="chordSearch" placeholder="Nombre del acorde…"></label>
+      <label class="filtro" for="chordType">Tipo
+        <select id="chordType"><option value="*">Todos</option></select></label>
       <label class="filtro" for="chordInstr">Instrumento
         <select id="chordInstr"></select></label>
       <button id="chordNew">+ Nuevo acorde</button>
       <button id="chordSeed" title="Añade los acordes que falten sin tocar los que ya has definido">Importar diccionario base</button>
       <button id="chordImport" title="Sube un diccionario entero en JSON para el instrumento elegido">Importar JSON…</button>
       <input type="file" id="chordFile" accept=".json,application/json" class="hidden">
+    </div>
+    <!-- Por dónde se busca un acorde de verdad: su nota. Las inversiones (C/G)
+         son once de cada doce entradas del diccionario base y enterraban los
+         acordes de siempre; se piden aparte. -->
+    <div class="row" style="margin-bottom:12px">
+      <span id="chordRoots" class="chips" role="group" aria-label="Nota fundamental"></span>
+      <span class="grow"></span>
+      <button id="chordSlash" class="chip" aria-pressed="false"
+              title="Enseñar también los acordes con otro bajo, como C/G">Con inversiones</button>
     </div>
     <div class="row" style="margin-bottom:10px">
       <span id="chordCount" class="ui-kicker"></span>
@@ -5602,8 +5803,8 @@ export const WEB_HTML = `<!doctype html>
            acordes y teal el tono. Antes eran seis botones de texto idénticos y
            no se distinguía uno de otro de un vistazo. -->
       <div class="row herr scroll">
-        <button id="vPlay" class="tool" aria-pressed="false" title="Desplazamiento automático">
-          <svg class="ic"><use id="vPlayIcon" href="#ac-play-circle"></use></svg><span>Scroll</span>
+        <button id="vPlay" class="tool" aria-pressed="false" title="Desplazamiento automático (barra espaciadora)">
+          <svg class="ic"><use id="vPlayIcon" href="#ac-play-circle"></use></svg><span>Desplazar</span>
         </button>
         <!-- Hasta 100 px/s: por encima la hoja pasa más rápido de lo que se
              toca, y el rango de 300 dejaba lo útil (10-40) apelotonado en el
@@ -5613,9 +5814,9 @@ export const WEB_HTML = `<!doctype html>
       </div>
       <div class="row herr tono">
         <label>Tono</label>
-        <button id="vDown" class="tool" title="Bajar medio tono">–</button>
+        <button id="vDown" class="tool" title="Bajar medio tono (flecha izquierda)">–</button>
         <label id="vTone" style="min-width:2.5em;text-align:center">±0</label>
-        <button id="vUp" class="tool" title="Subir medio tono">+</button>
+        <button id="vUp" class="tool" title="Subir medio tono (flecha derecha)">+</button>
         <button id="vFlat" class="tool" title="Escribir con bemoles">♭</button>
       </div>
       <div class="row herr letra">
