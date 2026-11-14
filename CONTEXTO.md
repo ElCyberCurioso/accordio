@@ -7,9 +7,8 @@ pendiente.
 Última actualización: 2026-11-14 · Rama `master`.
 
 > Todo lo que describe este documento está **commiteado** y el servidor está
-> **desplegado** (versión `83985770`), y está **subido** a `origin/master`, este
-> commit incluido. **Única excepción: el arreglo que saca «Varios» de la
-> portada está subido pero SIN desplegar** (§7).
+> **desplegado** (versión `872614cd`), y está **subido** a `origin/master`, este
+> commit incluido.
 > Lo de este párrafo sobre la app es anterior: sigue en
 > `versionCode 2`, y no debe publicarse sin probarla antes en un móvil de
 > verdad (§7).
@@ -896,7 +895,7 @@ Estado actual de producción:
 | R2 | `guitarchords` |
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
-| Worker | Versión `83985770`, desplegada el 14/11/2026 con `./tools/deploy.sh release --yes` |
+| Worker | Versión `872614cd`, desplegada el 14/11/2026 con `./tools/deploy.sh release --yes` (sin `--yes` el script pregunta y, lanzado desde donde no hay teclado, se cancela solo) |
 | App | `versionCode 8` / `2.6` publicada en `/update` y como release `v2.6` en GitHub (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
@@ -947,10 +946,8 @@ Estado actual de producción:
 **Convendría, sin prisa**
 - [ ] **Ver la web nueva en un teléfono de verdad** y en un navegador que no
       sea Chromium: todo el repaso de §3.20 se comprobó emulando 390 px.
-- [ ] **Desplegar el arreglo de «Varios» en la portada.** El código ya la
-      saca de las pastillas (`pintarPortada()` la filtra; en el desplegable
-      sigue), pero producción sigue en `83985770`, que aún la enseña:
-      `./tools/deploy.sh release`. Lo que queda después es
+- [x] ~~**«Varios» encabeza la portada**~~: fuera de las pastillas
+      (`pintarPortada()` la filtra; en el desplegable sigue). Lo que queda es
       el fondo del asunto: 332 de ~470 partituras están en ese cajón de sastre,
       y repartirlas es trabajo de «Categorías automáticas» o a mano.
 - [ ] **Texto de la portada**: el lema y la frase los puso la sesión, no el
