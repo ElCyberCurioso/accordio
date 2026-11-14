@@ -7,9 +7,10 @@ pendiente.
 Última actualización: 2026-11-14 · Rama `master`.
 
 > Todo lo que describe este documento está **commiteado** y el servidor está
-> **desplegado** (versión `83985770`). **Los commits de la sesión del
-> 11–14/11 (§3.20) están en `master` local y SIN subir a `origin`**: falta un
-> `git push`. Lo de este párrafo sobre la app es anterior: sigue en
+> **desplegado** (versión `83985770`), y está **subido** a `origin/master`, este
+> commit incluido. **Única excepción: el arreglo que saca «Varios» de la
+> portada está subido pero SIN desplegar** (§7).
+> Lo de este párrafo sobre la app es anterior: sigue en
 > `versionCode 2`, y no debe publicarse sin probarla antes en un móvil de
 > verdad (§7).
 
@@ -944,13 +945,14 @@ Estado actual de producción:
       quitarla.
 
 **Convendría, sin prisa**
-- [ ] **`git push` de la sesión del 11–14/11** (`f4ea336`, `13929bf` y el de
-      este documento): están desplegados pero no subidos a `origin`.
 - [ ] **Ver la web nueva en un teléfono de verdad** y en un navegador que no
       sea Chromium: todo el repaso de §3.20 se comprobó emulando 390 px.
-- [ ] **«Varios» encabeza la portada** (332 de ~470 partituras): es el cajón
-      de sastre y sale la primera por ser la más poblada. O se saca de las
-      pastillas, o se reparte con «Categorías automáticas».
+- [ ] **Desplegar el arreglo de «Varios» en la portada.** El código ya la
+      saca de las pastillas (`pintarPortada()` la filtra; en el desplegable
+      sigue), pero producción sigue en `83985770`, que aún la enseña:
+      `./tools/deploy.sh release`. Lo que queda después es
+      el fondo del asunto: 332 de ~470 partituras están en ese cajón de sastre,
+      y repartirlas es trabajo de «Categorías automáticas» o a mano.
 - [ ] **Texto de la portada**: el lema y la frase los puso la sesión, no el
       dueño. Están en `#portada` (`web-html.js`).
 - [ ] **Tonalidad en la tarjeta**: hace falta guardarla en una columna al

@@ -1898,7 +1898,12 @@ function pintarPortada() {
   portada.classList.toggle("hidden", !visible);
   if (!visible) return;
   portadaChips.innerHTML = "";
-  genres.slice().sort(function (a, b) { return (b.total || 0) - (a.total || 0); })
+  // «Varios» no sale: es el cajón de sastre que ponen las categorías
+  // automáticas (FALLBACK_GENRE en genres.js) y, al ser la más poblada,
+  // encabezaba la portada con dos tercios del catálogo dentro. Como atajo no
+  // lleva a ningún sitio; en el desplegable sigue estando.
+  genres.filter(function (g) { return (g.genre || "").toLowerCase() !== "varios"; })
+    .sort(function (a, b) { return (b.total || 0) - (a.total || 0); })
     .slice(0, 12).forEach(function (g) {
       var b = document.createElement("button");
       b.className = "chip";
