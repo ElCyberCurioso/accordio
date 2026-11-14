@@ -4,11 +4,12 @@ Documento de traspaso: qué es el proyecto, cómo está montado hoy, **por qué*
 tomaron ciertas decisiones (para no deshacerlas sin querer) y qué queda
 pendiente.
 
-Última actualización: 2026-10-19 · Rama `master`.
+Última actualización: 2026-11-14 · Rama `master`.
 
-> Todo lo que describe este documento está **commiteado y subido** a
-> `origin/master` —este commit incluido—, y el servidor está **desplegado**
-> (versión `59eae5f3`). Lo único sin publicar es la app: sigue en
+> Todo lo que describe este documento está **commiteado** y el servidor está
+> **desplegado** (versión `83985770`). **Los commits de la sesión del
+> 11–14/11 (§3.20) están en `master` local y SIN subir a `origin`**: falta un
+> `git push`. Lo de este párrafo sobre la app es anterior: sigue en
 > `versionCode 2`, y no debe publicarse sin probarla antes en un móvil de
 > verdad (§7).
 
@@ -551,6 +552,52 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
     función. **Ya no busca en la letra**, por decisión expresa.
   - Publicada SIN probar en un dispositivo.
 
+### 3.20 Sesión 11–14/11/2026 · repaso de la interfaz de la web
+Dos commits (`f4ea336`, `13929bf`), desplegados el 14/11 (versión `83985770`).
+Todo se revisó con capturas en Chromium sin cabeza (claro/oscuro, 1440 px y
+390 px) contra un `wrangler dev` con datos de prueba; ver §5.
+
+- **Navegación**
+  - Las pestañas viven en `<nav id="tabs">`, **fuera de `#listView`**: dentro,
+    al entrar en Acordes, Usuarios, Propuestas o Administración desaparecían y
+    solo se volvía por el logotipo. El CSS las esconde en el acceso y el editor.
+  - Son **enlaces** (`<a href="#/mias">`, `aria-current="page"`), no botones con
+    `aria-selected`. El clic normal sigue pasando por `navegar()`; con Ctrl o el
+    botón central se deja al navegador.
+  - En móvil son una tira que se arrastra (la activa se centra) y «Nueva» pasa a
+    botón flotante, solo sobre los listados.
+  - `#/entrar` con sesión redirige a «Mis partituras».
+- **Listado**
+  - **Portada del visitante** (`#portada`, `pintarPortada()`): lema y las doce
+    categorías más pobladas como atajos. Comparten `genreBy` con el
+    desplegable. Sin sesión, la pestaña «Catálogo» sola no se pinta.
+  - **Filtros del móvil en un panel inferior** (`panelFiltros()`), el mismo
+    gesto que «Mandos» en el visor. En escritorio el envoltorio
+    `#filtrosExtra` es `display:contents` y no existe para la maquetación.
+  - Tarjetas igualadas en alto; **en móvil son filas** (de ~6 a ~11 por
+    pantalla).
+  - La tarjeta enseña **capo, valoración y n.º de versiones**. Los listados
+    propio y público devuelven `versionCount`, `ratingCount` y `ratingAverage`
+    (`estadisticasDe()` en `db.js`: subconsultas en el mismo `SELECT`). Medido
+    en producción: 0,7 ms y 1.425 filas leídas por página de 100.
+    **La tonalidad no sale**: no es columna, vive en el texto de R2.
+  - Silueta de carga al cambiar de pestaña (`pintarEsqueleto()`), nunca al
+    filtrar o buscar, que parpadearía a cada tecla.
+- **Visor**: «Scroll» → «Desplazar»; **atajos** (espacio = desplazamiento,
+  ←/→ = tono), que no actúan con el foco en un campo, botón o enlace.
+- **Diccionario de acordes**: filtro por nota y por tipo. **Las inversiones
+  (C/G) van ocultas** salvo «Con inversiones» o una barra en la búsqueda: son
+  13.317 de las 14.424 entradas y sin filtro el listado empezaba por
+  `A, A#, A#/A, A#/B…`.
+- **Acceso**: es un `<form novalidate>`; Enter envía desde cualquier campo.
+- **Contraste**: `test/contraste.test.mjs` calcula el de los roles `--ui-*` en
+  los dos temas a partir del CSS que se sirve. Al escribirlo salió que **el
+  texto secundario en claro seguía en el gris del kit (3,2:1)**, pese a lo que
+  decía el punto 8 de §4: ahora es `#5A6F73` (4,65:1 sobre el crema).
+- Menores: el enlace «App 2.6» no se leía sobre la cabecera clara (1,6:1);
+  acceso y vacíos van en tarjeta; «Eliminar» del editor pasa a contorno; la
+  estrella de favorita tiene 38 px de diana; el listado mide 1100 px.
+
 ---
 
 ## 4. Decisiones de diseño que conviene respetar
@@ -671,6 +718,26 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
     cambia una, se cambia la otra. Montserrat y JetBrains Mono son fuentes
     **variables**: en `Paint` hay que pedir el peso con
     `setFontVariationSettings("'wght' 700")` o Montserrat sale en Thin.
+27. **Todo texto de la web va sobre una superficie, nunca suelto sobre el
+    mosaico.** Las notas del fondo se cruzan con las letras: pasó con el
+    formulario de acceso, con los mensajes de vacío y con las pastillas
+    transparentes. Lo mismo para los tintes translúcidos (`--ui-*-soft` en
+    oscuro): se pintan SOBRE `--ui-surface` (ver `.aviso`), no a pelo.
+28. **El contraste lo vigila un test, no la memoria.**
+    `test/contraste.test.mjs` fija el mínimo de cada pareja texto/fondo de los
+    roles. Dos parejas tienen el suelo por debajo del AA **a sabiendas**, por
+    ser colores del kit: los acordes (`coral-700` sobre crema, 4,41:1) y el
+    blanco sobre coral de «Nueva» (2,78:1). Subirlas es decisión de marca; el
+    test solo impide que empeoren.
+29. **Lo que en móvil no cabe en la barra sube en un panel inferior** con velo:
+    «Mandos» en el visor, «Filtros» en el listado. No tiras que se arrastran de
+    lado con controles: nada avisaba de que seguían. (Las pestañas y las
+    categorías de la portada sí son tiras, porque sangran hasta el borde y se
+    ve que continúan.)
+30. **Las estadísticas de la tarjeta viajan solo en los listados.**
+    `publicSong` las omite si la consulta no las trae (`undefined` se cae del
+    JSON), así que la ficha suelta y la sincronización no cambian. La app las
+    ignora (`ignoreUnknownKeys`).
 
 ---
 
@@ -680,7 +747,7 @@ Todo commiteado, subido y —lo del servidor— desplegado. 38 ficheros,
 # Worker · no hace falta cuenta de Cloudflare
 cd worker
 npm run check     # sintaxis de los módulos y del JS que se sirve
-npm test          # 205 tests
+npm test          # 222 tests
 npm run dev       # servidor local en https (ver §8: adopta el host del dominio)
 ```
 
@@ -704,7 +771,10 @@ punta (`test/instrumentos.test.mjs`); en la app, posturas y audio de ukelele
 
 **Prueba de la web en un navegador sin cabeza** (lo que usó la última sesión
 para las rutas, los permisos, los filtros, las digitaciones y la mudanza de
-claves; el arnés vivía fuera del repo y hay que rehacerlo):
+claves; el arnés vivía fuera del repo y hay que rehacerlo). **En la sesión
+del 11–14/11 se hizo de otra forma, más fiel y más corta** —`wrangler dev`
+contra una base desechable y Chromium manejado por CDP—; va descrita después
+de esta lista:
 1. Un script de Node importa `WEB_HTML`, `WEB_CSS`, `CLIENT_JS` y `WEB_APP_JS` y
    escribe una sola página: CSS en `<style>`, JS en `<script>` **cambiando
    `</script` por `<\/script`** (hay cadenas que lo contienen y cerrarían la
@@ -716,6 +786,26 @@ claves; el arnés vivía fuera del repo y hay que rehacerlo):
 4. `chromium --headless --no-sandbox --virtual-time-budget=10000 --dump-dom
    pagina.html | grep -o 'id="TEST"[^>]*>[^<]*'`. Con `--screenshot` y
    `--window-size=1440,900` se ve la maquetación.
+
+**Servidor local con datos de prueba + capturas por CDP** (sesión 11–14/11):
+1. Base desechable: `wrangler d1 execute vivace --local --persist-to <dir>
+   --file schema.sql`. **`migrations.sql` hay que aplicarlo sentencia a
+   sentencia** sobre el `.sqlite` de `<dir>/v3/d1/…` (el que tiene la tabla
+   `songs`): de golpe se para en el primer `duplicate column` y deja sin crear
+   `youtube_url`, `rev`, `favorite`…, y entonces crear una partitura da 500.
+2. `wrangler dev --local-protocol https --port 8799 --persist-to <dir>
+   --var AUTH_SECRET:<lo-que-sea>`. Sin el secreto la API responde 503. El
+   primer usuario que se registra es admin.
+3. Sembrar por la API (`/auth/register`, `/api/chords/global/seed`,
+   `/api/songs`, versiones, valoraciones).
+4. `chromium --headless=new --remote-debugging-port=<p>` y un script de Node
+   (22 trae `WebSocket`) que habla CDP: `Emulation.setDeviceMetricsOverride`
+   para el móvil, `Emulation.setEmulatedMedia` para el tema,
+   `Page.captureScreenshot`, `Input.dispatchKeyEvent` para los atajos y
+   `Network.emulateNetworkConditions` para ver la silueta de carga. La sesión
+   se pone con `localStorage.setItem("accordio_token", …)`.
+5. Para parar el servidor, `pkill -f 'port 879[9]'`: con el patrón literal,
+   `pkill -f` mata también a la orden que lo lanza.
 
 Cobertura de tests (lógica pura): transposición, biblioteca de acordes, audio de
 acordes, extracción de acordes de una canción, orden y filtrado de listas, formato
@@ -805,7 +895,7 @@ Estado actual de producción:
 | R2 | `guitarchords` |
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
-| Worker | Versión `59eae5f3`, desplegada el 19/10/2026 con `./tools/deploy.sh release` |
+| Worker | Versión `83985770`, desplegada el 14/11/2026 con `./tools/deploy.sh release --yes` |
 | App | `versionCode 8` / `2.6` publicada en `/update` y como release `v2.6` en GitHub (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
@@ -854,6 +944,23 @@ Estado actual de producción:
       quitarla.
 
 **Convendría, sin prisa**
+- [ ] **`git push` de la sesión del 11–14/11** (`f4ea336`, `13929bf` y el de
+      este documento): están desplegados pero no subidos a `origin`.
+- [ ] **Ver la web nueva en un teléfono de verdad** y en un navegador que no
+      sea Chromium: todo el repaso de §3.20 se comprobó emulando 390 px.
+- [ ] **«Varios» encabeza la portada** (332 de ~470 partituras): es el cajón
+      de sastre y sale la primera por ser la más poblada. O se saca de las
+      pastillas, o se reparte con «Categorías automáticas».
+- [ ] **Texto de la portada**: el lema y la frase los puso la sesión, no el
+      dueño. Están en `#portada` (`web-html.js`).
+- [ ] **Tonalidad en la tarjeta**: hace falta guardarla en una columna al
+      grabar; hoy solo está dentro del texto.
+- [ ] **Dos columnas en el visor** para pantallas anchas: las columnas CSS
+      piden alto fijo y eso choca con el desplazamiento automático. Pide
+      diseño (¿paginar en vez de desplazar?).
+- [ ] **Fuentes autoalojadas** en vez de Google Fonts. El Worker sirve los
+      estáticos desde cadenas de JS y no tiene canal para binarios: hay que
+      elegir entre R2, `assets` de Wrangler o base64.
 - [ ] Activar **Always Use HTTPS** y **Minimum TLS 1.2** en la zona de Cloudflare
       (SSL/TLS → Edge Certificates). El Worker ya redirige, pero eso corta antes.
 - [ ] El token OAuth de wrangler caducó una vez a mitad de sesión (`9109 Invalid
