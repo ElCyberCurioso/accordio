@@ -87,7 +87,10 @@ export function fakeD1(inicial = {}) {
     if (q.startsWith("SELECT * FROM playlists WHERE owner_id = ? AND deleted_at = 0")) {
       return t.playlists.filter((p) => p.owner_id === v[0] && !p.deleted_at);
     }
-    if (q.startsWith("SELECT * FROM songs WHERE owner_id = ? AND deleted_at = 0")) {
+    // El listado propio ya no es un SELECT * a secas: trae además las
+    // estadísticas de la tarjeta (versiones y valoración) como subconsultas.
+    if (q.startsWith("SELECT songs.*, (SELECT COUNT(*) FROM song_versions") &&
+        q.includes("FROM songs WHERE owner_id = ? AND deleted_at = 0")) {
       return pagina(t.songs.filter((s) => s.owner_id === v[0] && !s.deleted_at)
         .sort((a, b) => String(a.title).localeCompare(String(b.title))));
     }

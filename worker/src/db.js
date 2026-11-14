@@ -185,6 +185,21 @@ function ordenDe(sort, prefijo = "") {
 }
 
 /** Partituras del usuario (activas). Orden y filtros los resuelve SQL. */
+/**
+ * Lo que la tarjeta del listado enseña además de la ficha: cuántas versiones
+ * tiene la partitura (sin contar el Original) y su valoración, sumando las de
+ * todas sus versiones. Va como subconsultas en el mismo SELECT y no en una
+ * segunda consulta con IN (…): el listado viene de cien en cien y D1 limita los
+ * parámetros enlazados. Las dos tiran de índice (idx_versions_song_updated,
+ * idx_ratings_song), así que son tres búsquedas por fila, no tres recorridos.
+ *
+ * [t] es el nombre con el que la consulta conoce a la tabla de partituras.
+ */
+const estadisticasDe = (t) =>
+  `(SELECT COUNT(*) FROM song_versions v WHERE v.song_id = ${t}.id AND v.deleted_at = 0) AS version_count,
+   (SELECT COUNT(*) FROM ratings r WHERE r.song_id = ${t}.id) AS rating_count,
+   (SELECT AVG(r.stars) FROM ratings r WHERE r.song_id = ${t}.id) AS rating_avg`;
+
 export async function listOwnSongs(db, ownerId, pagina = {}) {
   const { limit, offset } = clampPage(pagina);
   const condiciones = ["owner_id = ?", "deleted_at = 0"];
@@ -192,7 +207,7 @@ export async function listOwnSongs(db, ownerId, pagina = {}) {
   filtroBusqueda(pagina.q, condiciones, valores);
   filtrosPropios(pagina, condiciones, valores);
   const { results } = await db.prepare(
-    `SELECT * FROM songs WHERE ${condiciones.join(" AND ")}
+    `SELECT songs.*, ${estadisticasDe("songs")} FROM songs WHERE ${condiciones.join(" AND ")}
      ORDER BY ${ordenDe(pagina.sort)} LIMIT ? OFFSET ?`
   ).bind(...valores, limit + 1, offset).all();
   return paginar(results || [], limit);
@@ -229,7 +244,8 @@ export async function listPublicSongs(db, ownerId = null, opciones = {}) {
   if (genre) { condiciones.push("LOWER(s.genre) = ?"); valores.push(String(genre).toLowerCase()); }
   filtroBusqueda(opciones.q, condiciones, valores, "s.");
   const { limit, offset } = clampPage(opciones);
-  const sql = `SELECT s.*, u.name AS owner_name FROM songs s JOIN users u ON u.id = s.owner_id
+  const sql = `SELECT s.*, u.name AS owner_name, ${estadisticasDe("s")}
+     FROM songs s JOIN users u ON u.id = s.owner_id
      WHERE ${condiciones.join(" AND ")} ORDER BY ${orden} LIMIT ? OFFSET ?`;
   valores.push(limit + 1, offset);
   const { results } = await db.prepare(sql).bind(...valores).all();
@@ -456,6 +472,15 @@ export function publicSong(song, includeKey = false) {
      * entre "sin elección" y "un servidor que aún no lo conoce".
      */
     chordVariants: decodeVariants(song.chord_variants),
+    /*
+     * Solo en los listados, que son los que las piden (ver estadisticasDe). En
+     * el resto de respuestas —ficha suelta, sync— no viajan: undefined se cae
+     * del JSON y nadie tiene que distinguir un cero de «no lo sé».
+     */
+    versionCount: song.version_count === undefined ? undefined : Number(song.version_count) || 0,
+    ratingCount: song.rating_count === undefined ? undefined : Number(song.rating_count) || 0,
+    ratingAverage: song.rating_count === undefined ? undefined
+      : Math.round((Number(song.rating_avg) || 0) * 10) / 10,
     // `rev` lo lleva el servidor: el cliente lo devuelve como `baseRev` al
     // subir y así se detecta que alguien más tocó la partitura mientras tanto.
     rev: song.rev || 1,

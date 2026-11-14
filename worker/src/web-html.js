@@ -272,6 +272,12 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
                           border-color:transparent; }
   header button.primary:hover { background:var(--ac-turquoise-600); }
   header #who { color:var(--ac-turquoise-200); }
+  /* El enlace a la app es un <a class="tool">: heredaba el turquesa-700 de los
+     enlaces y el icono teal de .tool, los dos sobre la barra teal (1,6:1, no se
+     leía). Letra crema e icono amarillo, como el resto de la barra. */
+  header a.tool { color:var(--ui-header-text); --tono-glifo:var(--ac-yellow);
+                  font-size:14px; font-weight:600; white-space:nowrap; padding:9px 4px; }
+  header a.tool:hover { color:var(--ac-yellow); }
   header .grow { flex:1; }
   main { padding:16px; max-width:1520px; margin:0 auto; }
   /*
@@ -304,13 +310,27 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
     body:has(#editView:not(.hidden)) main { flex:1 1 auto; min-height:0; display:flex; }
     body:has(#editView:not(.hidden)) #editView { flex:1 1 auto; min-width:0; min-height:0; display:flex; }
   }
-  #listView, #authView { max-width:960px; margin:0 auto; }
+  /* 1100 y no 960: con capo, visibilidad y categoría en la tarjeta, a 960 las
+     cuatro columnas dejaban 194 px útiles y las etiquetas partían en tres filas. */
+  #listView { max-width:1100px; margin:0 auto; }
+  #authView { max-width:960px; margin:0 auto; }
+  /* Mismo ancho de lectura para todo lo que es texto en filas: a 1500 px las
+     fichas de usuarios, propuestas y administración eran renglones de 180
+     caracteres. El diccionario de acordes sí aprovecha el ancho entero. */
+  #tabs, #adminView, #usersView, #proposalsView { max-width:1100px; margin-left:auto; margin-right:auto; }
+  main:has(#authView:not(.hidden)) #tabs,
+  main:has(#editView:not(.hidden)) #tabs { display:none; }
   .tabs { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
-  .tabs button { border-color:var(--ui-border-strong); color:var(--ui-accent); }
+  /* Relleno lateral algo más corto que el botón normal: con las siete secciones
+     de un administrador, «Nueva» no cabía en la fila y bajaba sola a otra. */
+  .tabs button { border-color:var(--ui-border-strong); color:var(--ui-accent);
+                 padding-left:14px; padding-right:14px; }
   .tabs button[aria-selected=true] { background:var(--ui-active); color:var(--ui-on-active);
                                      border-color:transparent; box-shadow:var(--ui-shadow-pop); }
   .tabs button[aria-selected=true]:hover { background:var(--ac-turquoise-600); }
-  .grid { display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); align-items:start; }
+  /* stretch y no start: con start cada tarjeta medía lo suyo y las filas
+     quedaban dentadas (la que no tiene categoría, más corta que sus vecinas). */
+  .grid { display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); align-items:stretch; }
   /* Las tarjetas son <button>, y la regla de arriba les pone nowrap: sin esto
      un titulo largo se sale de la tarjeta por la derecha. */
   .card, .chordCard { white-space:normal; }
@@ -318,7 +338,10 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
      letra y el aspecto que los botones traen de la regla general. */
   a.card { color:inherit; text-decoration:none; cursor:pointer; font-size:14px;
            font-weight:600; line-height:normal; }
-  .card { display:block; text-align:left; width:100%; border:1.5px solid transparent;
+  /* Columna flexible: las etiquetas se van al pie (margin-top:auto más abajo) y
+     en una fila de tarjetas igualadas caen todas a la misma altura. */
+  .card { display:flex; flex-direction:column; position:relative;
+          text-align:left; width:100%; border:1.5px solid transparent;
           border-radius:var(--ui-radius-lg); padding:16px 18px; background:var(--ui-surface);
           box-shadow:var(--ui-shadow-card);
           transition:box-shadow var(--ac-dur) var(--ac-ease),
@@ -360,7 +383,10 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
                             border-color:transparent; }
   .estado[data-s=approved] { color:var(--ui-beat); border-color:var(--ui-beat); }
   .estado[data-s=rejected], .estado[data-s=withdrawn] { color:var(--ui-danger); border-color:var(--ui-danger); }
-  .aviso { background:var(--ui-active-soft); border:1.5px solid var(--ac-turquoise-400);
+  /* El tinte va SOBRE la superficie: en oscuro --ui-active-soft es translúcido
+     y, a pelo, el aviso dejaba ver el mosaico del fondo entre las letras. */
+  .aviso { background:linear-gradient(var(--ui-active-soft), var(--ui-active-soft)), var(--ui-surface);
+           border:1.5px solid var(--ac-turquoise-400);
            color:var(--ui-head); border-radius:var(--ui-radius-md); padding:11px 14px;
            margin-bottom:12px; font-size:14px; }
   .filtros { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:flex-end; }
@@ -369,8 +395,16 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
      para buscar otra cosa. --alto-cabecera lo mide medirCabecera(), porque la
      cabecera cambia de alto con el ancho. El fondo tapa las tarjetas que pasan
      por debajo. */
+  /* Es una barra de herramientas con superficie propia, no una franja del color
+     del fondo: la franja cortaba el mosaico en un rectángulo a media página y
+     tapaba la sombra de la pestaña activa. La primera sombra, del color del
+     fondo y hacia arriba, tapa las tarjetas que asomarían por las esquinas
+     redondeadas cuando la barra está pegada a la cabecera. */
   #listView .filtros { position:sticky; top:var(--alto-cabecera, 0px); z-index:9;
-                       background:var(--ui-bg); padding:8px 0 10px; margin:-8px 0 4px; }
+                       background:var(--ui-surface); border:1.5px solid var(--ui-border);
+                       border-radius:var(--ui-radius-md); padding:10px 12px 12px;
+                       margin:0 0 14px;
+                       box-shadow:0 -12px 0 var(--ui-bg), var(--ui-shadow-card); }
   /* La etiqueta va encima del control: antes el nombre del filtro solo existía
      como title=, que ni se lee con lector de pantalla ni se ve al tocar. */
   .filtro { display:flex; flex-direction:column; gap:4px; flex:0 1 190px; font-size:11px;
@@ -378,7 +412,13 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   .filtro:first-child { flex:1 1 220px; }
   /* El control ocupa el ancho de su etiqueta y NADA de flex propio: dentro de
      una columna, un flex-basis se convertiría en altura y salen cajas gigantes. */
-  .filtro input, .filtro select { width:100%; flex:0 0 auto; }
+  /* La etiqueta es pequeña y en mayúsculas; lo que se escribe y se elige, no:
+     heredaban los 11 px del rótulo y el buscador se leía peor que su etiqueta. */
+  .filtro input, .filtro select { width:100%; flex:0 0 auto; font-size:14px;
+                                  text-transform:none; letter-spacing:0; }
+  /* El desplegable, un punto menos y con menos sangría: «Más recientes
+     primero» tiene que caber entero en los 190 px de su columna. */
+  .filtro select { font-size:13px; padding-left:10px; padding-right:4px; }
   /* El estado relleno lo pone .tool[aria-pressed=true] con --tono. */
   #favFilter[aria-pressed=true] .ic { color:var(--ac-on-highlight); }
   .listas { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
@@ -389,8 +429,13 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
           font-size:13px; background:transparent; color:inherit; cursor:pointer; }
   .chip[aria-pressed=true] { background:var(--ui-active); color:var(--ui-on-active);
                              border-color:var(--ui-active); font-weight:600; }
-  .card .fav { float:right; border:0; background:transparent; font-size:16px; line-height:1;
-               padding:0 0 0 8px; cursor:pointer; color:var(--ui-text-muted); }
+  /* Anclada a la esquina y con relleno: flotando medía 16 px de lado, imposible
+     de acertar con el dedo sin abrir la partitura. Ahora son 38 px de diana. */
+  .card .fav { position:absolute; top:6px; right:6px; border:0; background:transparent;
+               font-size:18px; line-height:1; padding:10px; cursor:pointer;
+               color:var(--ui-text-muted); border-radius:var(--ui-radius-pill); }
+  .card .fav:hover { background:var(--ui-accent-soft); }
+  .card:has(.fav) .a, .card:has(.fav) .t { padding-right:30px; }
   .card .fav[aria-pressed=true] { color:var(--ac-coral); }
   .acciones { display:flex; gap:6px; margin-top:8px; }
   /* Antes: fondo transparente y un radio inexistente (--ui-radius), así que la
@@ -404,6 +449,38 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   /* Las etiquetas van en su propia fila con separación real: pegadas unas a
      otras parecían una sola píldora partida. */
   .etiquetas { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .card .etiquetas { margin-top:auto; padding-top:12px; }
+  .card .etiquetas:empty { display:none; }
+  .card .etiquetas { align-items:center; gap:6px; }
+  .card .badge { padding:3px 10px; }
+  /* Capo: amarillo macizo, el mismo estado que en el visor. */
+  .badge.capo { background:var(--ui-state); color:var(--ui-on-state); }
+  /* Valoración y versiones: al final de la fila y sin caja. */
+  .card .datos { margin-left:auto; display:inline-flex; gap:10px; align-items:center;
+                 font-family:var(--ui-font-mono); font-size:12px; font-weight:400;
+                 color:var(--ui-text-muted); white-space:nowrap; }
+  .card .datos i { font-style:normal; font-size:14px; color:var(--ac-yellow-600); margin-right:3px; }
+
+  /* Portada del visitante. Con superficie, como todo lo que lleva texto: suelta
+     sobre el mosaico, las notas del fondo se cruzan con las letras. */
+  .portada { background:var(--ui-surface); border:1.5px solid var(--ui-border);
+             border-radius:var(--ui-radius-lg); box-shadow:var(--ui-shadow-card);
+             padding:24px 26px 22px; margin:0 0 14px; }
+  .portada h2 { margin:0 0 6px; font-size:28px; }
+  .portada p { margin:0 0 16px; max-width:56ch; color:var(--ui-text); }
+  .portada .chip { background:var(--ui-surface-alt); border-color:var(--ui-border-strong);
+                   color:var(--ui-accent); font-weight:600; padding:6px 14px;
+                   box-shadow:none; }
+  .portada .chip small { font-family:var(--ui-font-mono); font-weight:400;
+                         color:var(--ui-text-muted); margin-left:2px; }
+  /* Hay que repetir el estado pulsado: la regla de arriba pesa lo mismo que
+     .chip[aria-pressed=true] y va después, así que le quitaba el relleno. */
+  .portada .chip[aria-pressed=true] { background:var(--ui-active); color:var(--ui-on-active);
+                                      border-color:var(--ui-active); }
+  .portada .chip[aria-pressed=true] small { color:inherit; }
+  /* Sin sesión solo existe «Catálogo»: una pestaña sola no elige nada. La
+     portada ya dice dónde se está. */
+  #tabs:has(#tabMine.hidden) { display:none; }
   .badge { display:inline-block; font-size:12px; border-radius:var(--ui-radius-pill);
            padding:4px 12px; border:1.5px solid transparent; background:var(--ui-accent-soft);
            color:var(--ui-accent); font-weight:600; }
@@ -422,6 +499,11 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   .empty { color:var(--ui-text-muted); text-align:center; padding:40px 12px; }
   .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   .stack { display:flex; flex-direction:column; gap:12px; max-width:420px; margin:40px auto; }
+  /* El acceso va en tarjeta: suelto sobre el mosaico, las notas del fondo se
+     cruzaban con los rótulos del formulario. */
+  #authView .stack { background:var(--ui-surface); border:1.5px solid var(--ui-border);
+                     border-radius:var(--ui-radius-lg); box-shadow:var(--ui-shadow-pop);
+                     padding:28px 24px 24px; }
   /* La partitura se centra como bloque, pero el texto sigue alineado a la
      izquierda: las columnas son las del fichero y mover el texto descolocaria
      los acordes de sus silabas. max-content = ancho de la linea mas larga. */
@@ -512,7 +594,8 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   #eSide label input, #eSide label select { margin-top:4px; }
   /* Bloqueada es una casilla con su texto al lado, no un campo con rótulo
      encima: la regla de arriba pone todas las etiquetas en columna. */
-  #eSide #eLockedWrap { flex-direction:row; align-items:center; }
+  #eSide #eLockedWrap { flex-direction:row; align-items:center; flex-wrap:nowrap; }
+  #eSide #eLockedWrap > span { min-width:0; }
   /* El capo no es un <label> —su mando son dos botones, no un campo— pero en la
      rejilla tiene que comportarse igual que los demás. */
   #eSideBody .campo { display:flex; flex-direction:column; justify-content:flex-end;
@@ -566,6 +649,10 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
     #editSplit { grid-template-columns:1fr; }
     #eContent, #ePreview { flex:0 0 auto; height:44vh; min-height:220px; }
     #eContent { resize:vertical; }
+    /* La cabecera de la hoja no cabe en una línea: el rótulo y su aclaración
+       arriba, los dos botones debajo. Con el alto fijo se montaban encima. */
+    .pane .hd { height:auto; flex-wrap:wrap; row-gap:6px; }
+    .pane .hd .grow { flex:1 0 100%; height:0; }
   }
   label small { color:var(--ui-text-subtle); }
   /* ---- visor ---- */
@@ -702,6 +789,7 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   #vVersionPanel .hd { font-size:11px; letter-spacing:.18em; text-transform:uppercase;
                        color:var(--ui-text-subtle); }
   .vRow { display:flex; flex-direction:column; gap:4px; padding:8px; border-radius:var(--ui-radius-md);
+          width:100%; box-shadow:none;
           border:1px solid transparent; cursor:pointer; background:transparent; text-align:left;
           white-space:normal; }
   .vRow:hover { background:var(--ui-active-soft); }
@@ -739,6 +827,21 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   /* Con selector de elemento a propósito: .tool también fija display y, a
      igualdad de peso, ganaba la que va después en la hoja. */
   button.soloEstrecho { display:none; }
+  /* Lo mismo para lo que solo existe en el móvil (≤560 px): el botón y el panel
+     de filtros. En ancho, el envoltorio de los filtros no pinta caja: sus hijos
+     entran en la fila de .filtros como si no estuviera. */
+  button.soloMovil, div.soloMovil { display:none; }
+  #filtrosExtra { display:contents; }
+  .nFiltros { display:inline-grid; place-items:center; min-width:18px; height:18px;
+              padding:0 5px; border-radius:var(--ui-radius-pill); font-size:11px;
+              font-weight:600; background:var(--ui-active); color:var(--ui-on-active); }
+  /* Eliminar no compite con Guardar: el coral macizo es la acción destacada del
+     kit («Nueva»), y aquí había dos botones rellenos pidiendo el mismo clic. Va
+     de contorno, con el coral de LEER (rampa 700). La confirmación que sale al
+     pulsarlo sí va rellena: ahí borrar es la acción. */
+  #deleteBtn { background:var(--ui-surface-alt); color:var(--ui-danger-text);
+               border-color:var(--ui-danger-text); }
+  #deleteBtn:hover { background:var(--ui-danger-soft); border-color:var(--ui-danger-text); }
   @media (max-width:900px) {
     /*
      * Barra de una sola línea: atrás, título y un botón de acciones. Antes se
@@ -819,16 +922,88 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
     header .kicker { display:none; }
     header #who { display:none; }
     header h1 { font-size:19px; }
-    /* El buscador fijo, en una sola fila: con los filtros apilados la barra
-       pegada se llevaba un cuarto de la pantalla del móvil. Buscar va delante y
-       ocupa casi todo; categoría, orden y demás asoman a la derecha y se
-       arrastran de lado. */
-    #listView .filtros { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
-                         padding-left:2px; padding-right:2px; }
-    #listView .filtros::-webkit-scrollbar { display:none; }
-    #listView .filtros > * { flex:0 0 auto; }
-    #listView .filtros .filtro { width:160px; }
-    #listView .filtros .filtro:first-child { width:68%; }
+    /* El enlace de la app, solo el icono: con el rótulo la barra no cabía en
+       390 px y «App 2.6» se partía en dos líneas. El nombre sigue en title. */
+    header a.tool span { position:absolute; width:1px; height:1px; overflow:hidden;
+                         clip-path:inset(50%); white-space:nowrap; }
+    header a.tool { padding:9px 8px; }
+    header a.tool .ic { width:22px; height:22px; }
+    /* Las secciones, en una tira que se arrastra de lado: envueltas eran tres
+       filas de píldoras antes de ver una sola partitura. Sangra hasta el borde
+       de la pantalla para que se vea que sigue. */
+    #tabs { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
+            margin:0 -16px 6px; padding:4px 16px 12px; }
+    #tabs::-webkit-scrollbar { display:none; }
+    #tabs > button { flex:0 0 auto; }
+    #tabs .grow { display:none; }
+    /* «Nueva» baja a la esquina del pulgar, como «Mandos» en el visor. */
+    #tabs #newBtn { position:fixed; z-index:8; right:16px;
+                    bottom:calc(16px + env(safe-area-inset-bottom));
+                    padding:12px 20px; box-shadow:var(--ac-shadow-lg); }
+    /* Solo sobre los listados: en Administración o Usuarios tapaba botones y
+       no es lo que se va a hacer allí. */
+    main:not(:has(#listView:not(.hidden))) #newBtn { display:none; }
+    #listView { padding-bottom:72px; }
+    /* El buscador fijo, en una sola fila: buscar y un botón «Filtros». Antes
+       categoría, orden y demás iban detrás en una tira que se arrastraba de
+       lado, pero nada decía que la tira seguía y media pantalla de filtros
+       quedaba fuera sin pista. Ahora suben en un panel desde abajo, el mismo
+       gesto que «Mandos» en el visor. */
+    button.soloMovil { display:inline-flex; }
+    div.soloMovil { display:flex; }
+    #listView .filtros { flex-wrap:nowrap; align-items:flex-end; }
+    #listView .filtros > .filtro { flex:1 1 auto; min-width:0; }
+    #filtrosBtn { flex:0 0 auto; padding:11px 14px; }
+    #filtrosExtra { display:flex; flex-direction:column; gap:14px;
+                    position:fixed; left:0; right:0; bottom:0; z-index:2;
+                    max-height:76vh; overflow:auto;
+                    padding:12px 16px calc(18px + env(safe-area-inset-bottom));
+                    background:var(--ui-surface); border-top:1.5px solid var(--ui-border);
+                    border-radius:var(--ui-radius-lg) var(--ui-radius-lg) 0 0;
+                    box-shadow:var(--ac-shadow-lg);
+                    /* visibility además de transform: escondido fuera de la
+                       pantalla seguiría recibiendo el foco del tabulador. */
+                    transform:translateY(101%); visibility:hidden;
+                    transition:transform 280ms var(--ac-ease), visibility 0s 280ms; }
+    #listView.conFiltros #filtrosExtra { transform:none; visibility:visible;
+                                         transition:transform 280ms var(--ac-ease), visibility 0s; }
+    /* Abierto, la barra sube por encima de la cabecera para que el velo la
+       cubra también. */
+    #listView.conFiltros .filtros { z-index:30; }
+    #filtrosExtra .filtro { flex:0 0 auto; width:auto; }
+    #filtrosExtra > button { justify-content:center; }
+    #filtrosExtra .panelCab { align-items:center; justify-content:space-between;
+                              font-family:var(--ui-font-head); color:var(--ui-head); }
+    #filtrosVelo { position:fixed; inset:0; z-index:1; background:rgba(8,29,33,.45);
+                   border:0; border-radius:0; padding:0; box-shadow:none; }
+    #filtrosVelo[hidden] { display:none; }
+
+    /* El listado, en filas: la tarjeta de escritorio medía 120 px y cabían seis
+       por pantalla. Título y artista a la izquierda, etiquetas a la derecha. */
+    .grid { grid-template-columns:1fr; gap:6px; }
+    .grid .card { display:grid; grid-template-columns:minmax(0,1fr) auto;
+                  align-items:center; column-gap:10px; padding:10px 14px;
+                  border-radius:var(--ui-radius-md); }
+    .grid .card .a { grid-column:1; grid-row:1; font-size:12px; }
+    .grid .card .t { grid-column:1; grid-row:2; font-size:15px; }
+    .grid .card .etiquetas { grid-column:2; grid-row:1 / span 2; margin:0; padding:0;
+                             justify-content:flex-end; gap:4px; max-width:44vw; }
+    .grid .card .badge { font-size:11px; padding:2px 8px; }
+    .grid .card .acciones { grid-column:1 / -1; grid-row:3; }
+    .grid .card:has(.fav) { padding-right:46px; }
+    .grid .card:has(.fav) .a, .grid .card:has(.fav) .t { padding-right:0; }
+    .grid .card .fav { top:50%; right:4px; transform:translateY(-50%); }
+    /* En la fila no cabe todo: se queda la nota, se va el número de versiones. */
+    .grid .card .datos { margin-left:0; }
+    .grid .card .nVers { display:none; }
+    .portada { padding:18px 16px 16px; }
+    .portada h2 { font-size:22px; }
+    .portada p { font-size:14px; margin-bottom:12px; }
+    /* Las categorías, en una tira que se arrastra: envueltas eran cuatro filas. */
+    .portada .chips { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
+                      margin:0 -16px; padding:0 16px 2px; }
+    .portada .chips::-webkit-scrollbar { display:none; }
+    .portada .chip { flex:0 0 auto; }
 
     /* En la barra solo queda el botón de acciones, y ahí basta el icono; dentro
        del menú los nombres se leen enteros. */
@@ -851,7 +1026,9 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   .chordBar { display:flex; gap:8px; overflow-x:auto; padding:8px 14px; background:var(--ui-surface);
               border-bottom:1px solid var(--ui-border); }
   .chordBar button { flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:2px;
-                     padding:6px 8px; border-color:transparent; }
+                     padding:6px 8px; border-color:transparent;
+                     /* Píldora en un botón más alto que ancho es un huevo. */
+                     border-radius:var(--ui-radius-md); }
   .chordBar .nm { font-family:var(--ui-font-mono); font-size:12px; font-weight:600; color:var(--ui-chord); }
   .chordBar .none { color:var(--ui-text-subtle); font-size:13px; padding:8px 4px; white-space:nowrap; }
   .modal { position:fixed; inset:0; z-index:40; background:rgba(8,29,33,.55);
@@ -870,7 +1047,7 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   .instrBar { display:flex; align-items:center; gap:8px; flex-wrap:wrap;
               padding:6px 14px; border-bottom:1.5px solid var(--ui-border);
               background:var(--ui-surface); font-size:13px; }
-  .instrBar select { padding:4px 8px; }
+  .instrBar select { padding:4px 8px; width:auto; min-width:150px; }
   .instrBar .pista { color:var(--ui-text-subtle); font-size:11.5px; }
   @media (max-width:600px) { .instrBar .pista { display:none; } }
 
@@ -932,7 +1109,7 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   /* Quien pide menos movimiento en el sistema no ve el levantamiento: se queda
      el cambio de sombra y borde, que ya dice lo mismo. */
   @media (prefers-reduced-motion: reduce) {
-    #vSide { transition:none; }
+    #vSide, #filtrosExtra { transition:none; }
     .card, .chordCard, .toast, button { transition:none; }
     .card:hover, button.chordCard:hover, .card:active, button.chordCard:active { transform:none; }
   }
@@ -1663,6 +1840,35 @@ function renderGenreOptions(lista) {
   genreFilter.value = genreBy;
 }
 
+/**
+ * Portada del catálogo para quien no ha entrado: el lema y las categorías como
+ * atajos. Cada pastilla es el mismo filtro que el desplegable —comparten
+ * genreBy—, así que pulsar una mueve el otro y al revés. Las más pobladas
+ * primero y doce como mucho: es una puerta de entrada, no el índice.
+ */
+function pintarPortada() {
+  var visible = !user && tab === "public";
+  portada.classList.toggle("hidden", !visible);
+  if (!visible) return;
+  portadaChips.innerHTML = "";
+  genres.slice().sort(function (a, b) { return (b.total || 0) - (a.total || 0); })
+    .slice(0, 12).forEach(function (g) {
+      var b = document.createElement("button");
+      b.className = "chip";
+      b.setAttribute("aria-pressed", genreBy === g.genre ? "true" : "false");
+      b.textContent = g.genre + " ";
+      var n = document.createElement("small");
+      n.textContent = g.total;
+      b.appendChild(n);
+      b.onclick = function () {
+        genreBy = genreBy === g.genre ? "" : g.genre;
+        genreFilter.value = genreBy;
+        refresh();
+      };
+      portadaChips.appendChild(b);
+    });
+}
+
 /** Sugerencias del editor: las públicas y las propias, sin repetir. */
 function renderGenreDatalist(extra) {
   var vistas = {};
@@ -1698,6 +1904,7 @@ function genresOf(lista) {
 function loadGenres() {
   return api("GET", "/api/genres").then(function (d) {
     genres = d.genres || [];
+    pintarPortada();
     if (tab !== "mine") renderGenreOptions(genres);
     renderGenreDatalist(genresOf(songs));
   }).catch(function (e) {
@@ -1732,6 +1939,15 @@ function refresh(desde) {
   tabUsers.setAttribute("aria-selected", tab === "users");
   tabTrash.setAttribute("aria-selected", tab === "trash");
   tabAdmin.setAttribute("aria-selected", tab === "admin");
+  // En el móvil las secciones son una tira que se arrastra: la elegida tiene
+  // que quedar a la vista. Solo se mueve la tira, nunca la página.
+  contarFiltros();
+  pintarPortada();
+  var tira = document.getElementById("tabs");
+  var elegida = tira && tira.querySelector("[aria-selected=true]");
+  if (elegida && tira.scrollWidth > tira.clientWidth) {
+    tira.scrollLeft = elegida.offsetLeft - (tira.clientWidth - elegida.offsetWidth) / 2;
+  }
   if (tab === "chords") { showChords(); return; }
   if (tab === "proposals") { showProposals(); return; }
   if (tab === "users") { showUsers(); return; }
@@ -1860,6 +2076,24 @@ function renderList(error) {
                s.visibility === "public" ? "publica" : "privada");
       var lista = playlists.filter(function (p) { return p.id === s.playlistId; })[0];
       if (lista) etiqueta(lista.name, "lista");
+    }
+    // El capo cambia cómo se toca la canción: se sabe antes de abrirla, y en
+    // el amarillo que ya lleva en el visor.
+    if (s.capo) etiqueta("Capo " + s.capo, "capo");
+    // Valoración y versiones, a la derecha y en pequeño: son datos, no
+    // etiquetas. Solo cuando hay algo que decir.
+    var datos = [];
+    if (s.ratingCount) datos.push('<span class="nota5" title="' + s.ratingCount +
+      (s.ratingCount === 1 ? " valoración" : " valoraciones") + '"><i>★</i>' +
+      Number(s.ratingAverage).toFixed(1) + "</span>");
+    if (s.versionCount) datos.push('<span class="nVers">' + (s.versionCount + 1) + " versiones</span>");
+    if (datos.length) {
+      var d = document.createElement("span");
+      d.className = "datos";
+      d.innerHTML = datos.join("");
+      etiquetas.appendChild(d);
+    }
+    if (propio) {
       // La estrella va dentro de la tarjeta, que es un <button>: se marca como
       // control aparte y se corta la propagación para no abrir el visor.
       var star = document.createElement("span");
@@ -2038,6 +2272,9 @@ function volverAtras(alternativa) {
 /** Lleva la interfaz a donde diga la URL. Con el guardia por delante. */
 function aplicarUrl() {
   if (aplicandoUrl) return;
+  // Cambiar de pantalla cierra el panel de filtros del móvil: abierto se
+  // quedaría por encima del visor.
+  panelFiltros(false);
   var r = rutaActual();
   var def = PANTALLAS[r.pantalla];
 
@@ -2052,6 +2289,13 @@ function aplicarUrl() {
       notificar("Tu cuenta no tiene permiso para esa pantalla.", "error");
       navegar("#/", { reemplazar: true });
     }
+    return;
+  }
+
+  // Con sesión, «Entrar» no tiene nada que pedir: salía el formulario vacío
+  // con el nombre de quien ya había entrado en la cabecera.
+  if (r.pantalla === "entrar" && user) {
+    navegar(hashDePestana("mine"), { reemplazar: true });
     return;
   }
 
@@ -4567,6 +4811,34 @@ function mandos(abrir) {
   if (abrir) vSide.scrollTop = 0;
 }
 
+/*
+ * Panel de filtros del móvil: mismo gesto que los mandos. En ancho los filtros
+ * están en la barra y nada de esto se ve.
+ */
+function panelFiltros(abrir) {
+  listView.classList.toggle("conFiltros", abrir);
+  filtrosBtn.setAttribute("aria-expanded", abrir ? "true" : "false");
+  filtrosVelo.hidden = !abrir;
+}
+
+/** Cuántos filtros hay puestos: con el panel cerrado no se ven, y un listado
+    recortado sin motivo aparente parece un fallo. El orden no cuenta, que no
+    quita nada; «Solo privadas» tampoco, que es como nace la pestaña. */
+function contarFiltros() {
+  var n = 0;
+  if (genreBy) n++;
+  if (tab === "mine") {
+    if (playlistBy) n++;
+    if (favOnly) n++;
+  }
+  filtrosN.textContent = n;
+  filtrosN.classList.toggle("hidden", !n);
+}
+
+filtrosBtn.onclick = function () { panelFiltros(!listView.classList.contains("conFiltros")); };
+filtrosVelo.onclick = function () { panelFiltros(false); };
+filtrosCerrar.onclick = function () { panelFiltros(false); };
+
 vTools.onclick = function () { mandos(!viewer.classList.contains("conMandos")); };
 vVelo.onclick = function () { mandos(false); };
 vToolsClose.onclick = function () { mandos(false); };
@@ -4575,6 +4847,7 @@ document.addEventListener("keydown", function (e) {
     e.stopPropagation();          // que no se lleve por delante el visor entero
     mandos(false);
   }
+  if (e.key === "Escape" && listView.classList.contains("conFiltros")) panelFiltros(false);
 });
 
 /*
@@ -4944,9 +5217,10 @@ export const WEB_HTML = `<!doctype html>
     </div>
   </section>
 
-  <!-- listados -->
-  <section id="listView">
-    <div class="tabs">
+  <!-- Navegación entre secciones. Vive fuera de #listView: dentro, al entrar
+       en Acordes, Usuarios o Administración desaparecía y la única vuelta era
+       el logotipo. La esconde el CSS en el acceso y en el editor. -->
+  <nav id="tabs" class="tabs" aria-label="Secciones">
       <button id="tabPublic" aria-selected="true">Catálogo</button>
       <button id="tabMine" aria-selected="false" class="hidden">Mis partituras</button>
       <button id="tabProposals" aria-selected="false" class="hidden">Propuestas</button>
@@ -4957,10 +5231,33 @@ export const WEB_HTML = `<!doctype html>
       <span class="grow"></span>
       <button id="newBtn" class="tool destacada hidden">
         <svg class="ic"><use href="#ac-plus"></use></svg><span>Nueva</span></button>
+  </nav>
+
+  <!-- listados -->
+  <section id="listView">
+    <!-- Portada para quien llega sin sesión: qué es esto y por dónde empezar.
+         Con sesión no sale: ahí mandan las pestañas. La pinta pintarPortada(). -->
+    <div id="portada" class="portada hidden">
+      <h2>Acordes y letras para tocar ya</h2>
+      <p>Cambia el tono, deja que la hoja baje sola y sigue el compás con el
+         metrónomo. Sin registro.</p>
+      <div id="portadaChips" class="chips" role="group" aria-label="Categorías"></div>
     </div>
     <div class="filtros">
       <label class="filtro" for="search">Buscar
         <input type="text" id="search" placeholder="Título o artista…"></label>
+      <!-- Solo en móvil: abre el panel con el resto de filtros. El número es
+           cuántos hay puestos, para que no pasen inadvertidos con el panel
+           cerrado. -->
+      <button id="filtrosBtn" class="tool soloMovil" aria-expanded="false" aria-controls="filtrosExtra">
+        <svg class="ic"><use href="#ic-filtros"></use></svg><span>Filtros</span>
+        <b id="filtrosN" class="nFiltros hidden"></b></button>
+      <button id="filtrosVelo" class="soloMovil" aria-label="Cerrar filtros" hidden></button>
+      <!-- En escritorio este envoltorio no existe para la maquetación
+           (display:contents); en móvil es el panel que sube desde abajo. -->
+      <div id="filtrosExtra">
+      <div class="panelCab soloMovil"><strong>Filtros</strong>
+        <button id="filtrosCerrar" class="ghost">Cerrar</button></div>
       <label class="filtro" for="genreFilter">Categoría
         <select id="genreFilter">
           <option value="">Todas</option>
@@ -4979,6 +5276,7 @@ export const WEB_HTML = `<!doctype html>
         <svg class="ic"><use href="#ac-star-outline"></use></svg><span>Favoritas</span></button>
       <button id="privFilter" class="tool privadas hidden" aria-pressed="true" title="Ver también las que ya están publicadas">
         <svg class="ic"><use href="#ic-candado"></use></svg><span>Solo privadas</span></button>
+      </div>
     </div>
     <div id="listasBar" class="listas hidden">
       <span class="etiqueta">Listas</span>
@@ -5382,6 +5680,7 @@ export const WEB_HTML = `<!doctype html>
   <symbol id="ic-letra" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16M4 12h16"></path><path d="M4 16h10" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
   <symbol id="ic-app" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 16.5v-9M8.5 11L12 7.5l3.5 3.5" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
   <symbol id="ic-stop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><rect x="9" y="9" width="6" height="6" rx="1" stroke="var(--ac-icon-accent, #FF6B6B)"></rect></symbol>
+  <symbol id="ic-filtros" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"></path></symbol>
 </svg>
 
 <!-- Avisos flotantes (aria-live: un lector de pantalla los canta sin robar el
