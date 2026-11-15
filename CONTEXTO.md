@@ -7,9 +7,9 @@ pendiente.
 Última actualización: 2026-11-15 · Rama `master`.
 
 > Todo lo que describe este documento está **commiteado** y el servidor está
-> **desplegado** (versión `d7e55024`). **El commit del PDF adjunto (§3.21) está
-> en `master` local y SIN subir a `origin`**: falta un `git push`. La app 2.7
-> que lo acompaña está sin publicar y sin probar (§7).
+> **desplegado** (versión `d7e55024`), y está subido a `origin/master` salvo este
+> último commit de documentación. La app publicada es la **2.7**
+> (`versionCode 9`).
 > Lo de este párrafo sobre la app es anterior: sigue en
 > `versionCode 2`, y no debe publicarse sin probarla antes en un móvil de
 > verdad (§7).
@@ -602,7 +602,9 @@ Todo se revisó con capturas en Chromium sin cabeza (claro/oscuro, 1440 px y
 ### 3.21 Sesión 14–15/11/2026 · partitura en PDF adjunta
 Cada canción puede llevar un PDF. **Servidor y web están desplegados** (versión
 `d7e55024`, 15/11; lo desplegó el dueño desde el árbol de trabajo, antes del
-commit). **La app 2.7 está sin publicar** (ver §7).
+commit). **La app 2.7 está publicada** en `/update` desde el 15/11, después de
+probarla el dueño en su móvil: es la primera versión que sale vista en un
+dispositivo antes de publicarse.
 
 - **Servidor**: columnas `songs.pdf_key` / `pdf_size` (séptima tanda de
   `migrations.sql`). El fichero va a R2 en `pdf/<id-canción>/<uuid>.pdf`.
@@ -618,8 +620,8 @@ commit). **La app 2.7 está sin publicar** (ver §7).
   «Imprimir». Probado en Chromium contra `wrangler dev`.
 - **App 2.7** (`versionCode 9`, Room 18 → 19, columna `has_pdf`): botón en el
   visor que baja el PDF con la sesión y lo abre con el visor del teléfono;
-  adjuntar/cambiar/quitar desde el editor. Compila y pasan los 154 tests;
-  **no se ha ejecutado en ningún dispositivo**.
+  adjuntar/cambiar/quitar desde el editor. Compila, pasan los 154 tests y el
+  dueño la probó en su teléfono antes de publicarla.
 
 ---
 
@@ -938,7 +940,7 @@ Estado actual de producción:
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
 | Worker | Versión `d7e55024`, desplegada el 15/11/2026 con `./tools/deploy.sh release --yes` (sin `--yes` el script pregunta y, lanzado desde donde no hay teclado, se cancela solo) |
-| App | `versionCode 8` / `2.6` publicada en `/update` y como release `v2.6` en GitHub (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
+| App | `versionCode 9` / `2.7` publicada en `/update` el 15/11/2026 (APK SHA-256 `6948b43a…`; **sin release en GitHub todavía**). Antes: `2.6` en `/update` y como release `v2.6` en GitHub (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
 | Estilo web | paquete de marca Accordio (claro + oscuro); fuentes en `worker/brand/` |
@@ -950,17 +952,8 @@ Estado actual de producción:
 ## 7. Pendiente
 
 **Lo primero de todo**
-- [ ] **Terminar el PDF adjunto (§3.21).** Servidor y web ya están en
-      producción; queda:
-      1. `git push` del commit;
-      2. probar la app 2.7 en un teléfono: la migración 18 → 19 con datos,
-         abrir un PDF (¿sale el visor del teléfono?), adjuntar uno desde el
-         editor y **guardar después la ficha** para ver que no salta un
-         conflicto falso;
-      3. publicarla con `NOTAS=… ./tools/deploy.sh app …` (§6).
-      Mientras tanto, la app 2.6 publicada sigue funcionando contra el
-      servidor nuevo: ignora los campos que no conoce y no toca el PDF al
-      guardar.
+- [ ] **Release `v2.7` en GitHub.** La app está en `/update`, pero las
+      versiones anteriores tienen además su release en GitHub y esta no.
 - [ ] **El PDF no entra en la copia de seguridad en ZIP** (Administración), que
       solo lleva el texto de las partituras.
 - [ ] **Copia de seguridad de la clave de firma** fuera de esta máquina (§9).
