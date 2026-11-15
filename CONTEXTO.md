@@ -7,8 +7,8 @@ pendiente.
 Última actualización: 2026-11-15 · Rama `master`.
 
 > Todo lo que describe este documento está **commiteado** y el servidor está
-> **desplegado** (versión `d7e55024`), y está subido a `origin/master` salvo este
-> último commit de documentación. La app publicada es la **2.7**
+> **desplegado** (versión `d7e55024`), y está subido a `origin/master`, este
+> commit incluido. La app publicada es la **2.7**
 > (`versionCode 9`).
 > Lo de este párrafo sobre la app es anterior: sigue en
 > `versionCode 2`, y no debe publicarse sin probarla antes en un móvil de
@@ -940,7 +940,7 @@ Estado actual de producción:
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
 | Worker | Versión `d7e55024`, desplegada el 15/11/2026 con `./tools/deploy.sh release --yes` (sin `--yes` el script pregunta y, lanzado desde donde no hay teclado, se cancela solo) |
-| App | `versionCode 9` / `2.7` publicada en `/update` el 15/11/2026 (APK SHA-256 `6948b43a…`; **sin release en GitHub todavía**). Antes: `2.6` en `/update` y como release `v2.6` en GitHub (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
+| App | `versionCode 9` / `2.7` publicada en `/update` el 15/11/2026 y como release `v2.7` en GitHub, sobre el commit `dfcef90` (APK SHA-256 `6948b43a…`). Antes: `2.6`, también en los dos sitios (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
 | Estilo web | paquete de marca Accordio (claro + oscuro); fuentes en `worker/brand/` |
@@ -952,8 +952,6 @@ Estado actual de producción:
 ## 7. Pendiente
 
 **Lo primero de todo**
-- [ ] **Release `v2.7` en GitHub.** La app está en `/update`, pero las
-      versiones anteriores tienen además su release en GitHub y esta no.
 - [ ] **El PDF no entra en la copia de seguridad en ZIP** (Administración), que
       solo lleva el texto de las partituras.
 - [ ] **Copia de seguridad de la clave de firma** fuera de esta máquina (§9).
