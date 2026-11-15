@@ -168,6 +168,23 @@
     <string name="untitled">Untitled</string>
     <string name="source_url_label">Original song URL</string>
     <string name="link">Link</string>
+    <string name="pdf_sheet">PDF sheet</string>
+    <string name="pdf_open">Open the PDF sheet</string>
+    <string name="pdf_attach">Attach PDF</string>
+    <string name="pdf_replace">Replace PDF</string>
+    <string name="pdf_remove">Remove PDF</string>
+    <string name="pdf_attached">It has a PDF sheet.</string>
+    <string name="pdf_none">No PDF sheet.</string>
+    <string name="pdf_need_sync">To attach a PDF, save the song and sync it with your account first.</string>
+    <string name="pdf_too_big">The PDF cannot be larger than 10 MB.</string>
+    <string name="pdf_not_pdf">That file is not a PDF.</string>
+    <string name="pdf_unavailable">This song no longer has a PDF.</string>
+    <string name="pdf_network">Could not download the PDF. Check your connection.</string>
+    <string name="pdf_upload_failed">Could not upload the PDF. Check your connection.</string>
+    <string name="pdf_no_viewer">There is no app installed to open a PDF.</string>
+    <string name="pdf_session">Your session has expired. Sign in again.</string>
+    <string name="pdf_uploaded">PDF attached.</string>
+    <string name="pdf_removed">PDF removed.</string>
     <string name="title_required">Give the song a title</string>
 
     <!-- Dictionary -->

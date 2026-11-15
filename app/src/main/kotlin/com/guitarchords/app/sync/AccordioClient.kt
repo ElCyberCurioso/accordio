@@ -53,7 +53,14 @@ data class RemoteSong(
      * `{"guitarra":{"F":2}}`. El servidor siempre manda el objeto, vacío si no
      * hay ninguna elección.
      */
-    val chordVariants: Map<String, Map<String, Int>> = emptyMap()
+    val chordVariants: Map<String, Map<String, Int>> = emptyMap(),
+    /**
+     * Tiene partitura en PDF. El fichero no viaja con la ficha ni con el feed:
+     * se pide aparte a `/api/songs/<id>/pdf`, que aplica el mismo permiso que
+     * la partitura.
+     */
+    val hasPdf: Boolean = false,
+    val pdfSize: Long = 0
 )
 
 @Serializable
@@ -206,6 +213,14 @@ private data class RegisterRequest(val email: String, val password: String, val 
 class UnauthorizedException(message: String) : IOException(message)
 
 /**
+ * El servidor dice que ese PDF no existe para quien lo pide: o se quitó, o la
+ * partitura ya no se puede ver. Va aparte de un fallo de red porque aquí NO
+ * vale tirar de la copia guardada: sería seguir enseñando algo a lo que ya no
+ * se tiene acceso.
+ */
+class PdfNoDisponibleException(message: String) : IOException(message)
+
+/**
  * Cliente de la API de Accordio: autenticación por email/contraseña y acceso a
  * las partituras del usuario. Sustituyó al token compartido, ya retirado.
  */
@@ -316,6 +331,73 @@ class AccordioClient(baseUrl: String, private val token: String = "") {
     suspend fun getChords(): String = request("GET", "/api/chords")
 
     suspend fun putChords(body: String) { request("PUT", "/api/chords", body, "application/json") }
+
+    // ---- partitura en PDF ----
+    /**
+     * Baja el PDF de una partitura a [destino]. Se escribe primero en un
+     * fichero aparte y se renombra al acabar: una descarga cortada no deja un
+     * PDF a medias con el nombre bueno.
+     */
+    suspend fun downloadPdf(songId: String, destino: java.io.File) = withContext(Dispatchers.IO) {
+        val conn = abrir("GET", "/api/songs/$songId/pdf", accept = "application/pdf")
+        try {
+            if (conn.responseCode !in 200..299) fallar(conn, "GET", "/api/songs/$songId/pdf")
+            val parcial = java.io.File(destino.parentFile, destino.name + ".part")
+            conn.inputStream.use { entrada -> parcial.outputStream().use { entrada.copyTo(it) } }
+            if (!parcial.renameTo(destino)) {
+                parcial.copyTo(destino, overwrite = true)
+                parcial.delete()
+            }
+        } finally {
+            conn.disconnect()
+        }
+    }
+
+    /** Sube (o sustituye) el PDF. Devuelve la ficha, con su `rev` nueva. */
+    suspend fun uploadPdf(songId: String, bytes: ByteArray): RemoteSong = withContext(Dispatchers.IO) {
+        val ruta = "/api/songs/$songId/pdf"
+        val conn = abrir("PUT", ruta)
+        try {
+            conn.doOutput = true
+            conn.setRequestProperty("Content-Type", "application/pdf")
+            conn.setFixedLengthStreamingMode(bytes.size)
+            conn.outputStream.use { it.write(bytes) }
+            if (conn.responseCode !in 200..299) fallar(conn, "PUT", ruta)
+            fichaDe(conn.inputStream.bufferedReader().use { it.readText() })
+        } finally {
+            conn.disconnect()
+        }
+    }
+
+    suspend fun deletePdf(songId: String): RemoteSong =
+        fichaDe(request("DELETE", "/api/songs/$songId/pdf"))
+
+    private fun fichaDe(cuerpo: String): RemoteSong =
+        json.decodeFromString<Map<String, RemoteSong>>(cuerpo)["song"]
+            ?: throw IOException("respuesta inesperada")
+
+    private fun abrir(method: String, path: String, accept: String = "application/json"): HttpURLConnection {
+        if (base.isBlank()) throw IOException("Configura la dirección del servidor")
+        return (URL(base + path).openConnection() as HttpURLConnection).apply {
+            requestMethod = method
+            setRequestProperty("Accept", accept)
+            if (token.isNotBlank()) setRequestProperty("Authorization", "Bearer $token")
+            connectTimeout = 15_000
+            readTimeout = 60_000
+        }
+    }
+
+    /** Convierte una respuesta de error en la excepción que toca. No vuelve. */
+    private fun fallar(conn: HttpURLConnection, method: String, path: String): Nothing {
+        val code = conn.responseCode
+        val raw = conn.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
+        val message = runCatching {
+            json.decodeFromString<ErrorResponse>(raw).error
+        }.getOrNull()?.takeIf { it.isNotBlank() } ?: "HTTP $code"
+        if (code == 401) throw UnauthorizedException(message)
+        if (code == 404) throw PdfNoDisponibleException(message)
+        throw IOException("$message ($method $base$path)")
+    }
 
     private suspend fun request(
         method: String,

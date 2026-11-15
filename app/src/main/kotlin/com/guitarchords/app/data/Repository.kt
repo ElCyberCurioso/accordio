@@ -322,7 +322,8 @@ class Repository(
                 visibility = remote.visibility,
                 dirty = false,
                 position = remote.position,
-                chordVariants = ChordVariants.encode(remote.chordVariants)
+                chordVariants = ChordVariants.encode(remote.chordVariants),
+                hasPdf = remote.hasPdf
             )
         )
     }
@@ -349,7 +350,8 @@ class Repository(
                 deletedAt = 0,
                 dirty = false,
                 updatedAt = System.currentTimeMillis(),
-                chordVariants = ChordVariants.encode(remote.chordVariants)
+                chordVariants = ChordVariants.encode(remote.chordVariants),
+                hasPdf = remote.hasPdf
             )
         )
     }
@@ -363,6 +365,29 @@ class Repository(
     suspend fun applyRemoteFlags(local: Song, remote: RemoteSong) {
         if (remote.locked != local.locked) songDao.setLocked(local.id, remote.locked)
         if (remote.visibility != local.visibility) songDao.setVisibility(local.id, remote.visibility)
+        if (remote.hasPdf != local.hasPdf) songDao.setPdfState(local.id, remote.hasPdf, local.remoteRev)
+    }
+
+    /**
+     * Apunta el resultado de subir o quitar el PDF desde el móvil.
+     *
+     * El servidor sube `rev` con esa escritura. Si no se apuntara aquí, la
+     * siguiente subida de la ficha iría con la revisión vieja y el servidor la
+     * tomaría por un conflicto: guardaría la copia local como versión aparte
+     * por un cambio que ha hecho este mismo teléfono. La regla está en
+     * [SongPdf.revTrasEscribir]. Devuelve la revisión que queda guardada.
+     */
+    /** El servidor ha dicho que ese PDF ya no existe: se deja de ofrecer. */
+    suspend fun markPdfGone(local: Song) {
+        songDao.setPdfState(local.id, false, local.remoteRev)
+        notifyChange()
+    }
+
+    suspend fun applyPdfResult(local: Song, remote: RemoteSong): Int {
+        val rev = com.guitarchords.app.sync.SongPdf.revTrasEscribir(local.remoteRev, remote.rev)
+        songDao.setPdfState(local.id, remote.hasPdf, rev)
+        notifyChange()
+        return rev
     }
 
     /**

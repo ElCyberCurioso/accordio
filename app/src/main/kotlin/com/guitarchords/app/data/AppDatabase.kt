@@ -15,7 +15,7 @@ import com.guitarchords.app.training.TrainingArea
         TrainingProfile::class, AreaProgress::class, ExerciseResult::class,
         AchievementUnlock::class
     ],
-    version = 18,
+    version = 19,
     // El esquema se exporta a app/schemas/ (ver ksp {} en build.gradle.kts).
     exportSchema = true
 )
@@ -323,6 +323,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_18_19 = object : Migration(18, 19) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                /*
+                 * Partitura en PDF adjunta. Nace a 0 y, igual que en 17→18, NO
+                 * se marca nada como pendiente: quién tiene PDF lo dice el
+                 * servidor, y llega con la siguiente sincronización.
+                 */
+                db.execSQL("ALTER TABLE songs ADD COLUMN has_pdf INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         /**
          * Filas semilla del entrenamiento (perfil único + una fila por área),
          * para que el código nunca encuentre un perfil inexistente. Se invoca
@@ -360,7 +371,7 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10,
                         MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13,
                         MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
-                        MIGRATION_16_17, MIGRATION_17_18
+                        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19
                     )
                     .addCallback(object : Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {

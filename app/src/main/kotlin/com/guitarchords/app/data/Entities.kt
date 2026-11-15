@@ -83,7 +83,15 @@ data class Song(
      * móvil no pierda las elecciones de instrumentos que todavía no conozca.
      * Quien lo lee y lo escribe es [com.guitarchords.app.chords.ChordVariants].
      */
-    @ColumnInfo(name = "chord_variants") val chordVariants: String = ""
+    @ColumnInfo(name = "chord_variants") val chordVariants: String = "",
+    /**
+     * La partitura tiene un PDF adjunto EN EL SERVIDOR. Aquí solo se guarda el
+     * dato: el fichero se pide cuando se abre (ver
+     * [com.guitarchords.app.sync.SongPdf]) y queda en la caché de la app. Lo
+     * fija el servidor; en el móvil cambia al sincronizar o al subir/quitar el
+     * PDF desde el editor, nunca al guardar la ficha.
+     */
+    @ColumnInfo(name = "has_pdf") val hasPdf: Boolean = false
 )
 
 /**

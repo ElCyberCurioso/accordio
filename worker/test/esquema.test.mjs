@@ -139,7 +139,7 @@ test("están las columnas y tablas que el código nombra", () => {
   const { columnas } = radiografia(db);
 
   // songs: lo que leen db.js y sync.js al guardar una partitura.
-  for (const columna of ["chord_variants", "youtube_url", "rev", "favorite",
+  for (const columna of ["chord_variants", "youtube_url", "rev", "favorite", "pdf_key", "pdf_size",
                          "position", "playlist_id", "deleted_at", "visibility"]) {
     assert.ok(columnas.songs.includes(columna), `songs no tiene ${columna}`);
   }

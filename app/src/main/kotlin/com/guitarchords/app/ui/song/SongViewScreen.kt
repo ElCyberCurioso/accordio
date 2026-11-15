@@ -41,6 +41,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -78,6 +79,7 @@ import com.guitarchords.app.chords.RenderedLine
 import com.guitarchords.app.data.SongVersion
 import com.guitarchords.app.metronome.MetronomeEngine
 import com.guitarchords.app.print.PrintAdapter
+import com.guitarchords.app.sync.SongPdf
 import com.guitarchords.app.sync.SongTextFormat
 import com.guitarchords.app.ui.components.ChordModal
 import com.guitarchords.app.ui.components.EmptyState
@@ -328,6 +330,39 @@ fun SongViewScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+                // Partitura en PDF adjunta: solo si la hay y la canción está en la
+                // cuenta (el fichero vive en el servidor y se pide con la sesión).
+                if (s.hasPdf && s.remoteId != null) {
+                    val bajando by vm.pdfBusy.collectAsState()
+                    Spacer(Modifier.height(6.dp))
+                    androidx.compose.material3.OutlinedButton(
+                        enabled = !bajando,
+                        onClick = {
+                            vm.openPdf(
+                                onReady = { fichero ->
+                                    try {
+                                        ctx.startActivity(SongPdf.intentDeVer(ctx, fichero))
+                                    } catch (e: android.content.ActivityNotFoundException) {
+                                        android.widget.Toast.makeText(ctx, R.string.pdf_no_viewer, android.widget.Toast.LENGTH_LONG).show()
+                                    }
+                                },
+                                onError = { mensaje ->
+                                    android.widget.Toast.makeText(ctx, mensaje, android.widget.Toast.LENGTH_LONG).show()
+                                }
+                            )
+                        }
+                    ) {
+                        if (bajando) {
+                            androidx.compose.material3.CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp), strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(AccordioIcons.partitura(), stringResource(R.string.pdf_open), tint = Color.Unspecified)
+                        }
+                        Spacer(Modifier.size(8.dp))
+                        Text(stringResource(R.string.pdf_sheet))
+                    }
                 }
                 Spacer(Modifier.height(8.dp))
                 VersionBar(

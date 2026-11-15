@@ -168,6 +168,23 @@
     <string name="untitled">Sin título</string>
     <string name="source_url_label">URL de la canción original</string>
     <string name="link">Link</string>
+    <string name="pdf_sheet">Partitura PDF</string>
+    <string name="pdf_open">Abrir la partitura en PDF</string>
+    <string name="pdf_attach">Adjuntar PDF</string>
+    <string name="pdf_replace">Cambiar PDF</string>
+    <string name="pdf_remove">Quitar PDF</string>
+    <string name="pdf_attached">Tiene una partitura en PDF.</string>
+    <string name="pdf_none">Sin partitura en PDF.</string>
+    <string name="pdf_need_sync">Para adjuntar un PDF, guarda la partitura y sincronízala antes con tu cuenta.</string>
+    <string name="pdf_too_big">El PDF no puede pasar de 10 MB.</string>
+    <string name="pdf_not_pdf">Ese fichero no es un PDF.</string>
+    <string name="pdf_unavailable">Esta partitura ya no tiene PDF.</string>
+    <string name="pdf_network">No se ha podido descargar el PDF. Comprueba la conexión.</string>
+    <string name="pdf_upload_failed">No se ha podido subir el PDF. Comprueba la conexión.</string>
+    <string name="pdf_no_viewer">No hay ninguna aplicación instalada para abrir un PDF.</string>
+    <string name="pdf_session">La sesión ha caducado. Vuelve a entrar en tu cuenta.</string>
+    <string name="pdf_uploaded">PDF adjuntado.</string>
+    <string name="pdf_removed">PDF quitado.</string>
     <string name="title_required">Ponle un título a la canción</string>
 
     <!-- Diccionario -->

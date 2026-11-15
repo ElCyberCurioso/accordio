@@ -33,7 +33,12 @@ CREATE TABLE IF NOT EXISTS songs (
   deleted_at  INTEGER NOT NULL DEFAULT 0,   -- papelera (0 = activa)
   -- Digitación elegida para cada acorde EN ESTA partitura, por instrumento:
   -- {"guitarra":{"F":2},"ukelele":{}}. Vacío = la primera del diccionario.
-  chord_variants TEXT NOT NULL DEFAULT ''
+  chord_variants TEXT NOT NULL DEFAULT '',
+  -- Partitura en PDF adjunta: clave del objeto en R2 ('' = no tiene) y su
+  -- tamaño en bytes. La sirve GET /api/songs/:id/pdf con el MISMO permiso que
+  -- la partitura (canView); la clave no sale nunca al cliente.
+  pdf_key     TEXT NOT NULL DEFAULT '',
+  pdf_size    INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_songs_owner      ON songs(owner_id, deleted_at);

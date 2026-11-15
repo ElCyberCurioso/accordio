@@ -17,6 +17,12 @@ export const MAX_FIELD = 200;
 export const MAX_URL = 2000;
 /** Nota de una propuesta o motivo de un rechazo. */
 export const MAX_NOTE = 2000;
+/**
+ * Partitura en PDF adjunta a una canción. Un PDF de varias páginas escaneadas
+ * ronda 1–5 MB; con 10 hay margen y un fichero equivocado (un vídeo, un ZIP)
+ * no entra.
+ */
+export const MAX_PDF = 10 * 1024 * 1024;
 /** Blob de acordes personales de un usuario. */
 export const MAX_CHORDS_BLOB = 1024 * 1024;
 

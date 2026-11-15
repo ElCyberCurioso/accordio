@@ -658,6 +658,13 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   #eTubeWrap > label { min-width:0; }
   #eTubeMsg { grid-column:1 / -1; font-size:11px; color:var(--ui-text-muted); }
   #eTubeMsg:empty { display:none; }
+  /* El PDF también pide dos columnas: botón, «Quitar» y el nombre del fichero. */
+  #ePdfWrap { grid-column:span 2; }
+  .pdfCampo { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  #ePdfInfo { overflow-wrap:anywhere; }
+  #ePdfInfo:empty { display:none; }
+  #ePdfInfo a { font-weight:600; }
+  @media (max-width:620px) { #ePdfWrap, #eTubeWrap { grid-column:auto; } }
   #eAcciones { display:flex; flex-direction:column; gap:8px; flex:0 0 auto; width:200px;
                margin-top:0; padding:0 0 0 14px;
                border-top:0; border-left:1.5px solid var(--ui-border); }
@@ -1239,6 +1246,8 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   .tool.compartir     { --tono:var(--ac-highlight); --tono-glifo:var(--ui-chord);
                         --tono-texto:var(--ac-on-highlight); }
   .tool.imprimir      { --tono:var(--ac-action); --tono-glifo:var(--ui-accent); }
+  .tool.partitura     { --tono:var(--ac-highlight); --tono-glifo:var(--ui-chord);
+                        --tono-texto:var(--ac-on-highlight); }
   /* «Nueva» es la acción destacada de la página: el kit reserva el coral justo
      para eso («acción destacada, nuevo»). Va rellena, no de contorno. */
   .tool.destacada { background:var(--ac-highlight); color:var(--ac-on-highlight);
@@ -2167,6 +2176,7 @@ function renderList(error) {
     if (s.ratingCount) datos.push('<span class="nota5" title="' + s.ratingCount +
       (s.ratingCount === 1 ? " valoración" : " valoraciones") + '"><i>★</i>' +
       Number(s.ratingAverage).toFixed(1) + "</span>");
+    if (s.hasPdf) datos.push('<span class="nVers" title="Tiene partitura en PDF">PDF</span>');
     if (s.versionCount) datos.push('<span class="nVers">' + (s.versionCount + 1) + " versiones</span>");
     if (datos.length) {
       var d = document.createElement("span");
@@ -2930,6 +2940,7 @@ function openSong(id) {
       (d.song.artist ? " · " + d.song.artist : "") + " · Accordio";
     setCapo(d.song.capo);
     ponerOrigen(d.song.sourceUrl);
+    vPdf.classList.toggle("hidden", !d.song.hasPdf);
     vEdit.classList.toggle("hidden", !(user && (user.id === d.song.ownerId || user.role === "admin")));
     renderViewer();
     viewer.classList.add("on");
@@ -3511,6 +3522,48 @@ function deleteComment(id) {
  * Solo http(s). Un href con «javascript:» en la cabecera sería un agujero, y lo
  * ve cualquiera que abra la partitura (de ahí acUrlSegura, que está probada).
  */
+/*
+ * Abre la partitura en PDF en otra pestaña.
+ *
+ * La dirección es SIEMPRE /api/songs/<id>/pdf, que comprueba el permiso igual
+ * que la partitura. Lo que cambia es cómo se llega:
+ *
+ *  - Pública: se abre la dirección tal cual. No hace falta sesión.
+ *  - Privada: la sesión de esta web es un token que va en una cabecera, y una
+ *    pestaña nueva no manda cabeceras. Se pide el fichero desde aquí, con el
+ *    token, y se le entrega a la pestaña como blob. El token no viaja nunca en
+ *    la URL (acabaría en el historial y en los registros del servidor).
+ *
+ * La pestaña se abre ANTES de pedir nada, en el mismo clic: si se abriera al
+ * llegar la respuesta, el navegador la trataría como una ventana emergente no
+ * pedida y la bloquearía.
+ */
+function abrirPdf(song) {
+  var ruta = "/api/songs/" + encodeURIComponent(song.id) + "/pdf";
+  if (song.visibility === "public") {
+    window.open(ruta, "_blank", "noopener");
+    return;
+  }
+  var pestana = window.open("", "_blank");
+  if (!pestana) {
+    notificar("El navegador ha bloqueado la pestaña nueva. Permite las ventanas emergentes de esta página.", "error");
+    return;
+  }
+  try { pestana.opener = null; pestana.document.title = "Cargando partitura…"; } catch (e) { /* da igual */ }
+  fetch(ruta, { headers: token ? { Authorization: "Bearer " + token } : {} }).then(function (r) {
+    if (!r.ok) throw new Error(r.status === 404 ? "Esta partitura no tiene PDF, o ya no puedes verla." : "Error " + r.status);
+    return r.blob();
+  }).then(function (blob) {
+    var enlace = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+    pestana.location.replace(enlace);
+    // El blob ocupa memoria mientras viva: un minuto sobra para que cargue.
+    setTimeout(function () { URL.revokeObjectURL(enlace); }, 60000);
+  }).catch(function (e) {
+    try { pestana.close(); } catch (x) { /* ya estaba cerrada */ }
+    notificar("No se ha podido abrir el PDF: " + e.message, "error");
+  });
+}
+
 function ponerOrigen(url) {
   var origen = String(url || "");
   var valida = acUrlSegura(origen);
@@ -4522,6 +4575,8 @@ function applyEditorMode() {
   ePlaylistWrap.classList.toggle("hidden", esVersion);
   eVisibilityWrap.classList.toggle("hidden", esVersion || !esEditor());
   eLockedWrap.classList.toggle("hidden", esVersion);
+  // El PDF es de la canción, no de cada versión.
+  ePdfWrap.classList.toggle("hidden", esVersion);
   deleteBtn.classList.toggle("hidden", esVersion || !editingId);
   saveBtn.textContent = editorMode === "proposal" ? "Enviar a revisión" : "Guardar";
 
@@ -4566,6 +4621,7 @@ function prepararAlta() {
   editingId = null;
   eTitle.value = ""; eArtist.value = ""; eSource.value = ""; eContent.value = ""; eGenre.value = "";
   eTube.value = ""; eTubeMsg.textContent = "";
+  prepararPdf(null);
   editCapo = 0; renderCapo();
   editChordVariants = variantesDe(null);
   eLocked.checked = false;
@@ -4638,6 +4694,89 @@ function abrirEditorDe(id) {
 }
 
 /** Vuelca la partitura de current en los campos del editor. */
+/*
+ * PDF en el editor. Tres datos: si la partitura YA tiene uno (pdfActual), el
+ * fichero recién elegido que aún no se ha subido (pdfNuevo) y si se ha pedido
+ * quitar el que había (pdfQuitar). Nada de esto toca el servidor hasta
+ * «Guardar» (ver aplicarPdf).
+ */
+var PDF_MAX = 10 * 1024 * 1024;
+var pdfActual = null;    // { size } del que tiene la partitura, o null
+var pdfNuevo = null;     // File elegido, pendiente de subir
+var pdfQuitar = false;
+
+function megas(bytes) {
+  return bytes >= 1024 * 1024 ? (bytes / (1024 * 1024)).toFixed(1).replace(".", ",") + " MB"
+                              : Math.max(1, Math.round(bytes / 1024)) + " KB";
+}
+
+function prepararPdf(song) {
+  pdfActual = song && song.hasPdf ? { size: song.pdfSize || 0 } : null;
+  pdfNuevo = null;
+  pdfQuitar = false;
+  ePdfFile.value = "";
+  pintarPdf();
+}
+
+function pintarPdf() {
+  ePdfInfo.textContent = "";
+  if (pdfNuevo) {
+    ePdfInfo.textContent = pdfNuevo.name + " · " + megas(pdfNuevo.size) + " · se subirá al guardar";
+  } else if (pdfActual && pdfQuitar) {
+    ePdfInfo.textContent = "Se quitará al guardar.";
+  } else if (pdfActual) {
+    ePdfInfo.textContent = "Tiene un PDF" + (pdfActual.size ? " (" + megas(pdfActual.size) + ")" : "") + ". ";
+    var ver = document.createElement("a");
+    ver.href = "#";
+    ver.textContent = "Ver";
+    ver.onclick = function (ev) {
+      ev.preventDefault();
+      if (current && current.song) abrirPdf(current.song);
+    };
+    ePdfInfo.appendChild(ver);
+  }
+  ePdfPick.querySelector("span").textContent =
+    (pdfActual && !pdfQuitar) || pdfNuevo ? "Cambiar PDF…" : "Elegir PDF…";
+  ePdfQuitar.classList.toggle("hidden", !(pdfNuevo || (pdfActual && !pdfQuitar)));
+}
+
+ePdfPick.onclick = function () { ePdfFile.click(); };
+ePdfFile.onchange = function () {
+  var f = ePdfFile.files && ePdfFile.files[0];
+  ePdfFile.value = "";      // elegir otra vez el mismo fichero tiene que avisar
+  if (!f) return;
+  // El servidor comprueba lo mismo (y mira dentro del fichero); aquí es para
+  // decirlo antes de subir diez megas en balde.
+  var esPdf = f.type === "application/pdf" || /[.]pdf$/i.test(f.name);
+  if (!esPdf) { editMsg.textContent = "Ese fichero no es un PDF."; return; }
+  if (f.size > PDF_MAX) { editMsg.textContent = "El PDF no puede pasar de 10 MB (este pesa " + megas(f.size) + ")."; return; }
+  editMsg.textContent = "";
+  pdfNuevo = f;
+  pdfQuitar = false;
+  pintarPdf();
+};
+ePdfQuitar.onclick = function () {
+  if (pdfNuevo) pdfNuevo = null;      // primero se deshace lo recién elegido
+  else pdfQuitar = true;
+  pintarPdf();
+};
+
+/** Lleva al servidor lo que se haya decidido sobre el PDF. Devuelve una promesa. */
+function aplicarPdf(songId) {
+  var ruta = "/api/songs/" + encodeURIComponent(songId) + "/pdf";
+  if (pdfNuevo) {
+    var cabeceras = { "Content-Type": "application/pdf" };
+    if (token) cabeceras.Authorization = "Bearer " + token;
+    return fetch(ruta, { method: "PUT", headers: cabeceras, body: pdfNuevo }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) throw new Error(d.error || ("Error " + r.status));
+      });
+    });
+  }
+  if (pdfQuitar && pdfActual) return api("DELETE", ruta);
+  return Promise.resolve();
+}
+
 function volcarEnEditor() {
   editorMode = "song";
   editingVersionId = null;
@@ -4657,6 +4796,7 @@ function volcarEnEditor() {
   ePlaylist.value = current.song.playlistId || "";
   eContent.value = current.content || "";
   editChordVariants = variantesDe(current.song);
+  prepararPdf(current.song);
   renderEditorPreview();
   applyEditorMode();
   editMsg.textContent = "";
@@ -4694,7 +4834,21 @@ function saveSong() {
   };
   var req = editingId ? api("PUT", "/api/songs/" + editingId, payload)
                       : api("POST", "/api/songs", payload);
-  req.then(function () {
+  req.then(function (d) {
+    /*
+     * La ficha ya está guardada; el PDF va después y puede fallar por su
+     * cuenta (red, tamaño). Si falla NO se sale del editor, y la partitura
+     * pasa a ser «la que se está editando»: sin esto, reintentar en una
+     * partitura nueva la crearía otra vez.
+     */
+    var id = (d.song && d.song.id) || editingId;
+    return aplicarPdf(id).catch(function (e) {
+      editingId = id;
+      if (current && current.song && current.song.id === id) current = null;
+      applyEditorMode();
+      throw new Error("La partitura se ha guardado, pero el PDF no: " + e.message);
+    });
+  }).then(function () {
     loadGenres();          // la categoría puede ser nueva
     // Se REEMPLAZA la entrada del editor: guardada la partitura, «atrás» no
     // puede devolver a un formulario que ya no tiene nada que hacer.
@@ -5034,7 +5188,7 @@ var accionesDelVisor = [];
 
 function colocarAcciones() {
   if (!accionesDelVisor.length) {
-    accionesDelVisor = [vSource, vShare, vPrint, vEdit];
+    accionesDelVisor = [vSource, vPdf, vShare, vPrint, vEdit];
   }
   var destino = pantallaAncha.matches ? vLadoDer : vMenu;
   accionesDelVisor.forEach(function (n) {
@@ -5077,6 +5231,7 @@ document.addEventListener("keydown", function (e) {
 });
 
 vShare.onclick = compartirCancion;
+vPdf.onclick = function () { if (current && current.song) abrirPdf(current.song); };
 vPrint.onclick = printViewer;
 
 backupBtn.onclick = backupZip;
@@ -5598,6 +5753,19 @@ export const WEB_HTML = `<!doctype html>
             <button id="eTubeSearch" title="Busca el vídeo en YouTube, en otra pestaña">Buscar</button>
             <span id="eTubeMsg" class="nota"></span>
           </div>
+          <!-- Partitura en PDF. No se sube al elegirla sino al GUARDAR, como el
+               resto de la ficha: una partitura nueva aún no tiene id al que
+               colgársela, y «Cancelar» tiene que poder deshacerlo. -->
+          <div id="ePdfWrap" class="campo">
+            <span>Partitura en PDF <small>opcional; hasta 10 MB</small></span>
+            <div class="pdfCampo">
+              <button type="button" id="ePdfPick" class="tool">
+                <svg class="ic"><use href="#ac-sheet-music"></use></svg><span>Elegir PDF…</span></button>
+              <button type="button" id="ePdfQuitar" class="ghost hidden">Quitar</button>
+              <input type="file" id="ePdfFile" accept="application/pdf,.pdf" class="hidden">
+            </div>
+            <span id="ePdfInfo" class="nota"></span>
+          </div>
         </div>
 
           <!-- Los botones, a la derecha de la barra: sitio fijo, siempre a la vista. -->
@@ -5782,8 +5950,13 @@ export const WEB_HTML = `<!doctype html>
          title="Abrir la partitura original en otra pestaña">Original ↗</a>
       <button id="vShare" class="tool compartir" title="Copiar el enlace de esta partitura">
         <svg class="ic"><use href="#ac-submit"></use></svg><span>Compartir</span></button>
+      <!-- La partitura en PDF que se adjuntó a la canción. Solo sale si la hay. -->
+      <button id="vPdf" class="tool partitura hidden" title="Abrir la partitura en PDF en otra pestaña">
+        <svg class="ic"><use href="#ic-pdf"></use></svg><span>Partitura PDF</span></button>
+      <!-- Se llamaba «PDF», pero lo que hace es imprimir la hoja de acordes; con
+           el botón de arriba al lado, dos «PDF» distintos eran una trampa. -->
       <button id="vPrint" class="tool imprimir" title="Abre el diálogo de impresión; ahí puedes elegir «Guardar como PDF»">
-        <svg class="ic"><use href="#ac-sheet-music"></use></svg><span>PDF</span></button>
+        <svg class="ic"><use href="#ac-sheet-music"></use></svg><span>Imprimir</span></button>
       <button id="vEdit" class="hidden">Editar</button>
     </div>
     <!-- En estrecho, las acciones se mudan aquí dentro (ver colocarAcciones). -->
@@ -5886,6 +6059,7 @@ export const WEB_HTML = `<!doctype html>
   <symbol id="ic-letra" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16M4 12h16"></path><path d="M4 16h10" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
   <symbol id="ic-app" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 16.5v-9M8.5 11L12 7.5l3.5 3.5" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
   <symbol id="ic-stop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><rect x="9" y="9" width="6" height="6" rx="1" stroke="var(--ac-icon-accent, #FF6B6B)"></rect></symbol>
+  <symbol id="ic-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path><path d="M9 13h6M9 17h4" stroke="var(--ac-icon-accent, #FF6B6B)"></path></symbol>
   <symbol id="ic-filtros" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"></path></symbol>
 </svg>
 

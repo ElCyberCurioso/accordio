@@ -158,6 +158,56 @@ fun SongEditorScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(8.dp))
+            // Partitura en PDF: se sube y se quita al momento (ver el ViewModel).
+            val pdfOcupado by vm.pdfBusy.collectAsState()
+            val pdfAviso by vm.pdfMessage.collectAsState()
+            val contexto = androidx.compose.ui.platform.LocalContext.current
+            LaunchedEffect(pdfAviso) {
+                pdfAviso?.let {
+                    android.widget.Toast.makeText(contexto, it, android.widget.Toast.LENGTH_LONG).show()
+                    vm.pdfMessageShown()
+                }
+            }
+            val elegirPdf = androidx.activity.compose.rememberLauncherForActivityResult(
+                androidx.activity.result.contract.ActivityResultContracts.GetContent()
+            ) { uri -> if (uri != null) vm.attachPdf(uri) }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(AccordioIcons.partitura(), null, tint = Color.Unspecified)
+                Spacer(Modifier.size(8.dp))
+                Text(
+                    stringResource(
+                        when {
+                            !vm.canAttachPdf(song) -> R.string.pdf_need_sync
+                            song.hasPdf -> R.string.pdf_attached
+                            else -> R.string.pdf_none
+                        }
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            if (vm.canAttachPdf(song)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    TextButton(enabled = !pdfOcupado, onClick = { elegirPdf.launch("application/pdf") }) {
+                        Text(stringResource(if (song.hasPdf) R.string.pdf_replace else R.string.pdf_attach))
+                    }
+                    if (song.hasPdf) {
+                        TextButton(enabled = !pdfOcupado, onClick = { vm.removePdf() }) {
+                            Text(stringResource(R.string.pdf_remove), color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                    if (pdfOcupado) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp), strokeWidth = 2.dp
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
             val plName = song.playlistId?.let { pid -> playlists.firstOrNull { it.id == pid }?.name }
                 ?: stringResource(R.string.no_playlist)
             Row(

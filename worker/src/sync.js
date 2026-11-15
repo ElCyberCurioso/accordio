@@ -243,6 +243,7 @@ async function pushSongs(env, user, entradas, mapaListas, mapaCanciones) {
           continue;
         }
         if (existente.r2_key) await env.BUCKET.delete(existente.r2_key);
+        if (existente.pdf_key) await env.BUCKET.delete(existente.pdf_key);
         await hardDeleteSong(env.DB, existente.id);
         salida.push({ ...resultado, ok: true, id: existente.id, purged: true });
         continue;

@@ -147,6 +147,8 @@ class SyncViewModel(app: Application) : AndroidViewModel(app) {
     fun signOut() {
         SyncWorker.cancel(getApplication())
         prefs.clearSession()
+        // Los PDF bajados eran de esa cuenta: no se quedan en el teléfono.
+        com.guitarchords.app.sync.SongPdf.vaciar(getApplication())
         _account.value = ""
         _role.value = "user"
         _conflicts.value = emptyList()

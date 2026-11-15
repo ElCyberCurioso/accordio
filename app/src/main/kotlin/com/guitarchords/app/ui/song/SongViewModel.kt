@@ -6,7 +6,15 @@ import androidx.lifecycle.viewModelScope
 import com.guitarchords.app.GuitarChordsApp
 import com.guitarchords.app.chords.Instrument
 import com.guitarchords.app.data.Repository
+import com.guitarchords.app.R
 import com.guitarchords.app.data.Song
+import com.guitarchords.app.sync.AccordioClient
+import com.guitarchords.app.sync.PdfNoDisponibleException
+import com.guitarchords.app.sync.SongPdf
+import com.guitarchords.app.sync.SyncPrefs
+import com.guitarchords.app.sync.UnauthorizedException
+import java.io.File
+import java.io.IOException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -50,6 +58,38 @@ class SongViewModel(app: Application) : AndroidViewModel(app) {
     val siblings = _siblings.asStateFlow()
 
     fun load(id: Long) { songIdFlow.value = id }
+
+    private val _pdfBusy = MutableStateFlow(false)
+    /** true mientras se baja el PDF: el botón enseña que está en ello. */
+    val pdfBusy = _pdfBusy.asStateFlow()
+
+    /**
+     * Trae el PDF de la partitura abierta y avisa cuando está listo para
+     * abrirse. Los errores llegan como id de cadena, que es la pantalla quien
+     * sabe enseñarlos.
+     */
+    fun openPdf(onReady: (File) -> Unit, onError: (Int) -> Unit) = viewModelScope.launch {
+        if (_pdfBusy.value) return@launch
+        val actual = song.value ?: return@launch
+        val remoteId = actual.remoteId ?: return@launch
+        val prefs = SyncPrefs(getApplication())
+        _pdfBusy.value = true
+        try {
+            val client = AccordioClient(prefs.baseUrl, prefs.authToken)
+            onReady(SongPdf.traer(getApplication(), client, remoteId))
+        } catch (e: PdfNoDisponibleException) {
+            // Se quitó desde otro sitio y aún no ha llegado por la
+            // sincronización: se deja de ofrecer ya.
+            repo.markPdfGone(actual)
+            onError(R.string.pdf_unavailable)
+        } catch (e: UnauthorizedException) {
+            onError(R.string.pdf_session)
+        } catch (e: IOException) {
+            onError(R.string.pdf_network)
+        } finally {
+            _pdfBusy.value = false
+        }
+    }
 
     fun loadSiblings(playlistId: Long) {
         if (playlistId <= 0L || _siblings.value.isNotEmpty()) return

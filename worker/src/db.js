@@ -433,6 +433,22 @@ export async function hardDeleteSong(db, id) {
   await db.prepare("DELETE FROM songs WHERE id = ?").bind(id).run();
 }
 
+/**
+ * Pone o quita ([key] vacía) el PDF de una partitura. Sube `rev` como
+ * cualquier otra escritura: es lo que hace que la app se entere, por el feed
+ * de cambios, de que ahora hay (o ya no hay) PDF.
+ *
+ * Va en su propia sentencia y NO en stmtUpdateSongMeta a propósito: quien
+ * guarda la ficha —la app incluida, que la manda entera— no conoce la clave, y
+ * metida allí cada guardado borraría el adjunto.
+ */
+export async function setSongPdf(db, id, key, size) {
+  await db.prepare(
+    "UPDATE songs SET pdf_key = ?, pdf_size = ?, updated_at = ?, rev = rev + 1 WHERE id = ?"
+  ).bind(key || "", key ? (size || 0) : 0, Date.now(), id).run();
+  return findSongById(db, id);
+}
+
 /** Marca/desmarca favorito sin tocar el resto de la ficha. */
 export async function setSongFavorite(db, id, favorite) {
   const now = Date.now();
@@ -472,6 +488,10 @@ export function publicSong(song, includeKey = false) {
      * entre "sin elección" y "un servidor que aún no lo conoce".
      */
     chordVariants: decodeVariants(song.chord_variants),
+    // Si hay partitura en PDF. La clave de R2 no sale: el fichero se pide por
+    // /api/songs/:id/pdf, que es donde se comprueba el permiso.
+    hasPdf: !!song.pdf_key,
+    pdfSize: song.pdf_key ? (song.pdf_size || 0) : 0,
     /*
      * Solo en los listados, que son los que las piden (ver estadisticasDe). En
      * el resto de respuestas —ficha suelta, sync— no viajan: undefined se cae

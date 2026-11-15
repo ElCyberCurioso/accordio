@@ -182,6 +182,13 @@ interface SongDao {
     @Query("SELECT COUNT(*) FROM songs WHERE dirty = 1")
     suspend fun countDirtyOnce(): Int
 
+    /**
+     * Estado del PDF adjunto, sin tocar content/dirty. `rev` es la revisión del
+     * servidor que corresponde a ese estado (ver Repository.applyPdfResult).
+     */
+    @Query("UPDATE songs SET has_pdf = :hasPdf, remote_rev = :rev WHERE id = :id")
+    suspend fun setPdfState(id: Long, hasPdf: Boolean, rev: Int)
+
     /** El candado lo manda el Worker; se aplica sin tocar content/dirty. */
     @Query("UPDATE songs SET locked = :locked WHERE id = :id")
     suspend fun setLocked(id: Long, locked: Boolean)

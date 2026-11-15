@@ -4,11 +4,12 @@ Documento de traspaso: qué es el proyecto, cómo está montado hoy, **por qué*
 tomaron ciertas decisiones (para no deshacerlas sin querer) y qué queda
 pendiente.
 
-Última actualización: 2026-11-14 · Rama `master`.
+Última actualización: 2026-11-15 · Rama `master`.
 
 > Todo lo que describe este documento está **commiteado** y el servidor está
-> **desplegado** (versión `872614cd`), y está **subido** a `origin/master`, este
-> commit incluido.
+> **desplegado** (versión `d7e55024`). **El commit del PDF adjunto (§3.21) está
+> en `master` local y SIN subir a `origin`**: falta un `git push`. La app 2.7
+> que lo acompaña está sin publicar y sin probar (§7).
 > Lo de este párrafo sobre la app es anterior: sigue en
 > `versionCode 2`, y no debe publicarse sin probarla antes en un móvil de
 > verdad (§7).
@@ -598,6 +599,28 @@ Todo se revisó con capturas en Chromium sin cabeza (claro/oscuro, 1440 px y
   acceso y vacíos van en tarjeta; «Eliminar» del editor pasa a contorno; la
   estrella de favorita tiene 38 px de diana; el listado mide 1100 px.
 
+### 3.21 Sesión 14–15/11/2026 · partitura en PDF adjunta
+Cada canción puede llevar un PDF. **Servidor y web están desplegados** (versión
+`d7e55024`, 15/11; lo desplegó el dueño desde el árbol de trabajo, antes del
+commit). **La app 2.7 está sin publicar** (ver §7).
+
+- **Servidor**: columnas `songs.pdf_key` / `pdf_size` (séptima tanda de
+  `migrations.sql`). El fichero va a R2 en `pdf/<id-canción>/<uuid>.pdf`.
+  - `GET /api/songs/:id/pdf` lo sirve con **`canView`, la misma regla que la
+    partitura**; `PUT` (cuerpo = el fichero) y `DELETE` piden `canEdit`.
+  - Tope de 10 MB (`MAX_PDF`) y firma `%PDF-` en los primeros 1024 bytes.
+  - `publicSong` expone `hasPdf` y `pdfSize`, **nunca la clave**.
+  - Subir o quitar sube `rev`. El borrado definitivo (`api.js` y `sync.js`)
+    se lleva también el PDF.
+  - `test/pdf.test.mjs`: 12 tests, casi todos de acceso.
+- **Web**: campo en el editor (se sube **al guardar**, no al elegir) y botón
+  «Partitura PDF» en el visor. El botón que imprimía y se llamaba «PDF» pasa a
+  «Imprimir». Probado en Chromium contra `wrangler dev`.
+- **App 2.7** (`versionCode 9`, Room 18 → 19, columna `has_pdf`): botón en el
+  visor que baja el PDF con la sesión y lo abre con el visor del teléfono;
+  adjuntar/cambiar/quitar desde el editor. Compila y pasan los 154 tests;
+  **no se ha ejecutado en ningún dispositivo**.
+
 ---
 
 ## 4. Decisiones de diseño que conviene respetar
@@ -718,6 +741,25 @@ Todo se revisó con capturas en Chromium sin cabeza (claro/oscuro, 1440 px y
     cambia una, se cambia la otra. Montserrat y JetBrains Mono son fuentes
     **variables**: en `Paint` hay que pedir el peso con
     `setFontVariationSettings("'wght' 700")` o Montserrat sale en Thin.
+31. **El PDF de una canción no tiene dirección propia.** Solo sale por
+    `/api/songs/:id/pdf`, que mira `canView` en cada petición: una privada
+    tiene el PDF privado, publicarla lo abre y despublicarla lo cierra, sin
+    tocar el fichero. Nada de URL públicas de R2 ni de enlaces firmados: se
+    podrían reenviar y seguirían valiendo tras despublicar.
+    - **En la web, el PDF de una privada se pide con `fetch` y se entrega a la
+      pestaña nueva como blob.** La sesión es un token en una cabecera y una
+      pestaña nueva no manda cabeceras; ponerlo en la URL lo dejaría en el
+      historial y en los registros. Las públicas se abren por su dirección.
+    - **`pdf_key` no entra en `stmtUpdateSongMeta`.** Quien guarda la ficha
+      —la app la manda entera— no conoce la clave; metida ahí, cada guardado
+      borraría el adjunto. Solo la toca `setSongPdf`.
+    - **En la app, el PDF se sube al momento y no por la sincronización**: el
+      fichero no se guarda en el teléfono. Tras subirlo se adopta la `rev` que
+      devuelve el servidor **solo si es la local + 1**
+      (`SongPdf.revTrasEscribir`); si no, hubo un cambio ajeno y adoptarla lo
+      escondería.
+    - La copia en caché del móvil se usa si falla **la red**, nunca si el
+      servidor responde 404 o 401: entonces se borra.
 27. **Todo texto de la web va sobre una superficie, nunca suelto sobre el
     mosaico.** Las notas del fondo se cruzan con las letras: pasó con el
     formulario de acceso, con los mensajes de vacío y con las pastillas
@@ -747,14 +789,14 @@ Todo se revisó con capturas en Chromium sin cabeza (claro/oscuro, 1440 px y
 # Worker · no hace falta cuenta de Cloudflare
 cd worker
 npm run check     # sintaxis de los módulos y del JS que se sirve
-npm test          # 222 tests
+npm test          # 234 tests
 npm run dev       # servidor local en https (ver §8: adopta el host del dominio)
 ```
 
 ```bash
 # App Android · Linux (el JDK del sistema ya vale: se instaló openjdk-21-jdk)
 export ANDROID_HOME=$HOME/Android/Sdk ANDROID_SDK_ROOT=$HOME/Android/Sdk
-./gradlew testDebugUnitTest     # 121 tests
+./gradlew testDebugUnitTest     # 154 tests
 ./gradlew assembleDebug         # APK en app/build/outputs/apk/debug/
 ./gradlew assembleRelease       # APK firmado (necesita keystore.properties)
 ```
@@ -895,7 +937,7 @@ Estado actual de producción:
 | R2 | `guitarchords` |
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
-| Worker | Versión `872614cd`, desplegada el 14/11/2026 con `./tools/deploy.sh release --yes` (sin `--yes` el script pregunta y, lanzado desde donde no hay teclado, se cancela solo) |
+| Worker | Versión `d7e55024`, desplegada el 15/11/2026 con `./tools/deploy.sh release --yes` (sin `--yes` el script pregunta y, lanzado desde donde no hay teclado, se cancela solo) |
 | App | `versionCode 8` / `2.6` publicada en `/update` y como release `v2.6` en GitHub (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
@@ -908,6 +950,19 @@ Estado actual de producción:
 ## 7. Pendiente
 
 **Lo primero de todo**
+- [ ] **Terminar el PDF adjunto (§3.21).** Servidor y web ya están en
+      producción; queda:
+      1. `git push` del commit;
+      2. probar la app 2.7 en un teléfono: la migración 18 → 19 con datos,
+         abrir un PDF (¿sale el visor del teléfono?), adjuntar uno desde el
+         editor y **guardar después la ficha** para ver que no salta un
+         conflicto falso;
+      3. publicarla con `NOTAS=… ./tools/deploy.sh app …` (§6).
+      Mientras tanto, la app 2.6 publicada sigue funcionando contra el
+      servidor nuevo: ignora los campos que no conoce y no toca el PDF al
+      guardar.
+- [ ] **El PDF no entra en la copia de seguridad en ZIP** (Administración), que
+      solo lleva el texto de las partituras.
 - [ ] **Copia de seguridad de la clave de firma** fuera de esta máquina (§9).
       Sin ella no se puede volver a actualizar la app nunca. Sigue pendiente
       desde hace sesiones y es lo único irreversible de esta lista.

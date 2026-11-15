@@ -35,3 +35,11 @@ CREATE TABLE IF NOT EXISTS settings (
 -- esto se pintaba siempre la primera del diccionario, que para media biblioteca
 -- es una postura alta que no es la que toca quien escribió la partitura.
 ALTER TABLE songs ADD COLUMN chord_variants TEXT NOT NULL DEFAULT '';
+
+-- Séptima tanda · partitura en PDF adjunta a la canción.
+--
+-- El fichero vive en R2 y aquí solo queda su clave ('' = sin PDF) y el tamaño.
+-- No se sirve por la clave, sino por GET /api/songs/:id/pdf, que aplica el
+-- mismo permiso que la partitura: una canción privada tiene el PDF privado.
+ALTER TABLE songs ADD COLUMN pdf_key TEXT NOT NULL DEFAULT '';
+ALTER TABLE songs ADD COLUMN pdf_size INTEGER NOT NULL DEFAULT 0;

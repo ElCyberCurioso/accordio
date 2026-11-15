@@ -35,7 +35,8 @@ import {
   publicSong, publicUser, publicVersion, resolveProposal, softDeleteSong,
   softDeleteVersion, updateSongMeta, updateUserRole, updateVersionMeta, uuid,
   nextVersionPositionFor, stmtInsertVersion, stmtResolveProposal, stmtUpdateSongMeta,
-  hardDeleteSong, listTrashedSongs, restoreSong, setSongFavorite, findPlaylistById
+  hardDeleteSong, listTrashedSongs, restoreSong, setSongFavorite, findPlaylistById,
+  setSongPdf
 } from "./db.js";
 import {
   canAddVersion, canComment, canDeleteComment, canRate,
@@ -53,7 +54,7 @@ import { FALLBACK_GENRE, guessGenre } from "./genres.js";
 import { isValidYoutube, youtubeSearch } from "./youtube.js";
 import { handleSync } from "./sync.js";
 import {
-  MAX_CHORDS_BLOB, checkField, checkSongFields, clearRate,
+  MAX_CHORDS_BLOB, MAX_PDF, checkField, checkSongFields, clearRate,
   rateKey, rateLimit
 } from "./limits.js";
 
@@ -225,6 +226,111 @@ async function getSong(env, cors, user, id) {
   const song = await findSongById(env.DB, id);
   if (!canView(user, song)) return fail("no encontrada", cors, 404);
   return json({ song: publicSong(song, canEdit(user, song)), content: await readBody(env, song) }, cors);
+}
+
+/* ------------------------- partitura en PDF ------------------------- */
+
+/**
+ * Nombre del fichero para la cabecera Content-Disposition. Solo ASCII seguro:
+ * el título lo escribe el usuario y va dentro de una cabecera entre comillas.
+ */
+function nombreDePdf(song) {
+  const base = [song.artist, song.title].filter(Boolean).join(" - ")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9 ._-]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+  return (base || "partitura") + ".pdf";
+}
+
+/**
+ * Sirve el PDF. **La regla de acceso es `canView`, la misma que la partitura**:
+ * pública, cualquiera; privada, su dueño o un administrador. Quien no puede
+ * verla recibe el mismo 404 que si no existiera —ni la canción ni el PDF—, para
+ * no confirmar a nadie que una partitura privada está ahí.
+ *
+ * El fichero NO tiene dirección propia en R2 ni enlace que se pueda adivinar o
+ * compartir: solo sale por aquí, y aquí se mira el permiso en cada petición.
+ */
+async function getSongPdf(env, cors, user, id) {
+  const song = await findSongById(env.DB, id);
+  if (!canView(user, song) || !song.pdf_key) return fail("no encontrada", cors, 404);
+  const objeto = await env.BUCKET.get(song.pdf_key);
+  if (!objeto) return fail("no encontrada", cors, 404);
+  return new Response(objeto.body, {
+    status: 200,
+    headers: {
+      ...cors,
+      // Fijo, nunca el que mandó quien lo subió: con nosniff (ver index.js) el
+      // navegador lo trata como PDF y nada más, aunque dentro haya otra cosa.
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `inline; filename="${nombreDePdf(song)}"`,
+      /*
+       * Una privada no se guarda en ningún sitio. Una pública tampoco se
+       * cachea a ciegas (no-cache = «pregunta antes de reutilizar»): si se
+       * despublica, el siguiente intento tiene que pasar otra vez por aquí.
+       */
+      "Cache-Control": song.visibility === "public" ? "private, no-cache" : "private, no-store"
+    }
+  });
+}
+
+/**
+ * Sube (o sustituye) el PDF. Lo hace quien puede editar la partitura, igual
+ * que su texto. El cuerpo es el fichero tal cual, no JSON.
+ */
+async function putSongPdf(request, env, cors, user, id) {
+  const song = await findSongById(env.DB, id);
+  const denial = editDenialReason(user, song);
+  if (denial === "not_found") return fail("no encontrada", cors, 404);
+  if (denial === "unauthorized") return fail("inicia sesión", cors, 401);
+  if (denial) return fail("no puedes modificar esta partitura", cors, 403);
+
+  const limite = `el PDF no puede pasar de ${Math.round(MAX_PDF / (1024 * 1024))} MB`;
+  // Primero lo que declara, para no leer cien megas antes de decir que no; y
+  // después lo que de verdad llega, porque la cabecera la pone el cliente.
+  if (Number(request.headers.get("Content-Length") || 0) > MAX_PDF) return fail(limite, cors, 413);
+  const bytes = new Uint8Array(await request.arrayBuffer());
+  if (bytes.length > MAX_PDF) return fail(limite, cors, 413);
+  if (!esPdf(bytes)) return fail("el fichero no es un PDF", cors, 400);
+
+  // Clave nueva en cada subida: así no hay ventana en la que la ficha apunte a
+  // un objeto a medio sustituir, y el viejo se borra cuando el nuevo ya manda.
+  const clave = `pdf/${song.id}/${uuid()}.pdf`;
+  const anterior = song.pdf_key;
+  await env.BUCKET.put(clave, bytes, { httpMetadata: { contentType: "application/pdf" } });
+  const guardada = await setSongPdf(env.DB, song.id, clave, bytes.length);
+  if (anterior) await env.BUCKET.delete(anterior);
+  return json({ song: publicSong(guardada, true) }, cors);
+}
+
+async function deleteSongPdf(env, cors, user, id) {
+  const song = await findSongById(env.DB, id);
+  const denial = editDenialReason(user, song);
+  if (denial === "not_found") return fail("no encontrada", cors, 404);
+  if (denial === "unauthorized") return fail("inicia sesión", cors, 401);
+  if (denial) return fail("no puedes modificar esta partitura", cors, 403);
+  if (!song.pdf_key) return json({ song: publicSong(song, true) }, cors);
+  const anterior = song.pdf_key;
+  const guardada = await setSongPdf(env.DB, song.id, "", 0);
+  await env.BUCKET.delete(anterior);
+  return json({ song: publicSong(guardada, true) }, cors);
+}
+
+/**
+ * ¿Empieza como un PDF? La firma «%PDF-» tiene que estar en los primeros 1024
+ * bytes (la especificación tolera basura delante). No valida el documento
+ * entero: evita que se suba por error —o adrede— otra cosa con extensión .pdf.
+ */
+function esPdf(bytes) {
+  const firma = [0x25, 0x50, 0x44, 0x46, 0x2d];
+  const hasta = Math.min(bytes.length, 1024) - firma.length;
+  for (let i = 0; i <= hasta; i++) {
+    let igual = true;
+    for (let j = 0; j < firma.length; j++) {
+      if (bytes[i + j] !== firma[j]) { igual = false; break; }
+    }
+    if (igual) return true;
+  }
+  return false;
 }
 
 async function updateSong(request, env, cors, user, id) {
@@ -979,6 +1085,14 @@ export async function handleApi(request, env, url, cors) {
     return json({ song: publicSong(guardada, true) }, cors);
   }
 
+  // Partitura en PDF adjunta.
+  const pdfDe = path.match(/^\/api\/songs\/([A-Za-z0-9-]+)\/pdf$/);
+  if (pdfDe) {
+    if (method === "GET") return getSongPdf(env, cors, user, pdfDe[1]);
+    if (method === "PUT") return putSongPdf(request, env, cors, user, pdfDe[1]);
+    if (method === "DELETE") return deleteSongPdf(env, cors, user, pdfDe[1]);
+  }
+
   // Sacar de la papelera.
   const restaurar = path.match(/^\/api\/songs\/([A-Za-z0-9-]+)\/restore$/);
   if (restaurar && method === "POST") {
@@ -1005,6 +1119,7 @@ export async function handleApi(request, env, url, cors) {
           return fail("primero hay que mandarla a la papelera", cors, 409);
         }
         if (song.r2_key) await env.BUCKET.delete(song.r2_key);
+        if (song.pdf_key) await env.BUCKET.delete(song.pdf_key);
         await hardDeleteSong(env.DB, id);
         return json({ id, purged: true }, cors);
       }
