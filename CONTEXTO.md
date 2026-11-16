@@ -8,8 +8,8 @@ pendiente.
 
 > Todo lo que describe este documento está **commiteado** y el servidor está
 > **desplegado** (versión `d7e55024`), y está subido a `origin/master`, este
-> commit incluido. La app publicada es la **2.7**
-> (`versionCode 9`).
+> commit incluido. La app publicada es la **2.7.1**
+> (`versionCode 10`).
 > Lo de este párrafo sobre la app es anterior: sigue en
 > `versionCode 2`, y no debe publicarse sin probarla antes en un móvil de
 > verdad (§7).
@@ -622,6 +622,14 @@ dispositivo antes de publicarse.
   visor que baja el PDF con la sesión y lo abre con el visor del teléfono;
   adjuntar/cambiar/quitar desde el editor. Compila, pasan los 154 tests y el
   dueño la probó en su teléfono antes de publicarla.
+- **La 2.7 no enseñaba qué partituras tenían PDF** (arreglado en la 2.7.1,
+  `versionCode 10`). El feed de cambios es incremental: las partituras a las
+  que se les puso PDF mientras el móvil llevaba la 2.6 ya habían pasado, la
+  2.6 avanzó el cursor ignorando `hasPdf`, y la 2.7 no volvía a recibirlas.
+  La prueba en el teléfono no lo vio porque se adjuntó el PDF desde la propia
+  app. Ahora hay una **época del feed** (`SyncPlan.FEED_EPOCH`, guardada en
+  `SyncPrefs.feedEpoch`): si la app guardó su cursor con una época anterior,
+  recorre el feed de partituras entero una vez.
 
 ---
 
@@ -762,6 +770,13 @@ dispositivo antes de publicarse.
       escondería.
     - La copia en caché del móvil se usa si falla **la red**, nunca si el
       servidor responde 404 o 401: entonces se borra.
+32. **Un dato nuevo en la ficha no llega solo a la app: hay que subir
+    `SyncPlan.FEED_EPOCH`.** El feed solo manda lo que cambió después del
+    cursor. Si una versión de la app aprende a leer un campo que el servidor
+    ya mandaba, tiene que recorrer el feed entero una vez o las partituras que
+    no se toquen nunca lo tendrán. El recorrido no pisa nada: con la misma
+    `rev` solo se aplican las marcas (`applyRemoteFlags`), y **el campo nuevo
+    tiene que estar ahí** además de en `updateFromAccount`.
 27. **Todo texto de la web va sobre una superficie, nunca suelto sobre el
     mosaico.** Las notas del fondo se cruzan con las letras: pasó con el
     formulario de acceso, con los mensajes de vacío y con las pastillas
@@ -798,7 +813,7 @@ npm run dev       # servidor local en https (ver §8: adopta el host del dominio
 ```bash
 # App Android · Linux (el JDK del sistema ya vale: se instaló openjdk-21-jdk)
 export ANDROID_HOME=$HOME/Android/Sdk ANDROID_SDK_ROOT=$HOME/Android/Sdk
-./gradlew testDebugUnitTest     # 154 tests
+./gradlew testDebugUnitTest     # 156 tests
 ./gradlew assembleDebug         # APK en app/build/outputs/apk/debug/
 ./gradlew assembleRelease       # APK firmado (necesita keystore.properties)
 ```
@@ -940,7 +955,7 @@ Estado actual de producción:
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
 | Worker | Versión `d7e55024`, desplegada el 15/11/2026 con `./tools/deploy.sh release --yes` (sin `--yes` el script pregunta y, lanzado desde donde no hay teclado, se cancela solo) |
-| App | `versionCode 9` / `2.7` publicada en `/update` el 15/11/2026 y como release `v2.7` en GitHub, sobre el commit `dfcef90` (APK SHA-256 `6948b43a…`). Antes: `2.6`, también en los dos sitios (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
+| App | `versionCode 10` / `2.7.1` publicada en `/update` el 16/11/2026 (APK SHA-256 `d771ccb3…`), **sin release en GitHub todavía**; el dueño comprobó en su móvil que ya salen los PDF. Antes: `2.7` (`versionCode 9`), en `/update` desde el 15/11/2026 y como release `v2.7` sobre el commit `dfcef90` (APK SHA-256 `6948b43a…`), y `2.6`, también en los dos sitios (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
 | Estilo web | paquete de marca Accordio (claro + oscuro); fuentes en `worker/brand/` |
@@ -952,6 +967,9 @@ Estado actual de producción:
 ## 7. Pendiente
 
 **Lo primero de todo**
+- [ ] **Release `v2.7.1` en GitHub.** La 2.7.1 está publicada en `/update`
+      (16/11) y el dueño vio en su móvil que salen los PDF que ya existían
+      (§3.21), pero falta la release con el APK adjunto, como las anteriores.
 - [ ] **El PDF no entra en la copia de seguridad en ZIP** (Administración), que
       solo lleva el texto de las partituras.
 - [ ] **Copia de seguridad de la clave de firma** fuera de esta máquina (§9).

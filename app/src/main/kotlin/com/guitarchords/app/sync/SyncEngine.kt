@@ -79,6 +79,15 @@ class SyncEngine(
         var deleted = 0
         val conflictos = mutableListOf<ResolvedConflict>()
         var cursors = prefs.cursors()
+        // Una versión que aprende a leer un dato nuevo de la ficha recorre el
+        // feed de partituras entero una vez (ver SyncPlan.cursorDeArranque). La
+        // época se apunta junto al cursor ya reiniciado: si el proceso muere a
+        // mitad, la siguiente pasada sigue donde iba, no vuelve a empezar.
+        if (prefs.feedEpoch < SyncPlan.FEED_EPOCH) {
+            cursors = cursors.copy(songs = SyncPlan.cursorDeArranque(cursors.songs, prefs.feedEpoch))
+            prefs.saveCursors(cursors)
+            prefs.feedEpoch = SyncPlan.FEED_EPOCH
+        }
         var rondas = 0
 
         do {

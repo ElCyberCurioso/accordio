@@ -101,6 +101,33 @@ class SyncPlanTest {
     }
 
     @Test
+    fun `una app que aprende un dato nuevo recorre el feed entero una vez`() {
+        // Cursor guardado por la 2.6/2.7 (época 0): se empieza desde el principio.
+        assertEquals("", SyncPlan.cursorDeArranque("1731600000000:abc", epocaGuardada = 0))
+        // Ya recorrido con esta época: se sigue por donde iba.
+        assertEquals(
+            "1731600000000:abc",
+            SyncPlan.cursorDeArranque("1731600000000:abc", epocaGuardada = SyncPlan.FEED_EPOCH)
+        )
+        // Instalación nueva: no había cursor y sigue sin haberlo.
+        assertEquals("", SyncPlan.cursorDeArranque("", epocaGuardada = 0))
+    }
+
+    @Test
+    fun `volver a ver una partitura que no ha cambiado no la pisa`() {
+        // Es lo que hace inofensivo el recorrido completo: misma rev = solo marcas,
+        // aunque haya cambios locales sin subir.
+        assertEquals(
+            SyncPlan.PullAction.UP_TO_DATE,
+            SyncPlan.decidePull(song(remoteId = "r1", remoteRev = 4), 4, false)
+        )
+        assertEquals(
+            SyncPlan.PullAction.UP_TO_DATE,
+            SyncPlan.decidePull(song(remoteId = "r1", remoteRev = 4).copy(dirty = true), 4, false)
+        )
+    }
+
+    @Test
     fun `el nombre del conflicto lleva la fecha para no pisarse`() {
         val a = SyncPlan.conflictVersionName("25/08 14:32")
         val b = SyncPlan.conflictVersionName("25/08 14:40")

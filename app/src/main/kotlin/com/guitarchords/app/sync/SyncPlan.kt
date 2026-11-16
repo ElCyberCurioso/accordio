@@ -54,6 +54,30 @@ object SyncPlan {
     }
 
     /**
+     * Época del feed que entiende esta versión de la app. Se sube en uno cada
+     * vez que la app aprende a leer de la ficha un dato que el servidor ya
+     * mandaba (o podía haber mandado) antes de que ella existiera.
+     *
+     *  - 1: `hasPdf`. La 2.7 estrenó la columna, pero el feed es incremental:
+     *    las partituras a las que se les puso PDF mientras el móvil llevaba la
+     *    2.6 ya habían pasado, la 2.6 avanzó el cursor sin saber qué era ese
+     *    campo, y la 2.7 no volvía a verlas. Salían todas «sin PDF».
+     */
+    const val FEED_EPOCH = 1
+
+    /**
+     * Cursor de partituras con el que empezar a bajar.
+     *
+     * Si la app guardó su cursor con una época anterior, se empieza desde el
+     * principio UNA vez: es la única forma de recibir, de las partituras que no
+     * han cambiado desde entonces, el dato que la versión vieja ignoró. No
+     * pisa nada: una partitura con la misma `rev` cae en UP_TO_DATE, que solo
+     * aplica las marcas que manda el servidor (candado, visibilidad, PDF).
+     */
+    fun cursorDeArranque(guardado: String, epocaGuardada: Int): String =
+        if (epocaGuardada < FEED_EPOCH) "" else guardado
+
+    /**
      * `baseRev` que se manda al subir. 0 significa "no sé cuál era": el servidor
      * lo trata como "no compruebes", que es lo correcto para un alta y para las
      * partituras que se enlazaron antes de que existiera el contador.

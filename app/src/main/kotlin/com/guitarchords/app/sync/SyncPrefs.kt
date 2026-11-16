@@ -166,6 +166,15 @@ class SyncPrefs(context: Context) {
             .apply()
     }
 
+    /**
+     * Época del feed con la que se guardaron los cursores (ver
+     * [SyncPlan.FEED_EPOCH]). No se borra al cerrar sesión: ahí ya se van los
+     * cursores, que es lo que de verdad obliga a bajarlo todo.
+     */
+    var feedEpoch: Int
+        get() = sp.getInt(KEY_FEED_EPOCH, 0)
+        set(value) { sp.edit().putInt(KEY_FEED_EPOCH, value).apply() }
+
     /** ETag del último blob de acordes sincronizado (concurrencia optimista). */
     var chordsEtag: String
         get() = sp.getString(KEY_CHORDS_ETAG, "").orEmpty()
@@ -194,6 +203,7 @@ class SyncPrefs(context: Context) {
         const val KEY_LAST_ERROR = "last_sync_error"
         const val KEY_CUR_PLAYLISTS = "cursor_playlists"
         const val KEY_CUR_SONGS = "cursor_songs"
+        const val KEY_FEED_EPOCH = "feed_epoch"
         const val KEY_CUR_VERSIONS = "cursor_versions"
     }
 }

@@ -328,7 +328,12 @@ abstract class AppDatabase : RoomDatabase() {
                 /*
                  * Partitura en PDF adjunta. Nace a 0 y, igual que en 17→18, NO
                  * se marca nada como pendiente: quién tiene PDF lo dice el
-                 * servidor, y llega con la siguiente sincronización.
+                 * servidor.
+                 *
+                 * OJO: no llega solo. El feed es incremental y las partituras
+                 * que ya tenían PDF no vuelven a pasar; por eso la app recorre
+                 * el feed entero una vez (SyncPlan.FEED_EPOCH). La 2.7 salió
+                 * sin eso y enseñaba todas «sin PDF».
                  */
                 db.execSQL("ALTER TABLE songs ADD COLUMN has_pdf INTEGER NOT NULL DEFAULT 0")
             }
