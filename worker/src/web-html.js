@@ -444,6 +444,14 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   .sugeridas .tira { display:flex; gap:10px; overflow-x:auto; scroll-snap-type:x mandatory;
                      padding:4px 2px 10px; scrollbar-width:thin; }
   .sugeridas .tira .card { flex:0 0 220px; scroll-snap-align:start; }
+  /* Con ratón se arrastra (ver arrastreTira): mano abierta, y cerrada mientras
+     se arrastra. Durante el arrastre se quita el imán para que la tira siga
+     al ratón; al soltar vuelve y la deja encajada en una tarjeta. */
+  @media (hover:hover) and (pointer:fine) {
+    .sugeridas .tira, .sugeridas .tira .card { cursor:grab; }
+  }
+  .sugeridas .tira.arrastrando { scroll-snap-type:none; cursor:grabbing; user-select:none; }
+  .sugeridas .tira.arrastrando .card { cursor:grabbing; pointer-events:none; }
   @media (max-width:600px) { .sugeridas .tira .card { flex-basis:72%; }
                              .sugeridas .cab .flecha { display:none; } }
   /* El buscador se queda pegado bajo la cabecera al bajar por el listado: con la
@@ -456,11 +464,32 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
      tapaba la sombra de la pestaña activa. La primera sombra, del color del
      fondo y hacia arriba, tapa las tarjetas que asomarían por las esquinas
      redondeadas cuando la barra está pegada a la cabecera. */
-  #listView .filtros { position:sticky; top:var(--alto-cabecera, 0px); z-index:9;
-                       background:var(--ui-surface); border:1.5px solid var(--ui-border);
+  /* Pegada, la barra deja aire arriba (bajo la cabecera) y abajo (sobre las
+     tarjetas). Las tarjetas que pasan por debajo desaparecen en ese aire: una
+     franja con el MISMO fondo que la página —crema y mosaico fijo, alineado
+     con el de body::before—, así que no se ve como franja sino como hueco. La
+     franja solo existe con la barra pegada (.pegada, ver marcarPegada): suelta,
+     taparía lo que hay encima.
+     La superficie de la barra va en ::after y la franja en ::before, las dos
+     con z-index -1: dentro del contexto de apilamiento de la barra, ::after se
+     pinta después y queda encima de la franja. Con el fondo en la propia
+     barra, la franja lo habría tapado. */
+  #listView .filtros { position:sticky; top:calc(var(--alto-cabecera, 0px) + 14px); z-index:9;
+                       background:none; border:1.5px solid transparent;
                        border-radius:var(--ui-radius-md); padding:10px 12px 12px;
-                       margin:0 0 14px;
-                       box-shadow:0 -12px 0 var(--ui-bg), var(--ui-shadow-card); }
+                       margin:0 0 18px; }
+  #listView .filtros::after { content:""; position:absolute; inset:-1.5px; z-index:-1;
+                              background:var(--ui-surface); border:1.5px solid var(--ui-border);
+                              border-radius:var(--ui-radius-md); box-shadow:var(--ui-shadow-card);
+                              pointer-events:none; }
+  #listView .filtros::before { content:""; position:absolute; z-index:-1; pointer-events:none;
+                               left:-8px; right:-8px; top:-16px; bottom:-20px; display:none;
+                               background-color:var(--ui-bg); background-image:var(--ac-pattern);
+                               background-repeat:repeat; background-size:400px 400px;
+                               background-attachment:fixed;
+                               -webkit-mask-image:linear-gradient(to bottom, #000 calc(100% - 8px), transparent);
+                               mask-image:linear-gradient(to bottom, #000 calc(100% - 8px), transparent); }
+  #listView .filtros.pegada::before { display:block; }
   /* La etiqueta va encima del control: antes el nombre del filtro solo existía
      como title=, que ni se lee con lector de pantalla ni se ve al tocar. */
   .filtro { display:flex; flex-direction:column; gap:4px; flex:0 1 190px; font-size:11px;
@@ -3382,6 +3411,21 @@ if ("ResizeObserver" in window) {
 }
 medirCabecera();
 
+/*
+ * ¿Está la barra del buscador pegada arriba? Solo entonces lleva la franja de
+ * aire (ver #listView .filtros::before).
+ */
+var barraFiltros = document.querySelector("#listView .filtros");
+function marcarPegada() {
+  if (!barraFiltros) return;
+  var alto = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--alto-cabecera")) || 0;
+  var pegada = window.scrollY > 0 && barraFiltros.getBoundingClientRect().top <= alto + 14 + 0.5;
+  barraFiltros.classList.toggle("pegada", pegada);
+}
+window.addEventListener("scroll", marcarPegada, { passive: true });
+window.addEventListener("resize", marcarPegada);
+marcarPegada();
+
 function setCapo(capo) {
   var n = Number(capo) || 0;
   capoActual = n;
@@ -5466,6 +5510,47 @@ search.onkeydown = function (e) {
 };
 
 sugeridasOtras.onclick = cargarSugeridas;
+
+/*
+ * Arrastrar la tira de sugeridas con el ratón. En táctil ya se desliza sola,
+ * así que solo se atiende al ratón. Si el puntero se mueve más de unos píxeles
+ * es un arrastre y el clic que llega al soltar se anula: si no, soltar encima
+ * de una tarjeta la abriría.
+ */
+(function arrastreTira() {
+  var inicioX = 0, inicioScroll = 0, pulsado = false, movido = false;
+  sugeridasTira.addEventListener("pointerdown", function (e) {
+    if (e.pointerType !== "mouse" || e.button !== 0) return;
+    pulsado = true;
+    movido = false;
+    inicioX = e.clientX;
+    inicioScroll = sugeridasTira.scrollLeft;
+  });
+  window.addEventListener("pointermove", function (e) {
+    if (!pulsado) return;
+    var dx = e.clientX - inicioX;
+    if (!movido && Math.abs(dx) < 5) return;
+    if (!movido) {
+      movido = true;
+      sugeridasTira.classList.add("arrastrando");
+    }
+    sugeridasTira.scrollLeft = inicioScroll - dx;
+    e.preventDefault();
+  });
+  window.addEventListener("pointerup", function () {
+    if (!pulsado) return;
+    pulsado = false;
+    if (!movido) return;
+    // Quitar la clase en el siguiente fotograma: el clic de soltar llega
+    // antes, con las tarjetas aún sin eventos de puntero.
+    requestAnimationFrame(function () { sugeridasTira.classList.remove("arrastrando"); });
+  });
+  // Sin esto el navegador arrastra el enlace de la tarjeta como si fuera a soltarlo en otra pestaña.
+  sugeridasTira.addEventListener("dragstart", function (e) { e.preventDefault(); });
+  sugeridasTira.addEventListener("click", function (e) {
+    if (movido) { e.preventDefault(); e.stopPropagation(); movido = false; }
+  }, true);
+})();
 sugeridasIzq.onclick = function () {
   sugeridasTira.scrollBy({ left: -sugeridasTira.clientWidth * 0.8, behavior: "smooth" });
 };

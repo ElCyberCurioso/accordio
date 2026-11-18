@@ -7,7 +7,7 @@ pendiente.
 Última actualización: 2026-11-18 · Rama `master`.
 
 > Todo lo que describe este documento está **commiteado** y el servidor está
-> **desplegado** (versión `758db95f`), y está subido a `origin/master`, este
+> **desplegado** (versión `2d2b7b01`), y está subido a `origin/master`, este
 > commit incluido. La app publicada es la **2.7.1**
 > (`versionCode 10`).
 > Lo de este párrafo sobre la app es anterior: sigue en
@@ -660,6 +660,16 @@ Desplegado (versión `ddcce70b`) y probado por el dueño antes del commit.
   240 ms antes de quitar `.on`). Todo se apaga con `prefers-reduced-motion`.
   La animación termina en `transform:none` a propósito: un transform fijo en
   `#listView` rompería la barra de filtros pegada y los paneles fijos.
+- **Aire alrededor del buscador pegado** (versión `2d2b7b01`, probada por el
+  dueño): la barra se pega 14 px bajo la cabecera y, solo con `.pegada`
+  (`marcarPegada()` en el scroll), lleva en `::before` una franja con el mismo
+  fondo que la página (crema + mosaico con `background-attachment:fixed`,
+  alineado con `body::before`) que difumina las tarjetas por arriba y abajo.
+  La superficie de la barra va en `::after`: con el fondo en la propia barra,
+  la franja (z-index -1 dentro de su contexto) la habría tapado.
+- **Carrusel arrastrable con ratón** (`arrastreTira()`): umbral de 5 px; tras
+  un arrastre se anula el clic para no abrir la tarjeta; sin imán durante el
+  arrastre (`.arrastrando`). En táctil no se toca, ya desliza solo.
 
 ---
 
@@ -984,7 +994,7 @@ Estado actual de producción:
 | R2 | `guitarchords` |
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
-| Worker | Versión `758db95f`, desplegada el 18/11/2026 (transiciones; antes `ddcce70b`, mismo día) con `npx wrangler deploy` desde el árbol de trabajo (sin cambios de esquema; el dueño lo probó antes del commit). Antes: `d7e55024`, 15/11/2026, con `./tools/deploy.sh release --yes` (sin `--yes` el script pregunta y, lanzado desde donde no hay teclado, se cancela solo) |
+| Worker | Versión `2d2b7b01`, desplegada el 18/11/2026 (buscador con aire y carrusel arrastrable; antes `758db95f` y `ddcce70b`, mismo día) con `npx wrangler deploy` desde el árbol de trabajo (sin cambios de esquema; el dueño lo probó antes del commit). Antes: `d7e55024`, 15/11/2026, con `./tools/deploy.sh release --yes` (sin `--yes` el script pregunta y, lanzado desde donde no hay teclado, se cancela solo) |
 | App | `versionCode 10` / `2.7.1` publicada en `/update` el 16/11/2026 (APK SHA-256 `d771ccb3…`), **sin release en GitHub todavía**; el dueño comprobó en su móvil que ya salen los PDF. Antes: `2.7` (`versionCode 9`), en `/update` desde el 15/11/2026 y como release `v2.7` sobre el commit `dfcef90` (APK SHA-256 `6948b43a…`), y `2.6`, también en los dos sitios (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |
