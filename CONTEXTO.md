@@ -4,10 +4,10 @@ Documento de traspaso: qué es el proyecto, cómo está montado hoy, **por qué*
 tomaron ciertas decisiones (para no deshacerlas sin querer) y qué queda
 pendiente.
 
-Última actualización: 2026-11-15 · Rama `master`.
+Última actualización: 2026-11-18 · Rama `master`.
 
 > Todo lo que describe este documento está **commiteado** y el servidor está
-> **desplegado** (versión `d7e55024`), y está subido a `origin/master`, este
+> **desplegado** (versión `ddcce70b`), y está subido a `origin/master`, este
 > commit incluido. La app publicada es la **2.7.1**
 > (`versionCode 10`).
 > Lo de este párrafo sobre la app es anterior: sigue en
@@ -631,6 +631,28 @@ dispositivo antes de publicarse.
   `SyncPrefs.feedEpoch`): si la app guardó su cursor con una época anterior,
   recorre el feed de partituras entero una vez.
 
+### 3.22 Sesión 18/11/2026 · buscador, sugeridas y alta manual
+
+Desplegado (versión `ddcce70b`) y probado por el dueño antes del commit.
+- **Buscador**: teclear solo **sugiere** (lista bajo la caja con títulos y
+  artistas, coincidencia en negrita; se piden aparte a `/api/songs[/public]?q=`).
+  El listado cambia solo con `aplicarBusqueda()`: clic en sugerencia, Enter o
+  la lupa (`#searchGo`). Lo aplicado vive en `aplicada`, no en `search.value`.
+  Aspa (`#searchClear`) dentro de la caja. Petición expresa del dueño: no
+  volver a filtrar mientras se teclea.
+- **Te sugerimos** (`#sugeridasBox`): carrusel de 12 públicas al azar,
+  `GET /api/songs/suggested` (`listSuggestedSongs`, `ORDER BY RANDOM()`,
+  `no-store`). Solo en el catálogo y sin búsqueda aplicada.
+- **Visor**: logo (`#vHome`) a la izquierda de «Volver», salta a `#/`.
+- **Ancho de la hoja**: `--ui-sheet` a 88ch y el mínimo puesto en `#vBody`
+  (contra `#vMain`). El de `#vSheet` en % nunca se aplicaba: su contenedor se
+  ajusta al contenido.
+- **Selección**: `--ui-selection-bg/text` fijos en los dos temas (en oscuro
+  salía texto casi blanco sobre turquesa claro); pareja en `contraste.test.mjs`.
+- **Alta manual de usuarios**: `POST /api/users` (solo admin, ignora el
+  interruptor de altas, 409 si el email existe), formulario en la pestaña
+  Usuarios. Tests en `admin-usuarios.test.mjs`.
+
 ---
 
 ## 4. Decisiones de diseño que conviene respetar
@@ -806,7 +828,7 @@ dispositivo antes de publicarse.
 # Worker · no hace falta cuenta de Cloudflare
 cd worker
 npm run check     # sintaxis de los módulos y del JS que se sirve
-npm test          # 234 tests
+npm test          # 241 tests
 npm run dev       # servidor local en https (ver §8: adopta el host del dominio)
 ```
 
@@ -954,7 +976,7 @@ Estado actual de producción:
 | R2 | `guitarchords` |
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
-| Worker | Versión `d7e55024`, desplegada el 15/11/2026 con `./tools/deploy.sh release --yes` (sin `--yes` el script pregunta y, lanzado desde donde no hay teclado, se cancela solo) |
+| Worker | Versión `ddcce70b`, desplegada el 18/11/2026 con `npx wrangler deploy` desde el árbol de trabajo (sin cambios de esquema; el dueño lo probó antes del commit). Antes: `d7e55024`, 15/11/2026, con `./tools/deploy.sh release --yes` (sin `--yes` el script pregunta y, lanzado desde donde no hay teclado, se cancela solo) |
 | App | `versionCode 10` / `2.7.1` publicada en `/update` el 16/11/2026 (APK SHA-256 `d771ccb3…`), **sin release en GitHub todavía**; el dueño comprobó en su móvil que ya salen los PDF. Antes: `2.7` (`versionCode 9`), en `/update` desde el 15/11/2026 y como release `v2.7` sobre el commit `dfcef90` (APK SHA-256 `6948b43a…`), y `2.6`, también en los dos sitios (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |

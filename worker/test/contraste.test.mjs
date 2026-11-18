@@ -88,6 +88,8 @@ const PAREJAS = [
   ["--ui-on-active", "--ui-active", 4.5],
   ["--ui-on-state", "--ui-state", 4.5],
   ["--ui-header-text", "--ui-header-bg", 4.5],
+  // Texto seleccionado: en oscuro salía casi blanco sobre turquesa claro.
+  ["--ui-selection-text", "--ui-selection-bg", 4.5],
   // Blanco sobre el coral de marca: 2,78:1. Es la pareja del kit para la
   // «acción destacada» («Nueva», confirmar un borrado) y no llega al 3:1 de
   // los rótulos grandes. Decisión de marca conocida; el suelo impide empeorarla.

@@ -13,6 +13,8 @@
  *   POST   /api/songs                 { title, artist, …, content }
  *   GET    /api/songs/:id             -> ficha + contenido (según permisos)
  *   GET    /api/songs/:id/related     -> recomendadas (mismo artista, o estilo)
+ *   GET    /api/songs/suggested       -> unas cuantas públicas al azar (portada)
+ *   POST   /api/users                 { email, password, name, role } -> alta manual (admin)
  *   PUT    /api/songs/:id             -> actualiza metadatos y/o contenido
  *   DELETE /api/songs/:id             -> a la papelera
  *
@@ -36,7 +38,7 @@ import {
   softDeleteVersion, updateSongMeta, updateUserRole, updateVersionMeta, uuid,
   nextVersionPositionFor, stmtInsertVersion, stmtResolveProposal, stmtUpdateSongMeta,
   hardDeleteSong, listTrashedSongs, restoreSong, setSongFavorite, findPlaylistById,
-  setSongPdf
+  setSongPdf, listSuggestedSongs
 } from "./db.js";
 import {
   canAddVersion, canComment, canDeleteComment, canRate,
@@ -159,6 +161,33 @@ async function register(request, env, cors) {
   await clearRate(env.DB, clave);
   const token = await signToken({ sub: user.id, role: user.role }, authSecret(env));
   return json({ token, user: publicUser(user) }, cors, 201);
+}
+
+/**
+ * Alta hecha por el administrador desde la web. No mira el interruptor de
+ * altas: cerrarlas es cerrar el formulario público, no impedir que quien
+ * administra dé de alta a alguien a mano. Aquí sí se dice que el email ya
+ * existe: solo lo ve el administrador, que ya puede listar los usuarios.
+ */
+async function createUserByAdmin(request, env, cors) {
+  const body = await readJson(request);
+  if (!body) return fail("cuerpo JSON no válido", cors, 400);
+  const problem = validateCredentials(body.email, body.password);
+  if (problem) return fail(problem, cors, 400);
+  const problemaNombre = checkField(body.name, "el nombre");
+  if (problemaNombre) return fail(problemaNombre, cors, 400);
+  const role = body.role === undefined || body.role === "" ? "user" : body.role;
+  if (!isValidRole(role)) return fail("rol no válido", cors, 400);
+  if (await findUserByEmail(env.DB, normalizeEmail(body.email))) {
+    return fail("ya existe una cuenta con ese email", cors, 409);
+  }
+  const creado = await createUser(env.DB, {
+    email: String(body.email).trim(),
+    name: String(body.name || "").trim(),
+    passwordHash: await hashPassword(body.password),
+    role
+  });
+  return json({ user: publicUser(creado) }, cors, 201);
 }
 
 async function login(request, env, cors) {
@@ -499,6 +528,14 @@ async function publicCatalog(env, cors, url) {
   );
 }
 
+/** Sugerencias de la portada: públicas del dueño del catálogo, al azar. */
+async function suggestedSongs(env, cors, url) {
+  const ownerId = await catalogOwnerId(env, url);
+  const filas = await listSuggestedSongs(env.DB, ownerId, Number(url.searchParams.get("limit")) || 10);
+  // Al azar a propósito: guardarlo en caché enseñaría siempre las mismas.
+  return json({ songs: filas.map((s) => publicSong(s)) }, { ...cors, "Cache-Control": "no-store" });
+}
+
 /* ---------------------------- versiones ---------------------------- */
 
 async function createVersion(request, env, cors, user, song) {
@@ -700,6 +737,7 @@ export async function handleApi(request, env, url, cors) {
 
   // Catálogo publicado: accesible sin sesión (es la portada de la web).
   if (path === "/api/songs/public" && method === "GET") return publicCatalog(env, cors, url);
+  if (path === "/api/songs/suggested" && method === "GET") return suggestedSongs(env, cors, url);
 
   const user = await currentUser(request, env);
 
@@ -1058,6 +1096,10 @@ export async function handleApi(request, env, url, cors) {
     if (!canManageRoles(user)) return fail("solo el administrador", cors, 403);
     const { items, hasMore } = await listUsers(env.DB, paginaDe(url));
     return json({ users: items.map(publicUser), hasMore }, cors);
+  }
+  if (path === "/api/users" && method === "POST") {
+    if (!canManageRoles(user)) return fail("solo el administrador", cors, 403);
+    return createUserByAdmin(request, env, cors);
   }
   const rolDe = path.match(/^\/api\/users\/([A-Za-z0-9-]+)\/role$/);
   if (rolDe && method === "PUT") {

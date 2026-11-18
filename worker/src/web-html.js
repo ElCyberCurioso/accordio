@@ -99,7 +99,11 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
     /* Ancho de la hoja de partitura, en caracteres del tipo monoespaciado.
        Va en ch y no en px a propósito: al cambiar el tamaño de letra, la hoja
        sigue teniendo el mismo número de columnas y la lectura no se descoloca. */
-    --ui-sheet:68ch;
+    --ui-sheet:88ch;
+    /* Texto seleccionado. Fijo en los dos temas: antes era --ac-ink, que en
+       oscuro pasa a ser casi blanco, y sobre el turquesa claro de la selección
+       no se leía nada. */
+    --ui-selection-bg:#C2F0EB; --ui-selection-text:#12363D;
   }
 
   /* Modo oscuro del kit (tokens.dark.css), palabra por palabra. Se escribe dos
@@ -188,7 +192,7 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   /* Regla 8 del kit: el foco se ve siempre, y en turquesa. */
   :focus-visible { outline:3px solid var(--ui-focus); outline-offset:2px;
                    border-radius:var(--ui-radius-sm); }
-  ::selection { background:var(--ac-turquoise-200); color:var(--ac-ink); }
+  ::selection { background:var(--ui-selection-bg); color:var(--ui-selection-text); }
   /* Nada cuadrado (regla 3): los controles son píldoras. */
   /* Los botones secundarios tienen SUPERFICIE, no solo contorno: sobre el crema
      con mosaico, un borde pálido y letra fina no se leían como algo pulsable, y
@@ -403,6 +407,45 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
            color:var(--ui-head); border-radius:var(--ui-radius-md); padding:11px 14px;
            margin-bottom:12px; font-size:14px; }
   .filtros { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:flex-end; }
+  /* Buscador: la caja lleva dentro el aspa de borrar y, debajo, la lista de
+     sugerencias. */
+  .buscaCaja { position:relative; display:flex; gap:6px; align-items:stretch; }
+  .buscaInput { position:relative; flex:1 1 auto; min-width:0; }
+  #searchGo { flex:0 0 auto; padding:0 12px; }
+  #searchGo .ic { width:20px; height:20px; }
+  .buscaCaja input { padding-right:38px; }
+  #searchClear { position:absolute; right:4px; top:50%; transform:translateY(-50%);
+                 width:30px; height:30px; padding:0; border:0; border-radius:50%;
+                 background:transparent; color:var(--ui-text-muted); display:flex;
+                 align-items:center; justify-content:center; box-shadow:none; }
+  #searchClear:hover { background:var(--ui-surface-alt); color:var(--ui-head); }
+  #searchClear svg { width:16px; height:16px; }
+  #searchSug { position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:20;
+               margin:0; padding:4px; list-style:none; max-height:min(60vh, 360px);
+               overflow-y:auto; background:var(--ui-surface);
+               border:1.5px solid var(--ui-border-strong); border-radius:var(--ui-radius-md);
+               box-shadow:var(--ui-shadow-pop); text-transform:none; letter-spacing:0; }
+  #searchSug li { display:flex; align-items:baseline; gap:10px; padding:8px 10px;
+                  border-radius:var(--ui-radius-sm); cursor:pointer; font-size:14px;
+                  color:var(--ui-text); }
+  #searchSug li[aria-selected=true], #searchSug li:hover { background:var(--ui-surface-alt); }
+  #searchSug li .txt { flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis;
+                       white-space:nowrap; }
+  #searchSug li .txt small { color:var(--ui-text-muted); font-size:12px; }
+  #searchSug li b { color:var(--ui-head); font-weight:700; }
+  #searchSug li .tipo { flex:0 0 auto; font-size:10px; text-transform:uppercase;
+                        letter-spacing:.08em; color:var(--ui-text-muted); }
+  /* Sugeridas de la pantalla principal: una tira que se desliza de lado. */
+  .sugeridas { margin:0 0 14px; }
+  .sugeridas .cab { display:flex; align-items:center; gap:8px; margin:0 0 8px; }
+  .sugeridas h2 { margin:0; font-size:18px; flex:1 1 auto; }
+  .sugeridas .cab button { padding:6px 12px; font-size:14px; }
+  .sugeridas .cab .flecha { font-size:20px; line-height:1; padding:4px 12px 6px; }
+  .sugeridas .tira { display:flex; gap:10px; overflow-x:auto; scroll-snap-type:x mandatory;
+                     padding:4px 2px 10px; scrollbar-width:thin; }
+  .sugeridas .tira .card { flex:0 0 220px; scroll-snap-align:start; }
+  @media (max-width:600px) { .sugeridas .tira .card { flex-basis:72%; }
+                             .sugeridas .cab .flecha { display:none; } }
   /* El buscador se queda pegado bajo la cabecera al bajar por el listado: con la
      carga automática el listado no se acaba, y había que volver arriba a mano
      para buscar otra cosa. --alto-cabecera lo mide medirCabecera(), porque la
@@ -529,6 +572,7 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
   .badge.lista { background:var(--ui-state-soft); color:var(--ui-state-text);
                  border-color:var(--ui-state); }
   .msg { color:var(--ui-danger); min-height:1.2em; }
+  .msg.ok { color:var(--ui-beat); }
   /* Con superficie, como todo texto: suelto sobre el mosaico no se leía. */
   .empty { color:var(--ui-text-muted); text-align:center; padding:32px 16px;
            background:var(--ui-surface); border:1.5px dashed var(--ui-border-strong);
@@ -722,6 +766,12 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
            border-bottom:1px solid var(--ui-border); background:var(--ui-surface); }
   #vHead .lado { display:flex; align-items:center; gap:8px; min-width:0; }
   #vHead .lado.der { justify-content:flex-end; }
+  /* Atajo a la pantalla principal: el mismo logo de la cabecera. «Volver» va
+     paso a paso por el historial; esto salta del tirón. */
+  #vHome { display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+           padding:4px 6px; border-radius:var(--ui-radius-md); color:var(--ui-head); }
+  #vHome:hover { background:var(--ui-surface-alt); }
+  #vHome svg { width:34px; height:24px; display:block; }
   /* El bloque de título tiene que poder encoger: sin min-width:0 no baja de su
      contenido y el título largo se sale de la cabecera. */
   /* Una sola línea: autor – título, y el capo a su derecha. */
@@ -785,6 +835,19 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
      en el móvil la columna medía 68ch —más que la pantalla— y #vBody, que no
      desplaza de lado, cortaba el final de cada verso sin dejar arrastrarlo. */
   #vSheet { width:max-content; min-width:min(var(--ui-sheet), 100%); max-width:100%; flex:0 0 auto; }
+  /* El mínimo de la hoja no bastaba: #vBody mide lo que su contenido, y un
+     min-width en % dentro de una caja que se ajusta al contenido se descarta,
+     así que las canciones de versos cortos salían en una tira estrecha. El
+     ancho mínimo se le pone a #vBody, medido contra #vMain, que sí tiene ancho
+     fijo; se le resta lo que ocupan los mandos (260 + hueco) y, si lo hay, el
+     vídeo. Si los versos piden más, la hoja sigue creciendo. */
+  @media (min-width:901px) {
+    #vBody { min-width:min(calc(var(--ui-sheet) + 52px), calc(100% - 274px)); }
+    #vMain:has(#vTube.on) #vBody { min-width:min(calc(var(--ui-sheet) + 52px), calc(100% - 628px)); }
+  }
+  @media (min-width:901px) and (max-width:1200px) {
+    #vMain:has(#vTube.on) #vBody { min-width:min(calc(var(--ui-sheet) + 52px), calc(100% - 568px)); }
+  }
   .ln { white-space:pre; line-height:1.35; margin:0; }
   .tab { white-space:pre; line-height:1.35; color:var(--ui-text-muted); }
   .chord { color:var(--ui-chord); font-weight:600; }
@@ -906,6 +969,8 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
     #vHead .titulo { min-width:0; }
     #vHead .lado.der { justify-content:flex-end; }
     #vClose { padding:6px 10px; }
+    #vHome { padding:4px 2px; }
+    #vHome svg { width:28px; height:20px; }
     /* El capo se queda —cambia cómo suena todo— pero en pequeño. */
     #vCapo { padding:2px 8px 3px; font-size:10px; }
     #vCapo .n { font-size:13px; }
@@ -1385,6 +1450,7 @@ var PAGINA = 100;
  * porque un resultado de búsqueda paginado es justo el problema de partida.
  */
 var busqueda = "";             // texto que está filtrando en el servidor
+var aplicada = "";             // lo buscado de verdad (Enter, lupa o sugerencia), no lo que se está tecleando
 var MIN_BUSQUEDA = 3;          // letras o cifras a partir de las cuales se busca
 var PAGINA_BUSQUEDA = 500;
 var temporizadorBusqueda = null;
@@ -1930,6 +1996,225 @@ function pintarPortada() {
     });
 }
 
+/* ---------- sugerencias del buscador ---------- */
+
+/*
+ * Debajo del buscador, títulos y artistas que contienen lo escrito, con la
+ * coincidencia en negrita. Teclear SOLO sugiere: el listado no cambia hasta
+ * que se elige una sugerencia, se pulsa Enter o la lupa (aplicarBusqueda).
+ * Las sugerencias se piden aparte al servidor, a la misma lista que se está
+ * viendo (catálogo o «Mis partituras»).
+ */
+var sugSongs = [];           // partituras que casan con lo tecleado
+var sugPeticion = 0;
+var sugTemporizador = null;
+var sugActiva = -1;          // posición marcada con las flechas
+var sugItems = [];
+var sugCerradas = false;     // cerradas a mano (Escape o elegir) hasta que se teclee
+
+/** Texto normalizado letra a letra, para que las posiciones casen con el original. */
+function normalizarLetras(texto) {
+  var salida = "";
+  for (var i = 0; i < texto.length; i++) {
+    var c = texto.charAt(i);
+    var n = c.trim() ? acNormalizarBusqueda(c) : " ";
+    salida += n.length === 1 ? n : c.toLowerCase();
+  }
+  return salida;
+}
+
+/** [texto] con el primer trozo que coincide con [q] (ya normalizado) en <b>. */
+function conNegrita(texto, q) {
+  var f = document.createDocumentFragment();
+  var i = normalizarLetras(texto).indexOf(q);
+  if (i < 0) { f.appendChild(document.createTextNode(texto)); return f; }
+  f.appendChild(document.createTextNode(texto.slice(0, i)));
+  var b = document.createElement("b");
+  b.textContent = texto.slice(i, i + q.length);
+  f.appendChild(b);
+  f.appendChild(document.createTextNode(texto.slice(i + q.length)));
+  return f;
+}
+
+function calcularSugerencias(q) {
+  var vistos = {};
+  var salida = [];
+  sugSongs.forEach(function (s) {
+    var titulo = s.title || "";
+    var pt = normalizarLetras(titulo).indexOf(q);
+    if (pt >= 0) salida.push({ tipo: "cancion", texto: titulo, sub: s.artist || "", id: s.id, pos: pt });
+    var artista = s.artist || "";
+    var clave = acNormalizarBusqueda(artista);
+    var pa = normalizarLetras(artista).indexOf(q);
+    if (pa >= 0 && !vistos[clave]) {
+      vistos[clave] = true;
+      salida.push({ tipo: "artista", texto: artista, pos: pa });
+    }
+  });
+  // Primero lo que EMPIEZA por lo escrito, luego por dónde aparece, y a
+  // igualdad, por orden alfabético.
+  salida.sort(function (a, b) {
+    var ea = a.pos === 0 ? 0 : 1, eb = b.pos === 0 ? 0 : 1;
+    if (ea !== eb) return ea - eb;
+    if (a.pos !== b.pos) return a.pos - b.pos;
+    return a.texto.localeCompare(b.texto, "es", { sensitivity: "base" });
+  });
+  return salida.slice(0, 10);
+}
+
+function cerrarSugerencias() {
+  searchSug.classList.add("hidden");
+  searchSug.innerHTML = "";
+  search.setAttribute("aria-expanded", "false");
+  search.removeAttribute("aria-activedescendant");
+  sugItems = [];
+  sugActiva = -1;
+}
+
+function pintarSugerencias() {
+  searchClear.classList.toggle("hidden", !search.value);
+  var q = acNormalizarBusqueda(search.value);
+  if (!q || sugCerradas || tab === "trash" || document.activeElement !== search) {
+    cerrarSugerencias();
+    return;
+  }
+  sugItems = calcularSugerencias(q);
+  sugActiva = -1;
+  searchSug.innerHTML = "";
+  search.removeAttribute("aria-activedescendant");
+  if (!sugItems.length) { cerrarSugerencias(); return; }
+  sugItems.forEach(function (it, i) {
+    var li = document.createElement("li");
+    li.id = "sug" + i;
+    li.setAttribute("role", "option");
+    li.setAttribute("aria-selected", "false");
+    var txt = document.createElement("span");
+    txt.className = "txt";
+    txt.appendChild(conNegrita(it.texto, q));
+    if (it.sub) {
+      var sub = document.createElement("small");
+      sub.appendChild(document.createTextNode(" — "));
+      sub.appendChild(conNegrita(it.sub, q));
+      txt.appendChild(sub);
+    }
+    var tipo = document.createElement("span");
+    tipo.className = "tipo";
+    tipo.textContent = it.tipo === "artista" ? "Artista" : "Canción";
+    li.appendChild(txt);
+    li.appendChild(tipo);
+    // mousedown y no click: el click llega después del blur del buscador, y
+    // para entonces la lista ya se habría cerrado.
+    li.onmousedown = function (ev) { ev.preventDefault(); elegirSugerencia(i); };
+    searchSug.appendChild(li);
+  });
+  searchSug.classList.remove("hidden");
+  search.setAttribute("aria-expanded", "true");
+}
+
+function marcarSugerencia(i) {
+  var lis = searchSug.querySelectorAll("li");
+  if (!lis.length) return;
+  sugActiva = (i + lis.length) % lis.length;
+  for (var k = 0; k < lis.length; k++) lis[k].setAttribute("aria-selected", k === sugActiva ? "true" : "false");
+  search.setAttribute("aria-activedescendant", "sug" + sugActiva);
+  lis[sugActiva].scrollIntoView({ block: "nearest" });
+}
+
+function elegirSugerencia(i) {
+  var it = sugItems[i];
+  if (!it) return;
+  sugCerradas = true;
+  cerrarSugerencias();
+  if (it.tipo === "cancion") { navegar("#/cancion/" + it.id); return; }
+  aplicarBusqueda(it.texto);
+}
+
+/** Pide al servidor las partituras que casan con lo tecleado, sin tocar el listado. */
+function pedirSugerencias() {
+  clearTimeout(sugTemporizador);
+  var texto = search.value.trim();
+  if (!texto || tab === "trash") { sugSongs = []; pintarSugerencias(); return; }
+  sugTemporizador = setTimeout(function () {
+    var esta = ++sugPeticion;
+    var base = tab === "mine" ? "/api/songs?" : "/api/songs/public?";
+    api("GET", base + "limit=40&sort=title&q=" + encodeURIComponent(texto)).then(function (d) {
+      if (esta !== sugPeticion) return;
+      sugSongs = d.songs || [];
+      pintarSugerencias();
+    }).catch(function () {
+      if (esta !== sugPeticion) return;
+      sugSongs = [];
+      pintarSugerencias();
+    });
+  }, 200);
+}
+
+/** Aplica [texto] al listado: esto sí recarga las tarjetas. */
+function aplicarBusqueda(texto) {
+  search.value = texto;
+  aplicada = String(texto || "").trim();
+  sugCerradas = true;
+  ++sugPeticion;
+  clearTimeout(sugTemporizador);
+  cerrarSugerencias();
+  searchClear.classList.toggle("hidden", !search.value);
+  if (aplicada === busqueda) { renderList(); return; }
+  busqueda = aplicada;
+  refresh();
+}
+
+/* ---------- sugeridas de la pantalla principal ---------- */
+
+var sugeridas = null;        // null: sin pedir todavía
+var pidiendoSugeridas = false;
+
+function cargarSugeridas() {
+  if (pidiendoSugeridas) return;
+  pidiendoSugeridas = true;
+  api("GET", "/api/songs/suggested?limit=12").then(function (d) {
+    sugeridas = d.songs || [];
+  }).catch(function () {
+    sugeridas = [];
+  }).then(function () {
+    pidiendoSugeridas = false;
+    sugeridasTira.scrollLeft = 0;
+    pintarSugeridas();
+  });
+}
+
+/** Solo en el catálogo y sin búsqueda: buscando, lo que importa es el resultado. */
+function pintarSugeridas() {
+  var visible = tab === "public" && !aplicada;
+  if (visible && sugeridas === null) { cargarSugeridas(); visible = false; }
+  if (visible && !sugeridas.length) visible = false;
+  sugeridasBox.classList.toggle("hidden", !visible);
+  if (!visible || sugeridasTira.childNodes.length && sugeridasTira.__de === sugeridas) return;
+  sugeridasTira.__de = sugeridas;
+  sugeridasTira.innerHTML = "";
+  sugeridas.forEach(function (s) {
+    var card = enlaceACancion(s.id);
+    card.className = "card";
+    var a = document.createElement("div");
+    a.className = "a";
+    a.textContent = s.artist || "";
+    var t = document.createElement("div");
+    t.className = "t";
+    t.textContent = s.title || "(sin título)";
+    card.appendChild(a);
+    card.appendChild(t);
+    if (s.genre) {
+      var et = document.createElement("div");
+      et.className = "etiquetas";
+      var b = document.createElement("span");
+      b.className = "badge";
+      b.textContent = s.genre;
+      et.appendChild(b);
+      card.appendChild(et);
+    }
+    sugeridasTira.appendChild(card);
+  });
+}
+
 /** Sugerencias del editor: las públicas y las propias, sin repetir. */
 function renderGenreDatalist(extra) {
   var vistas = {};
@@ -2091,7 +2376,7 @@ function refresh(desde) {
  * descargaron.
  */
 function visibles() {
-  var q = acNormalizarBusqueda(search.value);
+  var q = acNormalizarBusqueda(aplicada);
   if (!q) return songs;
   return songs.filter(function (s) {
     return acNormalizarBusqueda((s.title || "") + " " + (s.artist || "")).indexOf(q) >= 0;
@@ -2134,7 +2419,8 @@ function pintarEsqueleto() {
 
 function renderList(error) {
   list.removeAttribute("aria-busy");
-  var q = acNormalizarBusqueda(search.value);
+  pintarSugeridas();
+  var q = acNormalizarBusqueda(aplicada);
   var propio = tab === "mine";
   var shown = visibles();
   list.innerHTML = "";
@@ -2225,10 +2511,6 @@ function renderList(error) {
     }
     list.appendChild(card);
   });
-  // Con menos de 3 letras no se ha preguntado al servidor: si el recorte local
-  // no encuentra nada, hay que decir que la búsqueda aún no ha salido de aquí,
-  // y no que no existe la partitura.
-  var cortaParaBuscar = q && acLetrasYCifras(search.value) < MIN_BUSQUEDA;
   // Si hay partituras y no se ve ninguna, lo que sobra es un filtro, no el
   // repertorio: decirlo así evita el «todavía no tienes partituras» que sonaba
   // a que se habían perdido.
@@ -2236,9 +2518,7 @@ function renderList(error) {
                   (favOnly || sinPublicas || playlistBy || genreBy);
   var msg = error ? error
     : shown.length ? ""
-    : cortaParaBuscar ? "Escribe al menos " + MIN_BUSQUEDA +
-        " letras o cifras para buscar en todo el catálogo."
-    : q ? "Ninguna partitura coincide con «" + search.value.trim() + "»."
+    : q ? "Ninguna partitura coincide con «" + aplicada + "»."
     // Caso propio y frecuente ahora que el filtro viene puesto: todo publicado.
     : (propio && sinPublicas && !favOnly && !playlistBy && !genreBy && songs.length)
         ? "Todas tus partituras están publicadas. Quita «Solo privadas» para verlas."
@@ -5061,24 +5341,70 @@ if ("IntersectionObserver" in window) {
     if (finalALaVista) cargaAutomatica();
   }, { rootMargin: "0px 0px 600px 0px" }).observe(moreBtn);
 }
-/*
- * Al teclear: recorte inmediato de lo que ya hay y, si hay al menos 3 letras o
- * cifras, consulta al servidor un poco después. El retardo es para no lanzar
- * una consulta por tecla; con menos de 3 no se consulta, pero el recorte local
- * sigue funcionando.
- */
+/* Al teclear solo se sugiere; el listado cambia con aplicarBusqueda(). */
 search.oninput = function () {
-  renderList();
-  var texto = search.value.trim();
-  var quiereBuscar = acLetrasYCifras(texto) >= MIN_BUSQUEDA ? texto : "";
-  if (quiereBuscar === busqueda) return;      // nada que cambiar en el servidor
-  clearTimeout(temporizadorBusqueda);
-  temporizadorBusqueda = setTimeout(function () {
-    busqueda = quiereBuscar;
-    refresh();
-  }, 250);
+  sugCerradas = false;
+  searchClear.classList.toggle("hidden", !search.value);
+  pedirSugerencias();
 };
 tabChords.onclick = alPulsarSeccion("chords");
+
+searchClear.onclick = function () {
+  aplicarBusqueda("");
+  search.focus();
+};
+searchGo.onclick = function () { aplicarBusqueda(search.value); };
+search.onfocus = function () { sugCerradas = false; pedirSugerencias(); };
+search.onblur = function () { cerrarSugerencias(); };
+search.onkeydown = function (e) {
+  var abierta = !searchSug.classList.contains("hidden");
+  if (e.key === "ArrowDown" && abierta) { e.preventDefault(); marcarSugerencia(sugActiva + 1); }
+  else if (e.key === "ArrowUp" && abierta) { e.preventDefault(); marcarSugerencia(sugActiva - 1); }
+  else if (e.key === "Enter") {
+    e.preventDefault();
+    if (abierta && sugActiva >= 0) elegirSugerencia(sugActiva);
+    else aplicarBusqueda(search.value);
+  }
+  else if (e.key === "Escape" && abierta) {
+    // Primer Escape cierra la lista; el siguiente ya borra, como siempre.
+    e.preventDefault();
+    e.stopPropagation();
+    sugCerradas = true;
+    cerrarSugerencias();
+  }
+};
+
+sugeridasOtras.onclick = cargarSugeridas;
+sugeridasIzq.onclick = function () {
+  sugeridasTira.scrollBy({ left: -sugeridasTira.clientWidth * 0.8, behavior: "smooth" });
+};
+sugeridasDer.onclick = function () {
+  sugeridasTira.scrollBy({ left: sugeridasTira.clientWidth * 0.8, behavior: "smooth" });
+};
+
+vHome.onclick = function (ev) {
+  if (ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
+  ev.preventDefault();
+  navegar("#/");
+};
+
+nuForm.onsubmit = function (ev) {
+  ev.preventDefault();
+  nuMsg.textContent = "";
+  nuBtn.disabled = true;
+  api("POST", "/api/users", {
+    email: nuEmail.value.trim(), name: nuName.value.trim(),
+    password: nuPass.value, role: nuRole.value
+  }).then(function (d) {
+    nuMsg.className = "msg ok";
+    nuMsg.textContent = "Cuenta creada para " + d.user.email + ".";
+    nuForm.reset();
+    loadUsers();
+  }).catch(function (e) {
+    nuMsg.className = "msg";
+    nuMsg.textContent = e.message;
+  }).then(function () { nuBtn.disabled = false; });
+};
 
 themeBtn.onclick = toggleTheme;
 
@@ -5592,9 +5918,29 @@ export const WEB_HTML = `<!doctype html>
          metrónomo. Sin registro.</p>
       <div id="portadaChips" class="chips" role="group" aria-label="Categorías"></div>
     </div>
+    <!-- Sugeridas: unas cuantas del catálogo al azar. Las pinta pintarSugeridas(). -->
+    <section id="sugeridasBox" class="sugeridas hidden" aria-labelledby="sugeridasTit">
+      <div class="cab">
+        <h2 id="sugeridasTit">Te sugerimos</h2>
+        <button id="sugeridasIzq" class="ghost flecha" aria-label="Anteriores">‹</button>
+        <button id="sugeridasDer" class="ghost flecha" aria-label="Siguientes">›</button>
+        <button id="sugeridasOtras" class="ghost">Otras</button>
+      </div>
+      <div id="sugeridasTira" class="tira"></div>
+    </section>
     <div class="filtros">
-      <label class="filtro" for="search">Buscar
-        <input type="text" id="search" placeholder="Título o artista…"></label>
+      <div class="filtro"><label for="search">Buscar</label>
+        <div class="buscaCaja">
+          <div class="buscaInput">
+          <input type="text" id="search" placeholder="Título o artista…" autocomplete="off"
+                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="searchSug">
+          <button id="searchClear" type="button" class="hidden" aria-label="Borrar la búsqueda" title="Borrar la búsqueda">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
+          <button id="searchGo" type="button" class="tool" aria-label="Buscar" title="Buscar">
+            <svg class="ic"><use href="#ac-search"></use></svg></button>
+          <ul id="searchSug" role="listbox" aria-label="Sugerencias" class="hidden"></ul>
+        </div></div>
       <!-- Solo en móvil: abre el panel con el resto de filtros. El número es
            cuántos hay puestos, para que no pasen inadvertidos con el panel
            cerrado. -->
@@ -5824,6 +6170,27 @@ export const WEB_HTML = `<!doctype html>
       resuelve propuestas y mantiene el diccionario de acordes. El <b>usuario</b> crea
       partituras suyas y propone publicarlas o aportar versiones.
     </div>
+    <div class="adminTool">
+      <h3>Nuevo usuario</h3>
+      <p>Crea una cuenta a mano. Funciona aunque las altas públicas estén cerradas;
+         pásale la contraseña a la persona para que entre.</p>
+      <form id="nuForm" class="filtros" novalidate style="margin:0">
+        <label class="filtro" for="nuEmail">Email
+          <input type="email" id="nuEmail" autocomplete="off" required></label>
+        <label class="filtro" for="nuName">Nombre
+          <input type="text" id="nuName" autocomplete="off"></label>
+        <label class="filtro" for="nuPass">Contraseña
+          <input type="text" id="nuPass" autocomplete="new-password" minlength="8" required></label>
+        <label class="filtro" for="nuRole">Rol
+          <select id="nuRole">
+            <option value="user">Usuario</option>
+            <option value="editor">Editor</option>
+            <option value="admin">Administrador</option>
+          </select></label>
+        <button id="nuBtn" type="submit">Crear usuario</button>
+      </form>
+      <div class="msg" id="nuMsg"></div>
+    </div>
     <div class="msg" id="usersMsg"></div>
     <div id="usersList"></div>
   </section>
@@ -5932,6 +6299,22 @@ export const WEB_HTML = `<!doctype html>
 <div id="viewer" role="dialog" aria-modal="true" aria-labelledby="vTitle">
   <div id="vHead">
     <div class="lado">
+      <a id="vHome" href="#/" aria-label="Ir a la página principal" title="Página principal">
+        <svg viewBox="0 0 132 92" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="square">
+            <path d="M8 10H124M8 26H124M8 42H124M8 58H124M8 74H124"></path>
+            <path d="M8 10V74M37 10V74M66 10V74M95 10V74M124 10V74"></path>
+          </g>
+          <g>
+            <circle cx="66" cy="10" r="9" fill="currentColor"></circle>
+            <circle cx="37" cy="26" r="9" fill="currentColor"></circle>
+            <circle cx="95" cy="26" r="9" fill="#FF6B6B"></circle>
+            <circle cx="8" cy="42" r="9" fill="currentColor"></circle>
+            <circle cx="80" cy="42" r="9" fill="#FF6B6B"></circle>
+            <circle cx="80" cy="58" r="9" fill="#FF6B6B"></circle>
+            <circle cx="51" cy="74" r="9" fill="#FF6B6B"></circle>
+          </g>
+        </svg></a>
       <button id="vClose" class="ghost">‹ Volver</button>
     </div>
     <div class="vMeta">

@@ -253,6 +253,25 @@ export async function listPublicSongs(db, ownerId = null, opciones = {}) {
 }
 
 /**
+ * Sugerencias de la portada: un puñado de partituras publicadas al azar, para
+ * que la pantalla principal enseñe algo distinto cada vez en lugar de lo de
+ * siempre arriba del listado. [ownerId] acota al dueño del catálogo, como el
+ * listado público.
+ */
+export async function listSuggestedSongs(db, ownerId = null, limit = 10) {
+  const limite = Math.min(Math.max(Number(limit) || 10, 1), 20);
+  const condiciones = ["s.visibility = 'public'", "s.deleted_at = 0"];
+  const valores = [];
+  if (ownerId) { condiciones.push("s.owner_id = ?"); valores.push(ownerId); }
+  const sql = `SELECT s.*, u.name AS owner_name, ${estadisticasDe("s")}
+     FROM songs s JOIN users u ON u.id = s.owner_id
+     WHERE ${condiciones.join(" AND ")} ORDER BY RANDOM() LIMIT ?`;
+  valores.push(limite);
+  const { results } = await db.prepare(sql).bind(...valores).all();
+  return results || [];
+}
+
+/**
  * Recomendaciones para quien está leyendo una partitura: primero **del mismo
  * artista**, y si no hay, **del mismo estilo**. En dos consultas y no en una con
  * OR porque el criterio no es un filtro, es una prioridad: mezclarlos daría
