@@ -7,7 +7,7 @@ pendiente.
 Última actualización: 2026-11-18 · Rama `master`.
 
 > Todo lo que describe este documento está **commiteado** y el servidor está
-> **desplegado** (versión `ddcce70b`), y está subido a `origin/master`, este
+> **desplegado** (versión `758db95f`), y está subido a `origin/master`, este
 > commit incluido. La app publicada es la **2.7.1**
 > (`versionCode 10`).
 > Lo de este párrafo sobre la app es anterior: sigue en
@@ -652,6 +652,14 @@ Desplegado (versión `ddcce70b`) y probado por el dueño antes del commit.
 - **Alta manual de usuarios**: `POST /api/users` (solo admin, ignora el
   interruptor de altas, 409 si el email existe), formulario en la pestaña
   Usuarios. Tests en `admin-usuarios.test.mjs`.
+- **Transiciones** (versión `758db95f`, probada por el dueño): barra de carga
+  arriba (`barraCarga()`, solo envuelve la carga del listado y `openSong`),
+  pantallas que entran con fundido (`animarEntrada()` desde `showView`, solo
+  la que aparece), tarjetas escalonadas (`animarLista`, solo con
+  `listOffset` 0), visor que sube al abrir y se funde al cerrar (`.sale`,
+  240 ms antes de quitar `.on`). Todo se apaga con `prefers-reduced-motion`.
+  La animación termina en `transform:none` a propósito: un transform fijo en
+  `#listView` rompería la barra de filtros pegada y los paneles fijos.
 
 ---
 
@@ -976,7 +984,7 @@ Estado actual de producción:
 | R2 | `guitarchords` |
 | Secreto | `AUTH_SECRET` puesto (obligatorio; sin él la API responde 503) |
 | Datos | 1 usuario (admin) · 426 partituras |
-| Worker | Versión `ddcce70b`, desplegada el 18/11/2026 con `npx wrangler deploy` desde el árbol de trabajo (sin cambios de esquema; el dueño lo probó antes del commit). Antes: `d7e55024`, 15/11/2026, con `./tools/deploy.sh release --yes` (sin `--yes` el script pregunta y, lanzado desde donde no hay teclado, se cancela solo) |
+| Worker | Versión `758db95f`, desplegada el 18/11/2026 (transiciones; antes `ddcce70b`, mismo día) con `npx wrangler deploy` desde el árbol de trabajo (sin cambios de esquema; el dueño lo probó antes del commit). Antes: `d7e55024`, 15/11/2026, con `./tools/deploy.sh release --yes` (sin `--yes` el script pregunta y, lanzado desde donde no hay teclado, se cancela solo) |
 | App | `versionCode 10` / `2.7.1` publicada en `/update` el 16/11/2026 (APK SHA-256 `d771ccb3…`), **sin release en GitHub todavía**; el dueño comprobó en su móvil que ya salen los PDF. Antes: `2.7` (`versionCode 9`), en `/update` desde el 15/11/2026 y como release `v2.7` sobre el commit `dfcef90` (APK SHA-256 `6948b43a…`), y `2.6`, también en los dos sitios (la `v2.5` también está, recompilada desde `3303982`), firmada con la clave de siempre (SHA-256 `e6a53587…`) |
 | CI | GitHub Actions en cada push y PR; en verde |
 | Diccionario | biblioteca completa sembrada en el diccionario global (14.424 nombres) |

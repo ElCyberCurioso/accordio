@@ -585,6 +585,33 @@ export const WEB_CSS = `  /* Accordio · paquete de estilo de marca (accordio-we
                       animation:latido 900ms ease-in-out infinite alternate; }
   .card.esqueleto i + i { height:15px; width:74%; }
   @keyframes latido { from { opacity:.4; } to { opacity:1; } }
+  /* ---- transiciones entre pantallas ----
+     Cada pantalla entra con un fundido y un leve ascenso; las tarjetas, una
+     detrás de otra; el visor sube desde abajo y se va con un fundido. Con
+     «reducir movimiento» del sistema no se anima nada. */
+  :root { --ui-ease-out:cubic-bezier(.22,.61,.36,1); }
+  @keyframes entraVista { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+  @keyframes entraTarjeta { from { opacity:0; transform:translateY(12px) scale(.98); } to { opacity:1; transform:none; } }
+  @keyframes entraVisor { from { opacity:0; transform:translateY(24px) scale(.985); } to { opacity:1; transform:none; } }
+  @keyframes saleVisor { from { opacity:1; transform:none; } to { opacity:0; transform:translateY(18px) scale(.99); } }
+  @keyframes entraHoja { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  .entra { animation:entraVista 420ms var(--ui-ease-out) both; }
+  .grid > .card.aparece { animation:entraTarjeta 460ms var(--ui-ease-out) both;
+                          animation-delay:calc(var(--i, 0) * 45ms); }
+  #viewer.entra { animation:entraVisor 440ms var(--ui-ease-out) both; }
+  #viewer.sale { animation:saleVisor 240ms ease-in both; pointer-events:none; }
+  #vMain.entra { animation:entraHoja 380ms var(--ui-ease-out) both; }
+  /* Barra de carga arriba del todo: dice «estoy en ello» mientras llega la
+     partitura o el listado, en vez de un salto en seco. */
+  #barraCarga { position:fixed; top:0; left:0; height:3px; width:0; z-index:100;
+                background:linear-gradient(90deg, var(--ac-turquoise), #FF6B6B);
+                box-shadow:0 0 8px rgba(78,205,196,.6); opacity:0; pointer-events:none;
+                transition:width 600ms var(--ui-ease-out), opacity 300ms ease; }
+  #barraCarga.on { opacity:1; }
+  @media (prefers-reduced-motion: reduce) {
+    .entra, .grid > .card.aparece, #viewer.entra, #viewer.sale, #vMain.entra { animation:none; }
+    #barraCarga { transition:none; }
+  }
   @media (prefers-reduced-motion: reduce) { .card.esqueleto i { animation:none; } }
   .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   .stack { display:flex; flex-direction:column; gap:12px; max-width:420px; margin:40px auto; }
@@ -1450,6 +1477,7 @@ var PAGINA = 100;
  * porque un resultado de búsqueda paginado es justo el problema de partida.
  */
 var busqueda = "";             // texto que está filtrando en el servidor
+var animarLista = false;       // la próxima pintada del listado entra escalonada
 var aplicada = "";             // lo buscado de verdad (Enter, lupa o sugerencia), no lo que se está tecleando
 var MIN_BUSQUEDA = 3;          // letras o cifras a partir de las cuales se busca
 var PAGINA_BUSQUEDA = 500;
@@ -1742,6 +1770,44 @@ function api(method, path, body) {
   });
 }
 
+/* ---------- transiciones ---------- */
+
+/** Vuelve a lanzar la animación de entrada de [el] (quitar y poner la clase). */
+function animarEntrada(el) {
+  if (!el) return;
+  el.classList.remove("entra");
+  void el.offsetWidth;          // fuerza el reflujo para que la animación arranque de nuevo
+  el.classList.add("entra");
+}
+
+/*
+ * Barra de carga: avanza mientras haya cargas de pantalla en marcha (listado o
+ * partitura, no las sugerencias del buscador) y se completa al terminar. Si la
+ * respuesta llega en un suspiro, la barra se ve igual un instante: es la
+ * pequeña pausa que hace que el cambio no sea un salto en seco.
+ */
+var barraCarga_ = document.getElementById("barraCarga");
+var cargasEnCurso = 0;
+var barraTemporizador = null;
+function barraCarga(promesa) {
+  cargasEnCurso++;
+  clearTimeout(barraTemporizador);
+  barraCarga_.classList.add("on");
+  barraCarga_.style.width = "0";
+  void barraCarga_.offsetWidth;
+  barraCarga_.style.width = "70%";
+  var fin = function () {
+    if (--cargasEnCurso > 0) return;
+    barraCarga_.style.width = "100%";
+    barraTemporizador = setTimeout(function () {
+      barraCarga_.classList.remove("on");
+      barraTemporizador = setTimeout(function () { barraCarga_.style.width = "0"; }, 300);
+    }, 350);
+  };
+  promesa.then(fin, fin);
+  return promesa;
+}
+
 /* ---------- sesión ---------- */
 function setSession(tok, u) {
   token = tok || "";
@@ -1931,7 +1997,10 @@ function showView(vista) {
     admin: adminView
   };
   Object.keys(vistas).forEach(function (nombre) {
+    var antes = !vistas[nombre].classList.contains("hidden");
     vistas[nombre].classList.toggle("hidden", nombre !== vista);
+    // Solo anima la que APARECE: repintar la misma pantalla no debe parpadear.
+    if (nombre === vista && !antes) animarEntrada(vistas[nombre]);
   });
 }
 
@@ -2340,7 +2409,7 @@ function refresh(desde) {
   // anterior, o nada. Al filtrar o buscar NO: parpadearía a cada tecla.
   if (!listOffset && pestanaPintada !== tab) pintarEsqueleto();
   var deEstaPestana = tab;
-  return api("GET", path).then(function (d) {
+  return barraCarga(api("GET", path)).then(function (d) {
     if (esta !== peticionLista) return;
     pestanaPintada = deEstaPestana;
     // Al pedir "más" se añade; al cambiar de pestaña o filtro se empieza de cero.
@@ -2353,7 +2422,9 @@ function refresh(desde) {
     if (tab === "mine") renderGenreOptions(propias);
     else renderGenreOptions(genres);
     renderGenreDatalist(propias);
+    animarLista = !listOffset;
     renderList();
+    animarLista = false;
   }).catch(function (e) {
     if (esta !== peticionLista) return;
     pestanaPintada = "";
@@ -2508,6 +2579,10 @@ function renderList(error) {
       borrar.onclick = function (ev) { ev.stopPropagation(); borrarDelTodo(s); };
       acc.appendChild(rest); acc.appendChild(borrar);
       card.appendChild(acc);
+    }
+    if (animarLista) {
+      card.classList.add("aparece");
+      card.style.setProperty("--i", Math.min(list.children.length, 14));
     }
     list.appendChild(card);
   });
@@ -3204,7 +3279,7 @@ function categoriasAuto(aplicar) {
  * sitios que no correspondían.
  */
 function openSong(id) {
-  api("GET", "/api/songs/" + id).then(function (d) {
+  barraCarga(api("GET", "/api/songs/" + id)).then(function (d) {
     current = d;
     semis = 0; flats = false;
     var parsed = acParseSong(d.content);
@@ -3223,7 +3298,16 @@ function openSong(id) {
     vPdf.classList.toggle("hidden", !d.song.hasPdf);
     vEdit.classList.toggle("hidden", !(user && (user.id === d.song.ownerId || user.role === "admin")));
     renderViewer();
-    viewer.classList.add("on");
+    clearTimeout(visorSaliendo);
+    var cerrandose = viewer.classList.contains("sale");
+    viewer.classList.remove("sale");
+    if (!viewer.classList.contains("on") || cerrandose) {
+      viewer.classList.add("on");
+      animarEntrada(viewer);
+    } else {
+      // De una partitura a otra: el visor se queda y la hoja entra de nuevo.
+      animarEntrada(vMain);
+    }
     // El scroll se reinicia DESPUÉS de mostrar el visor. Mientras está en
     // display:none no tiene caja, así que asignarle scrollTop no hace nada y el
     // navegador restaura la posición anterior al mostrarlo: al abrir la segunda
@@ -3391,9 +3475,16 @@ function cerrarVisor() {
   vChordBar.classList.add("hidden");
   stopScroll();
   if (metro.isRunning()) toggleMetro();
-  viewer.classList.remove("on");
+  // Se va con un fundido; se apaga del todo cuando acaba.
+  viewer.classList.remove("entra");
+  viewer.classList.add("sale");
+  clearTimeout(visorSaliendo);
+  visorSaliendo = setTimeout(function () {
+    viewer.classList.remove("on", "sale");
+  }, 240);
   document.title = "Accordio";
 }
+var visorSaliendo = null;
 
 /** Cerrar el visor es VOLVER: a la pantalla de la que se vino. */
 function salirDelVisor() { volverAtras(); }
@@ -5827,6 +5918,7 @@ export const WEB_HTML = `<!doctype html>
 </head>
 <body>
 
+<div id="barraCarga" aria-hidden="true"></div>
 <header>
   <a class="brand" href="/" aria-label="Accordio">
     <svg width="42" height="29" viewBox="0 0 132 92" aria-hidden="true">
